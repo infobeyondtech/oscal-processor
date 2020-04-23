@@ -7,5 +7,6 @@ import (
 
 // Given a set of controls, a set of catalogs, and a baseline,
 // generates a profile
-func create(ctrls []string, b string, ctlgs []string) *sdk_profile.Profile {
+func Create(ctrls []string, b string, ctlgs []string) *sdk_profile.Profile {
+	return nil
 }

@@ -8,7 +8,10 @@ import (
 	"os/exec"
 )
 
-func applyResolutionProcedure(saxonJarPath string, xslPath string,
+/* Run applies a series of transformations to the input profile,
+with the given transformations, jar package, writing the given output
+file. */
+func ResolveProfile(saxonJarPath string, xslPath string,
 	inputFile string, outputFile string) error {
 
 	javaCmd := exec.Command("java",
@@ -19,8 +22,8 @@ func applyResolutionProcedure(saxonJarPath string, xslPath string,
 
 	javaaCmdOutput := &bytes.Buffer{}
 	javaCmdErr := &bytes.Buffer{}
-	javaCmd.Stdout = xmllintCmdOutput
-	javaCmd.Stderr = xmllintCmdErr
+	javaCmd.Stdout = javaaCmdOutput
+	javaCmd.Stderr = javaCmdErr
 
 	if err := javaCmd.Run(); err != nil {
 		stderr := javaCmdErr.String()
