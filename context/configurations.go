@@ -18,6 +18,9 @@ const (
 var usr, _ = user.Current()
 var dir = usr.HomeDir
 
+/*
+ExpandPath resolves the tidle in the given path.
+*/
 func ExpandPath(path string) string {
 	if path == "~" {
 		// In case of "~", which won't be caught by the "else if"
