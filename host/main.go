@@ -1,7 +1,7 @@
 package main
 
 import (
-	"http"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,7 +39,7 @@ func main() {
 			})
 	})
 	// Download
-	router.GET("/file/:uuid", func(c *gin.Context) {
+	r.GET("/file/:uuid", func(c *gin.Context) {
 		id := c.Param("uuid")
 		dir := context.DownloadDir
 		src := dir + "/" + id
