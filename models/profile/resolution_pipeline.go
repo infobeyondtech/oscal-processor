@@ -1,5 +1,3 @@
-// Provides the features of applying the standard XSLT transformations
-// defined by OSCAL.
 package profile
 
 import (
@@ -8,7 +6,7 @@ import (
 	"os/exec"
 )
 
-/* Run applies a series of transformations to the input profile,
+/* ResolveProfile applies a series of transformations to the input profile,
 with the given transformations, jar package, writing the given output
 file. */
 func ResolveProfile(saxonJarPath string, xslPath string,
