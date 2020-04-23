@@ -1,6 +1,10 @@
 package profile
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // Test
 func TestResolveProfile(t *testing.T) {
@@ -10,5 +14,5 @@ func TestResolveProfile(t *testing.T) {
 	input := "/home/tom/oscal_workspace/OSCAL/src/utils/util/resolver-pipeline/testing/pathological-profile.xml"
 	output := dir + "/output/selected.xml"
 	e := ResolveProfile(jarPath, rules, input, output)
-	t.Error(e != nil)
+	assert.Nil(t, e)
 }
