@@ -1,4 +1,4 @@
-package Context
+package context
 
 import (
 	"os/user"

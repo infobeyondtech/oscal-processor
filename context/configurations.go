@@ -1,4 +1,4 @@
-package Context
+package context
 
 import (
 	"os/user"
@@ -12,6 +12,7 @@ const (
 	UploadDir   = "~/oscal_processing_space/uploads"
 	DownloadDir = "~/oscal_processing_space/downloads"
 	JarLibDir   = "~/.nanshiie_baker/jars"
+	OSCALRepo   = "~/oscal_workspace/OSCAL"
 )
 
 var usr, _ = user.Current()
