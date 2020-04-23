@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"github.com/infobeyondtech/oscal-processor/context"
 )
 
 func main() {
@@ -23,18 +24,27 @@ func main() {
 		// log.Println(file.Filename)
 
 		// Generate a file
-		dir := "/home/tom/oscal_processing_space"
+		dir := context.UploadDir
 		id := uuid.New().String()
-		dst := dir + "/output/" + id + ".xml"
+		dst := dir + "/" + id
+		dst = context.ExpandPath(dst)
 
 		// Upload the file to specific dst.
 		c.SaveUploadedFile(file, dst)
 
-		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+		c.JSON(http.StatusOK,
+			gin.H{
+				"uuid":     id,
+				"filename": file.Filename,
+			})
 	})
 	// Download
-	router.GET("file", func(c *gin.Context) {
-		c.File("local/file.go")
+	router.GET("/file/:uuid", func(c *gin.Context) {
+		id := c.Param("uuid")
+		dir := context.DownloadDir
+		src := dir + "/" + id
+		src = context.ExpandPath(src)
+		c.File(src)
 	})
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
