@@ -1,6 +1,10 @@
 package Context
 
-import "os/user"
+import (
+	"os/user"
+	"path/filepath"
+	"strings"
+)
 
 const (
 	AppData     = "~/oscal_processing_space"
@@ -10,10 +14,10 @@ const (
 	JarLibDir   = "~/.nanshiie_baker/jars"
 )
 
-usr, _ := user.Current()
-dir := usr.HomeDir;
+var usr, _ = user.Current()
+var dir = usr.HomeDir
 
-func ExpandPath(path string) string{
+func ExpandPath(path string) string {
 	if path == "~" {
 		// In case of "~", which won't be caught by the "else if"
 		path = dir
@@ -24,6 +28,3 @@ func ExpandPath(path string) string{
 	}
 	return path
 }
-
-
-
