@@ -3,6 +3,7 @@ package profile
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -17,15 +18,60 @@ import (
 
 // Given a set of controls, a set of catalogs, and a baseline,
 // generate a unique ID, which can be used for the following operations.
-func CreateProfile(ctrls []string, b string, ctlgs []string) (string, error) {
+func CreateProfile(ctrls []string, baseline string, ctlgs []string) (string, error) {
 	// A unique file
 	fid := uuid.New().String()
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fid
 	targetFile = context.ExpandPath(targetFile)
 
+	// generate profile and write to file
+	p := &sdk_profile.Profile{}
+
+	// todo: many fields here are hardcoded
+	SetID(p, "uuid-be3f5ab3-dbe0-4293-a2e0-8182c7fddc23")
+	SetTitleVersion(p, "2015-01-22", "1.0.0-milestone1", "Infobeyond BASELINE")
+	partyID := "IT-JTF"
+	orgName := "Infobeyondtech"
+	orgEmail := "info@infobeyondtech.com"
+	AddRoleParty(p, "creator", "Document Creator", partyID, orgName, orgEmail)
+
+	addressLines := []string{"InfoBeyond Technology LLC", "320 Whittington PKWY, STE 117", "Louisville, KY, USA 40222-4917"}
+	AddAddress(p, partyID, addressLines, "Louvisville", "KY", "40222-4917")
+
+	SetMerge(p, "true")
+
+	sourceID := "catalog"
+	controls := ctrls
+	AddControls(p, controls, "#"+sourceID)
+
+	AddModification(p, "cp-1", "starting", "priority", "P1")
+
+	// check ctlgs and baseline
+	if len(ctlgs) == 0 {
+		return fid, errors.New("ctlgs cannot be empty")
+	}
+	if len(baseline) == 0 {
+		return fid, errors.New("baseline cannot be empty")
+	}
+
+	// todo: give ctlgs and baseline to the correct field
+	description := baseline
+	source := ctlgs[0]
+
+	sourceType := "application/oscal.catalog+xml"
+	AddBackMatter(p, sourceID, description, source, sourceType)
+
+	// marshal
+	out, e := xml.MarshalIndent(p, "  ", "    ")
+	if e != nil {
+		return fid, e
+	}
+
+	err := ioutil.WriteFile(targetFile, out, 0644)
+
 	// Returns the unique file id, if everything is correct
-	return fid, nil
+	return fid, err
 }
 
 // LoadFromFile : initiate a profile using a xml file
