@@ -39,7 +39,7 @@ func main() {
 			})
 	})
 	// Download
-	r.GET("/file/:uuid", func(c *gin.Context) {
+	r.GET("/download/:uuid", func(c *gin.Context) {
 		id := c.Param("uuid")
 		dir := context.DownloadDir
 		src := dir + "/" + id
