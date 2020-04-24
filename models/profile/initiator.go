@@ -12,8 +12,8 @@ import (
 )
 
 // Given a set of controls, a set of catalogs, and a baseline,
-// generates a profile
-func Create(ctrls []string, b string, ctlgs []string) *sdk_profile.Profile {
+// generate a unique ID, which can be used for the following operations.
+func CreateProfile(ctrls []string, b string, ctlgs []string) string {
 	return nil
 }
 
