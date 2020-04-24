@@ -7,14 +7,25 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/google/uuid"
+
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
+
+	"github.com/infobeyondtech/oscal-processor/context"
 )
 
 // Given a set of controls, a set of catalogs, and a baseline,
 // generate a unique ID, which can be used for the following operations.
-func CreateProfile(ctrls []string, b string, ctlgs []string) string {
-	return nil
+func CreateProfile(ctrls []string, b string, ctlgs []string) (string, error) {
+	// A unique file
+	fid := uuid.New().String()
+	parent := context.DownloadDir
+	targetFile := parent + "/" + fid
+	targetFile := context.ExpandPath(targetFile)
+
+	// Returns the unique file id, if everything is correct
+	return fid, nil
 }
 
 // LoadFromFile : initiate a profile using a xml file
