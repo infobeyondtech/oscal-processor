@@ -9,6 +9,12 @@ import (
 	"github.com/infobeyondtech/oscal-processor/context"
 )
 
+type CreatProfileDTO struct {
+	Baseline string   `json:"baseline" binding:"required"`
+	Controls []string `json:"controls" binding:"required"`
+	Catalogs []string `json:"catalogs" binding:"required"`
+}
+
 func main() {
 	r := gin.Default()
 	// Ping
@@ -45,6 +51,22 @@ func main() {
 		src := dir + "/" + id
 		src = context.ExpandPath(src)
 		c.File(src)
+	})
+	// Create profile
+	r.POST("/profile/create", func(c *gin.Context) {
+		var json CreatProfileDTO
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK,
+			gin.H{
+				"controls": json.Controls,
+				"baseline": json.Baseline,
+				"catalogs": json.Catalogs,
+			})
+
 	})
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
