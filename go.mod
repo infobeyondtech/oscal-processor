@@ -1,6 +1,7 @@
 module github.com/infobeyondtech/oscal-processor
 
 require (
+	github.com/ahmetb/go-linq/v3 v3.1.0 // indirect
 	github.com/docker/oscalkit v0.2.0
 	github.com/gin-gonic/gin v1.6.2
 	github.com/google/uuid v1.1.1
