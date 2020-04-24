@@ -22,7 +22,7 @@ func CreateProfile(ctrls []string, b string, ctlgs []string) (string, error) {
 	fid := uuid.New().String()
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fid
-	targetFile := context.ExpandPath(targetFile)
+	targetFile = context.ExpandPath(targetFile)
 
 	// Returns the unique file id, if everything is correct
 	return fid, nil
