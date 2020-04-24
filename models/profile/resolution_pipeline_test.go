@@ -5,16 +5,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/infobeyondtech/oscal-processor/context"
 )
 
 // Test
 func TestResolveProfile(t *testing.T) {
-	rules := "/home/tom/oscal_workspace/OSCAL/src/utils/util/resolver-pipeline/oscal-profile-resolve-select.xsl"
-	jarPath := "/home/tom/.nanshiie_baker/jars/saxon-he-10.0.jar"
-	dir := "/home/tom/oscal_processing_space"
-	input := "/home/tom/oscal_workspace/OSCAL/src/utils/util/resolver-pipeline/testing/pathological-profile.xml"
+	rules := context.OSCALRepo +
+		"/src/utils/util/resolver-pipeline/oscal-profile-resolve-select.xsl"
+	rules = context.ExpandPath(rules)
+
+	jarPath := context.JarLibDir + "/saxon-he-10.0.jar"
+	jarPath = context.ExpandPath(jarPath)
+
+	output := context.TempDir
 	id := uuid.New().String()
-	output := dir + "/output/" + id + ".xml"
+	output = output + "/" + id + ".xml"
+	output = context.ExpandPath(output)
+
+	input := context.OSCALRepo +
+		"/src/utils/util/resolver-pipeline/testing/pathological-profile.xml"
+	input = context.ExpandPath(input)
+
 	e := ResolveProfile(jarPath, rules, input, output)
 	assert.Nil(t, e)
 }
