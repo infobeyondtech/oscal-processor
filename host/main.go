@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/infobeyondtech/oscal-processor/context"
-	"github.com/infobeyondtech/oscal-processor/model/profile"
+	"github.com/infobeyondtech/oscal-processor/models/profile"
 )
 
 type CreatProfileDTO struct {
@@ -65,7 +65,7 @@ func main() {
 
 		// Create a file
 		fid, err := profile.CreateProfile(json.Controls, json.Baseline, json.Catalogs)
-		if err == nil {
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 
