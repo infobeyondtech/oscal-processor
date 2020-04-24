@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/infobeyondtech/oscal-processor/context"
+	"github.com/infobeyondtech/oscal-processor/model/profile"
 )
 
 type CreatProfileDTO struct {
@@ -47,9 +48,11 @@ func main() {
 	// Download
 	r.GET("/download/:uuid", func(c *gin.Context) {
 		id := c.Param("uuid")
+		// Search the file in three directories
 		dir := context.DownloadDir
 		src := dir + "/" + id
 		src = context.ExpandPath(src)
+
 		c.File(src)
 	})
 	// Create profile
@@ -60,11 +63,16 @@ func main() {
 			return
 		}
 
+		// Create a file
+		fid, err := profile.CreateProfile(json.Controls, json.Baseline, json.Catalogs)
+		if err == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+
 		c.JSON(http.StatusOK,
 			gin.H{
-				"controls": json.Controls,
-				"baseline": json.Baseline,
-				"catalogs": json.Catalogs,
+				"id":  fid,
+				"ext": "xml",
 			})
 
 	})

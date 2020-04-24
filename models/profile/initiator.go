@@ -1,4 +1,3 @@
-// Provides the functionality of creating a profile
 package profile
 
 import (
