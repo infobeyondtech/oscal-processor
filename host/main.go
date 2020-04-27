@@ -109,7 +109,7 @@ func main() {
 		}
 	})
 	// Modify Metadata
-	r.POST("", func(c *gin.Context) {
+	r.POST("/profile/set-title", func(c *gin.Context) {
 		var json SetTitleVersionDTO
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -131,5 +131,5 @@ func main() {
 			return
 		}
 	})
-	r.Run("gamma.infobeyondtech.com:9999") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run("gamma.infobeyondtech.com:9888") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
