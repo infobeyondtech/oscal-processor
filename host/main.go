@@ -84,7 +84,7 @@ func main() {
 
 	})
 	// Resolve profile
-	r.POST("/profile/resolve", func(c *gin.Context) {
+	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
 			"/src/utils/util/resolver-pipeline/oscal-profile-resolve-select.xsl"
 		rules = context.ExpandPath(rules)
