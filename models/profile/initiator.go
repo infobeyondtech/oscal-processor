@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/docker/oscalkit/pkg/oscal_source"
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 
@@ -259,6 +260,22 @@ func guardBackMatter(profile *sdk_profile.Profile) {
 	if profile.BackMatter == nil {
 		profile.BackMatter = &BackMatter{}
 	}
+}
+
+// Validate : examine if this profile is a valid
+func Validate(path string) (bool, error) {
+	os, err := oscal_source.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer os.Close()
+
+	err = os.Validate()
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // Metadata : field in profile

@@ -355,3 +355,36 @@ func check(e error) {
 		panic(e)
 	}
 }
+
+func TestValidate(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr error
+	}{
+		{
+			args: args{
+				path: "test_files/test.xml",
+			},
+			want:    true,
+			wantErr: nil,
+		},
+		// todo: add a negative case
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Validate(tt.args.path)
+			if err != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Validate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
