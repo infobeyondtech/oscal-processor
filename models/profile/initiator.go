@@ -95,17 +95,19 @@ func SetID(profile *sdk_profile.Profile, id string) {
 }
 
 // SetTitleVersion : set profile title, version, oscal version, modify date in metadata
-func SetTitleVersion(profile *sdk_profile.Profile, version string, oscalVersion string, title string) {
+func SetTitleVersion(profile *sdk_profile.Profile, version string, oscalVersion string, title string) error {
 	// metadata
 	guardMetadata(profile)
 	profile.Metadata.Title = validation_root.Title(title)
 	profile.Metadata.LastModified = LastModified((time.Now().Format(time.RFC3339)))
 	profile.Metadata.Version = validation_root.Version(version)
 	profile.Metadata.OscalVersion = validation_root.OscalVersion(oscalVersion)
+
+	return nil
 }
 
 // AddRoleParty : append a role to profile metadata. Note: does not check duplicate roles
-func AddRoleParty(profile *sdk_profile.Profile, roleID string, title string, partyID string, orgName string, email string) {
+func AddRoleParty(profile *sdk_profile.Profile, roleID string, title string, partyID string, orgName string, email string) error {
 	// metadata
 	guardMetadata(profile)
 
@@ -131,10 +133,12 @@ func AddRoleParty(profile *sdk_profile.Profile, roleID string, title string, par
 	relation := &ResponsibleParty{RoleId: roleID}
 	relation.PartyIds = append(relation.PartyIds, PartyId(pid))
 	profile.Metadata.ResponsibleParties = append(profile.Metadata.ResponsibleParties, *relation)
+
+	return nil
 }
 
 // AddAddress : append an address to profile metadata. Note: does not check duplicate addresses
-func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []string, city string, state string, postalCode string) {
+func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []string, city string, state string, postalCode string) error {
 	guardMetadata(profile)
 
 	// check if the party exist
@@ -148,7 +152,7 @@ func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []str
 		}
 	}
 	if !addressExist {
-		return
+		return errors.New("address not exist")
 	}
 
 	address := &Address{
@@ -168,10 +172,12 @@ func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []str
 	}
 	existParty.Org.Addresses = append(existParty.Org.Addresses, *address)
 	//existParty.Org.EmailAddresses = append(existParty.Org.EmailAddresses, validation_root.Email(email))
+
+	return nil
 }
 
 // AddControls : append a list of controls to profile. Note: does not check duplicate controls
-func AddControls(profile *sdk_profile.Profile, controls []string, reference string) {
+func AddControls(profile *sdk_profile.Profile, controls []string, reference string) error {
 
 	guardImport(profile)
 
@@ -200,17 +206,18 @@ func AddControls(profile *sdk_profile.Profile, controls []string, reference stri
 		// this is a newly created import
 		profile.Imports = append(profile.Imports, *existImport)
 	}
-
+	return nil
 }
 
 // SetMerge : set the merge value in profile
-func SetMerge(profile *sdk_profile.Profile, asIs string) {
+func SetMerge(profile *sdk_profile.Profile, asIs string) error {
 	guardMerge(profile)
 	profile.Merge.AsIs = AsIs(asIs)
+	return nil
 }
 
 // AddModification : append a modification to profile. Note: does not check duplicate modifications
-func AddModification(profile *sdk_profile.Profile, controlID string, position string, name string, value string) {
+func AddModification(profile *sdk_profile.Profile, controlID string, position string, name string, value string) error {
 
 	guardModify(profile)
 	// todo: only support alter for the time being
@@ -220,15 +227,18 @@ func AddModification(profile *sdk_profile.Profile, controlID string, position st
 	addition.Properties = append(addition.Properties, *prop)
 	alter.Additions = append(alter.Additions, *addition)
 	profile.Modify.Alterations = append(profile.Modify.Alterations, *alter)
+
+	return nil
 }
 
 // AddBackMatter : append a back matter source to profile backmatter. Note: does not check duplicate back matter source
-func AddBackMatter(profile *sdk_profile.Profile, id string, desc string, link string, media string) {
+func AddBackMatter(profile *sdk_profile.Profile, id string, desc string, link string, media string) error {
 	guardBackMatter(profile)
 	resource := &Resource{Id: id, Desc: Desc(desc)}
 	rlink := &RLink{Href: link, MediaType: media}
 	resource.Rlinks = append(resource.Rlinks, *rlink)
 	profile.BackMatter.Resources = append(profile.BackMatter.Resources, *resource)
+	return nil
 }
 
 //

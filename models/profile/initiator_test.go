@@ -2,6 +2,7 @@ package profile
 
 import (
 	"encoding/xml"
+	"errors"
 	"io/ioutil"
 	"reflect"
 	"strings"
@@ -373,18 +374,27 @@ func TestValidate(t *testing.T) {
 			want:    true,
 			wantErr: nil,
 		},
-		// todo: add a negative case
+		{
+			args: args{
+				path: "test_files/test_invalid.xml",
+			},
+			want:    false,
+			wantErr: errors.New(""),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Validate(tt.args.path)
-			if err != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
 			if got != tt.want {
 				t.Errorf("Validate() = %v, want %v", got, tt.want)
 			}
+
+			if tt.wantErr != nil && err == nil {
+				t.Errorf("Validate() error, wantErr")
+				return
+			}
+
 		})
 	}
 }

@@ -16,6 +16,13 @@ type CreatProfileDTO struct {
 	Catalogs []string `json:"catalogs" binding:"required"`
 }
 
+type SetTitleVersionDTO struct {
+	UUID         string `json:"uuid" binding:"required"`
+	Title        string `json:"title" binding:"required"`
+	Version      string `json:"version" binding:"required"`
+	OscalVersion string `json:"oscalversion" binding:"required"`
+}
+
 func main() {
 	r := gin.Default()
 	// Ping
@@ -76,6 +83,53 @@ func main() {
 			})
 
 	})
+	// Resolve profile
+	r.POST("/profile/resolve", func(c *gin.Context) {
+		rules := context.OSCALRepo +
+			"/src/utils/util/resolver-pipeline/oscal-profile-resolve-select.xsl"
+		rules = context.ExpandPath(rules)
+		jarPath := context.JarLibDir + "/saxon-he-10.0.jar"
+		jarPath = context.ExpandPath(jarPath)
 
+		// input path
+		iid := c.Param("uuid")
+		dir := context.DownloadDir
+		inputSrc := dir + "/" + iid
+		inputSrc = context.ExpandPath(inputSrc)
+
+		// output path
+		output := context.TempDir
+		oid := uuid.New().String()
+		output = output + "/" + oid + ".xml"
+		output = context.ExpandPath(output)
+
+		err := profile.ResolveProfile(jarPath, rules, inputSrc, output)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+	})
+	// Modify Metadata
+	r.POST("", func(c *gin.Context) {
+		var json SetTitleVersionDTO
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// load from file
+		iid := json.UUID
+		dir := context.DownloadDir
+		inputSrc := dir + "/" + iid
+		inputSrc = context.ExpandPath(inputSrc)
+		p := &profile.Profile{}
+		profile.LoadFromFile(p, inputSrc)
+
+		// Set title and version
+		er := profile.SetTitleVersion(p, json.Version, json.OscalVersion, json.Title)
+		if er != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
+			return
+		}
+	})
 	r.Run("gamma.infobeyondtech.com:9999") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
