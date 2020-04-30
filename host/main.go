@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -25,6 +26,8 @@ type SetTitleVersionDTO struct {
 
 func main() {
 	r := gin.Default()
+	// Cors support
+	r.Use(cors.Default())
 	// Ping
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
