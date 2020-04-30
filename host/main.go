@@ -86,7 +86,7 @@ func main() {
 	// Resolve profile
 	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
-			"/src/utils/util/resolver-pipeline/oscal-profile-resolve-select.xsl"
+			"/src/utils/util/resolver-pipeline/oscal-profile-RESOLVE.xsl"
 		rules = context.ExpandPath(rules)
 		jarPath := context.JarLibDir + "/saxon-he-10.0.jar"
 		jarPath = context.ExpandPath(jarPath)
