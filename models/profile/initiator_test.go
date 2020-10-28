@@ -309,6 +309,8 @@ func TestAddBackMatter(t *testing.T) {
 			if string(rlink.MediaType) != tt.expectMedia {
 				t.Errorf("got: %s, expectMedia: %s", resource.Id, tt.expectMedia)
 			}
+
+			// todo: test validation of this profile
 		})
 	}
 }
@@ -387,7 +389,7 @@ func TestValidate(t *testing.T) {
 			got, err := Validate(tt.args.path)
 
 			if got != tt.want {
-				t.Errorf("Validate() = %v, want %v", got, tt.want)
+				t.Errorf("Validate() = %v, want %v, err: %v", got, tt.want, err)
 			}
 
 			if tt.wantErr != nil && err == nil {
