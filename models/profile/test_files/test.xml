@@ -27,7 +27,6 @@
       <import href="#catalog">
           <include>
               <call control-id="cp-1"></call>
-              <call control-id="cp-10"></call>
               <call control-id="cp-2"></call>
               <call control-id="cp-3"></call>
               <call control-id="cp-4"></call>
