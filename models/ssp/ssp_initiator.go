@@ -2,7 +2,7 @@ package ssp
 
 import (
 	"encoding/xml"
-	"fmt"
+	"io/ioutil"
 
 	"github.com/google/uuid"
 
@@ -20,15 +20,20 @@ func CreateFreshSSP() (string, error) {
 	// set id
 	ssp.Id = fid
 
-	// marshal
-	out, e := xml.MarshalIndent(ssp, "  ", "    ")
-	if e != nil {
-		return fid, e
-	}
+	out, err1 := xml.MarshalIndent(ssp, "  ", "    ")
+	check(err1)
 
-	fmt.Printf("%v", out)
+	err := ioutil.WriteFile("ssp_test", out, 0644)
+	check(err)
 
 	return fid, nil
+}
+
+// handle error
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
 
 // ImplementedComponent
