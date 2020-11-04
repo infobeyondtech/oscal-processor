@@ -345,7 +345,7 @@ func TestCreateProfile(t *testing.T) {
 	title := "Infobeyond BASELINE_2020"
 	baseline := "NIST Special Publication 800-53 Revision 4: Security and Privacy Controls for Federal Information Systems and Organizations"
 	controls := []string{"cp-1", "cp-10", "cp-2", "cp-3", "cp-4", "ir-1", "ir-2", "ir-3", "ir-4", "ir-5", "ir-6"}
-	source := "NIST_SP-800-53_rev4_catalog.xml"
+	source := []string{"NIST_SP-800-53_rev4_catalog.xml"}
 	CreateProfile(controls, baseline, source, title, "be3f5ab3-dbe0-4293-a2e0-8182c7fddc24", orgName, orgEmail)
 
 	// marshal
