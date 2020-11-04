@@ -19,6 +19,7 @@ func CreateFreshSSP() (string, error) {
 
 	// set id
 	ssp.Id = fid
+	ssp.back
 
 	out, err1 := xml.MarshalIndent(ssp, "  ", "    ")
 	check(err1)

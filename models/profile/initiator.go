@@ -18,8 +18,12 @@ import (
 
 // Given a set of controls, a set of catalogs, and a baseline,
 // generate a unique ID, which can be used for the following operations.
-func CreateProfile(ctrls []string, baseline string, ctlgs []string) (string, error) {
+func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string, orgUuid string, orgName string, orgEmail string) (string, error) {
 	// A unique file
+	version := "2015-01-22"
+	oscalVersion := "1.0.0-milestone1"            // hardcoded oscal version
+	sourceType := "application/oscal.catalog+xml" // hardcoded source type
+
 	fid := uuid.New().String()
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fid
@@ -28,24 +32,19 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string) (string, err
 	// generate profile and write to file
 	p := &sdk_profile.Profile{}
 
-	// todo: many fields here are hardcoded
-	SetID(p, "uuid-be3f5ab3-dbe0-4293-a2e0-8182c7fddc23")
-	SetTitleVersion(p, "2015-01-22", "1.0.0-milestone1", "Infobeyond BASELINE")
-	partyID := "IT-JTF"
-	orgName := "Infobeyondtech"
-	orgEmail := "info@infobeyondtech.com"
+	SetID(p, fid)
+	SetTitleVersion(p, version, oscalVersion, title)
+	partyID := orgUuid
+
 	AddRoleParty(p, "creator", "Document Creator", partyID, orgName, orgEmail)
 
-	addressLines := []string{"InfoBeyond Technology LLC", "320 Whittington PKWY, STE 117", "Louisville, KY, USA 40222-4917"}
-	AddAddress(p, partyID, addressLines, "Louvisville", "KY", "40222-4917")
-
-	SetMerge(p, "true")
+	// SetMerge(p, "true")
 
 	sourceID := "catalog"
 	controls := ctrls
 	AddControls(p, controls, "#"+sourceID)
 
-	AddModification(p, "cp-1", "starting", "priority", "P1")
+	// AddModification(p, "cp-1", "starting", "priority", "P1")
 
 	// check ctlgs and baseline
 	if len(ctlgs) == 0 {
@@ -59,7 +58,6 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string) (string, err
 	description := baseline
 	source := ctlgs[0]
 
-	sourceType := "application/oscal.catalog+xml"
 	AddBackMatter(p, sourceID, description, source, sourceType)
 
 	// marshal
@@ -138,11 +136,11 @@ func AddRoleParty(profile *sdk_profile.Profile, roleID string, title string, par
 }
 
 // AddAddress : append an address to profile metadata. Note: does not check duplicate addresses
-func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []string, city string, state string, postalCode string) error {
+func AddAddress(profile *sdk_profile.Profile, addressLines []string, city string, state string, postalCode string) error {
 	guardMetadata(profile)
 
 	// check if the party exist
-	addressExist := false
+	/*addressExist := false
 	existParty := &Party{}
 	for _, p := range profile.Metadata.Parties {
 		if p.Id == partyID {
@@ -153,12 +151,13 @@ func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []str
 	}
 	if !addressExist {
 		return errors.New("address not exist")
-	}
+	}*/
 
 	address := &Address{
 		City:       validation_root.City(city),
-		PostalCode: validation_root.PostalCode(postalCode),
-		State:      validation_root.State(state)}
+		PostalCode: validation_root.PostalCode(postalCode)
+		State:      validation_root.State(state)
+	}
 
 	// address lines
 	for _, line := range addressLines {
@@ -173,7 +172,7 @@ func AddAddress(profile *sdk_profile.Profile, partyID string, addressLines []str
 	existParty.Org.Addresses = append(existParty.Org.Addresses, *address)
 	//existParty.Org.EmailAddresses = append(existParty.Org.EmailAddresses, validation_root.Email(email))
 
-	return nil
+	return
 }
 
 // AddControls : append a list of controls to profile. Note: does not check duplicate controls
@@ -241,7 +240,7 @@ func AddBackMatter(profile *sdk_profile.Profile, id string, desc string, link st
 	return nil
 }
 
-//
+// underlaying functions
 func guardMetadata(profile *sdk_profile.Profile) {
 	if profile.Metadata == nil {
 		profile.Metadata = &Metadata{}
