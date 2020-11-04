@@ -140,9 +140,9 @@ func AddAddress(profile *sdk_profile.Profile, addressLines []string, city string
 	guardMetadata(profile)
 
 	// check if the party exist
-	/*addressExist := false
+	//addressExist := false
 	existParty := &Party{}
-	for _, p := range profile.Metadata.Parties {
+	/*for _, p := range profile.Metadata.Parties {
 		if p.Id == partyID {
 			addressExist = true
 			existParty = &p
@@ -155,9 +155,8 @@ func AddAddress(profile *sdk_profile.Profile, addressLines []string, city string
 
 	address := &Address{
 		City:       validation_root.City(city),
-		PostalCode: validation_root.PostalCode(postalCode)
-		State:      validation_root.State(state)
-	}
+		PostalCode: validation_root.PostalCode(postalCode),
+		State:      validation_root.State(state)}
 
 	// address lines
 	for _, line := range addressLines {
@@ -172,7 +171,7 @@ func AddAddress(profile *sdk_profile.Profile, addressLines []string, city string
 	existParty.Org.Addresses = append(existParty.Org.Addresses, *address)
 	//existParty.Org.EmailAddresses = append(existParty.Org.EmailAddresses, validation_root.Email(email))
 
-	return
+	return nil
 }
 
 // AddControls : append a list of controls to profile. Note: does not check duplicate controls
