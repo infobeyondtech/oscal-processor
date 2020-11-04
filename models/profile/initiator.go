@@ -69,7 +69,7 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	err := ioutil.WriteFile(targetFile, out, 0644)
 
 	// Returns the unique file id, if everything is correct
-	return fid, err
+	return targetFile, err
 }
 
 // LoadFromFile : initiate a profile using a xml file

@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -346,8 +347,8 @@ func TestCreateProfile(t *testing.T) {
 	baseline := "NIST Special Publication 800-53 Revision 4: Security and Privacy Controls for Federal Information Systems and Organizations"
 	controls := []string{"cp-1", "cp-10", "cp-2", "cp-3", "cp-4", "ir-1", "ir-2", "ir-3", "ir-4", "ir-5", "ir-6"}
 	source := []string{"NIST_SP-800-53_rev4_catalog.xml"}
-	CreateProfile(controls, baseline, source, title, "be3f5ab3-dbe0-4293-a2e0-8182c7fddc24", orgName, orgEmail)
-
+	filePath, err := CreateProfile(controls, baseline, source, title, "be3f5ab3-dbe0-4293-a2e0-8182c7fddc24", orgName, orgEmail)
+	check(err)
 	// marshal
 	/*out, e3 := xml.MarshalIndent(p, "  ", "    ")
 	if e3 != nil {
@@ -358,6 +359,12 @@ func TestCreateProfile(t *testing.T) {
 	err := ioutil.WriteFile("test", out, 0644)
 	check(err)*/
 
+	// validate this file
+	fmt.Printf("target file: %v", filePath)
+	valid, err := Validate(filePath)
+	if valid != true {
+		t.Errorf("Validate() = %v, err: %v", valid, err)
+	}
 }
 
 // handle error
