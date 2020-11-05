@@ -1,8 +1,9 @@
 package profile
 
 import (
+	"encoding/xml"
 	"errors"
-	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
@@ -349,6 +350,7 @@ func TestCreateProfile(t *testing.T) {
 	source := []string{"NIST_SP-800-53_rev4_catalog.xml"}
 	filePath, err := CreateProfile(controls, baseline, source, title, "be3f5ab3-dbe0-4293-a2e0-8182c7fddc24", orgName, orgEmail)
 	check(err)
+
 	// marshal
 	/*out, e3 := xml.MarshalIndent(p, "  ", "    ")
 	if e3 != nil {
@@ -359,12 +361,21 @@ func TestCreateProfile(t *testing.T) {
 	err := ioutil.WriteFile("test", out, 0644)
 	check(err)*/
 
-	// validate this file
-	fmt.Printf("target file: %v", filePath)
-	valid, err := Validate(filePath)
+	// read from file
+	p := &sdk_profile.Profile{}
+	LoadFromFile(p, filePath)
+
+	// save to xml
+	out, e := xml.MarshalIndent(p, "  ", "    ")
+	check(e)
+
+	ioErr := ioutil.WriteFile(filePath+".xml", out, 0644)
+
+	valid, ioErr := Validate(filePath + ".xml")
 	if valid != true {
-		t.Errorf("Validate() = %v, err: %v", valid, err)
+		t.Errorf("CreateProfile Validate() = %v, err: %v", valid, ioErr)
 	}
+	check(ioErr)
 }
 
 // handle error
