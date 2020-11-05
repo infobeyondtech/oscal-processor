@@ -32,7 +32,7 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	// generate profile and write to file
 	p := &sdk_profile.Profile{}
 
-	SetID(p, fid)
+	SetID(p, "uuid:"+fid)
 	SetTitleVersion(p, version, oscalVersion, title)
 	partyID := orgUuid
 
