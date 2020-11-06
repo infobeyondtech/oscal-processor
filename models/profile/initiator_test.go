@@ -10,6 +10,7 @@ import (
 
 	. "github.com/ahmetb/go-linq/v3"
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
+	"github.com/infobeyondtech/oscal-processor/context"
 )
 
 func TestSetTitleVersion(t *testing.T) {
@@ -91,10 +92,19 @@ func TestSetID(t *testing.T) {
 
 		Id := p.Id
 		if Id != tt.expectId {
-			t.Errorf("got: %s, expectId: %s", Id, tt.expectId)
+			t.Errorf("profile id, got: %s, expectId: %s", Id, tt.expectId)
 		}
 
-		// todo: validate profile
+		// validate profile
+		parent := context.DownloadDir
+		targetFile := parent + "/" + Id
+		targetFile = context.ExpandPath(targetFile)
+
+		xmlFile := targetFile + ".xml"
+		valid := validateProfile(p, xmlFile)
+		if valid != true {
+			t.Errorf("profile not valid = %v", valid)
+		}
 	}
 }
 
@@ -316,32 +326,7 @@ func TestAddBackMatter(t *testing.T) {
 }
 
 func TestCreateProfile(t *testing.T) {
-	// p := &sdk_profile.Profile{}
 
-	/*
-		SetID(p, "uuid-be3f5ab3-dbe0-4293-a2e0-8182c7fddc23")
-		SetTitleVersion(p, "2015-01-22", "1.0.0-milestone1", "Infobeyond BASELINE")
-		partyID := "IT-JTF"
-		orgName := "Infobeyondtech"
-		orgEmail := "info@infobeyondtech.com"
-		AddRoleParty(p, "creator", "Document Creator", partyID, orgName, orgEmail)
-
-		addressLines := []string{"InfoBeyond Technology LLC", "320 Whittington PKWY, STE 117", "Louisville, KY, USA 40222-4917"}
-		AddAddress(p, partyID, addressLines, "Louvisville", "KY", "40222-4917")
-
-		SetMerge(p, "true")
-
-		sourceID := "catalog"
-		controls := []string{"cp-1", "cp-10", "cp-2", "cp-3", "cp-4", "ir-1", "ir-2", "ir-3", "ir-4", "ir-5", "ir-6"}
-		AddControls(p, controls, "#"+sourceID)
-
-		AddModification(p, "cp-1", "starting", "priority", "P1")
-
-		description := "NIST Special Publication 800-53 Revision 4: Security and Privacy Controls for Federal Information Systems and Organizations"
-		source := "NIST_SP-800-53_rev4_catalog.xml"
-		sourceType := "application/oscal.catalog+xml"
-		AddBackMatter(p, sourceID, description, source, sourceType)
-	*/
 	orgName := "Infobeyondtech"
 	orgEmail := "info@infobeyondtech.com"
 	title := "Infobeyond BASELINE_2020"
@@ -351,31 +336,29 @@ func TestCreateProfile(t *testing.T) {
 	filePath, err := CreateProfile(controls, baseline, source, title, "be3f5ab3-dbe0-4293-a2e0-8182c7fddc24", orgName, orgEmail)
 	check(err)
 
-	// marshal
-	/*out, e3 := xml.MarshalIndent(p, "  ", "    ")
-	if e3 != nil {
-		t.Errorf("error: %v\n", e3)
-	}
-	t.Log(len(string(out)))
-
-	err := ioutil.WriteFile("test", out, 0644)
-	check(err)*/
-
-	// read from file
+	// create profile will generate a file under download folder
+	// read from file and load it into a profile structure
 	p := &sdk_profile.Profile{}
 	LoadFromFile(p, filePath)
 
-	// save to xml
-	out, e := xml.MarshalIndent(p, "  ", "    ")
+	// validate profile
+	xmlFile := filePath + ".xml"
+	valid := validateProfile(p, xmlFile)
+	if valid != true {
+		t.Errorf("CreateProfile() result not valid = %v", valid)
+	}
+
+	/*out, e := xml.MarshalIndent(p, "  ", "    ")
 	check(e)
+	xmlFile := filePath + ".xml"
+	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
 
-	ioErr := ioutil.WriteFile(filePath+".xml", out, 0644)
-
-	valid, ioErr := Validate(filePath + ".xml")
+	// validate the xml file
+	valid, ioErr := Validate(xmlFile)
 	if valid != true {
 		t.Errorf("CreateProfile Validate() = %v, err: %v", valid, ioErr)
 	}
-	check(ioErr)
+	check(ioErr)*/
 }
 
 // handle error
@@ -383,6 +366,22 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func validateProfile(p *Profile, filePath string) bool {
+	out, e := xml.MarshalIndent(p, "  ", "    ")
+	check(e)
+	xmlFile := filePath + ".xml"
+	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
+
+	// validate the xml file
+	valid, ioErr := Validate(xmlFile)
+
+	check(ioErr)
+
+	// os.Remove(xmlFile)
+
+	return valid
 }
 
 func TestValidate(t *testing.T) {

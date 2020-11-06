@@ -37,14 +37,9 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	partyID := orgUuid
 
 	AddRoleParty(p, "creator", "Document Creator", partyID, orgName, orgEmail)
-
-	// SetMerge(p, "true")
-
 	sourceID := "catalog"
 	controls := ctrls
 	AddControls(p, controls, "#"+sourceID)
-
-	// AddModification(p, "cp-1", "starting", "priority", "P1")
 
 	// check ctlgs and baseline
 	if len(ctlgs) == 0 {
@@ -54,10 +49,11 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 		return fid, errors.New("baseline cannot be empty")
 	}
 
-	// todo: give ctlgs and baseline to the correct field
+	// set ctlgs and baseline
 	description := baseline
 	source := ctlgs[0]
 
+	// back matter
 	AddBackMatter(p, sourceID, description, source, sourceType)
 
 	// marshal
@@ -66,6 +62,7 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 		return fid, e
 	}
 
+	// target file has no file type, but content is in xml format
 	err := ioutil.WriteFile(targetFile, out, 0644)
 
 	// Returns the unique file id, if everything is correct
