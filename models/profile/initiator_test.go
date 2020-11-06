@@ -90,6 +90,13 @@ func TestSetID(t *testing.T) {
 			SetID(tt.args.profile, tt.args.id)
 		})
 
+		version := "2015-01-22"
+		oscalVersion := "1.0.0-milestone1"            // hardcoded oscal version
+		sourceType := "application/oscal.catalog+xml" // hardcoded source type
+		SetTitleVersion(p, version, oscalVersion, sourceType)
+
+		guardImport(p)
+
 		Id := p.Id
 		if Id != tt.expectId {
 			t.Errorf("profile id, got: %s, expectId: %s", Id, tt.expectId)
