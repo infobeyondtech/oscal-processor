@@ -10,61 +10,9 @@ import (
 
 	. "github.com/ahmetb/go-linq/v3"
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
+	"github.com/google/uuid"
 	"github.com/infobeyondtech/oscal-processor/context"
 )
-
-func TestSetTitleVersion(t *testing.T) {
-	p := &sdk_profile.Profile{}
-	type args struct {
-		profile      *sdk_profile.Profile
-		version      string
-		oscalVersion string
-		title        string
-	}
-	tests := []struct {
-		name               string
-		args               args
-		expectTitle        string
-		expectVersion      string
-		expectOscalVersion string
-	}{
-		{
-			args: args{
-				profile:      p,
-				version:      "2015-01-22",
-				oscalVersion: "1.0.0-milestone1",
-				title:        "Infobeyond BASELINE",
-			},
-			expectTitle:        "Infobeyond BASELINE",
-			expectVersion:      "2015-01-22",
-			expectOscalVersion: "1.0.0-milestone1",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			SetTitleVersion(tt.args.profile, tt.args.version, tt.args.oscalVersion, tt.args.title)
-
-			title := tt.args.profile.Metadata.Title
-			if tt.expectTitle != string(title) {
-				t.Errorf("got: %s, expectTitle: %s", string(title), tt.expectTitle)
-			}
-
-			version := tt.args.profile.Metadata.Version
-			if tt.expectVersion != string(version) {
-				t.Errorf("got: %s, expectVersion: %s", string(version), tt.expectVersion)
-			}
-
-			oscalVersion := tt.args.profile.Metadata.OscalVersion
-			if tt.expectOscalVersion != string(oscalVersion) {
-				t.Errorf("got: %s, expectOscalVersion: %s", string(oscalVersion), tt.expectOscalVersion)
-			}
-
-			// todo: validate profile
-
-		})
-	}
-}
 
 func TestSetID(t *testing.T) {
 	p := &sdk_profile.Profile{}
@@ -97,18 +45,81 @@ func TestSetID(t *testing.T) {
 
 		guardImport(p)
 
+		// examine Id
 		Id := p.Id
 		if Id != tt.expectId {
 			t.Errorf("profile id, got: %s, expectId: %s", Id, tt.expectId)
 		}
 
 		// validate profile
-		parent := context.DownloadDir
-		targetFile := parent + "/" + Id
-		targetFile = context.ExpandPath(targetFile)
+		valid := validateProfile(p)
+		if valid != true {
+			t.Errorf("profile not valid = %v", valid)
+		}
+	}
+}
 
-		xmlFile := targetFile + ".xml"
-		valid := validateProfile(p, xmlFile)
+func TestSetTitleVersion(t *testing.T) {
+	p := &sdk_profile.Profile{}
+	type args struct {
+		profile      *sdk_profile.Profile
+		version      string
+		oscalVersion string
+		title        string
+	}
+	tests := []struct {
+		name               string
+		args               args
+		expectTitle        string
+		expectVersion      string
+		expectOscalVersion string
+	}{
+		{
+			args: args{
+				profile:      p,
+				version:      "2015-01-22",
+				oscalVersion: "1.0.0-milestone1",
+				title:        "Infobeyond BASELINE",
+			},
+			expectTitle:        "Infobeyond BASELINE",
+			expectVersion:      "2015-01-22",
+			expectOscalVersion: "1.0.0-milestone1",
+		},
+	}
+
+	for _, tt := range tests {
+
+		fid := uuid.New().String()
+		SetID(p, "_"+fid)
+
+		guardImport(p)
+
+		t.Run(tt.name, func(t *testing.T) {
+
+			SetTitleVersion(tt.args.profile, tt.args.version, tt.args.oscalVersion, tt.args.title)
+
+			// examine title
+			title := tt.args.profile.Metadata.Title
+			if tt.expectTitle != string(title) {
+				t.Errorf("got: %s, expectTitle: %s", string(title), tt.expectTitle)
+			}
+
+			// examine version
+			version := tt.args.profile.Metadata.Version
+			if tt.expectVersion != string(version) {
+				t.Errorf("got: %s, expectVersion: %s", string(version), tt.expectVersion)
+			}
+
+			// examine oscal version
+			oscalVersion := tt.args.profile.Metadata.OscalVersion
+			if tt.expectOscalVersion != string(oscalVersion) {
+				t.Errorf("got: %s, expectOscalVersion: %s", string(oscalVersion), tt.expectOscalVersion)
+			}
+
+		})
+
+		// validate profile
+		valid := validateProfile(p)
 		if valid != true {
 			t.Errorf("profile not valid = %v", valid)
 		}
@@ -166,8 +177,7 @@ func TestAddRoleParty(t *testing.T) {
 			firstRPRoleId := firstResponsibleParty.RoleId
 			firstRPPartyId := firstResponsibleParty.PartyIds[0]
 
-			//email := firstOrg.EmailAddresses[0]
-
+			// examine role id, org name and title
 			if roleId != tt.expectRoleID {
 				t.Errorf("got: %s, expectroleId: %s", roleId, tt.expectRoleID)
 			}
@@ -178,11 +188,7 @@ func TestAddRoleParty(t *testing.T) {
 				t.Errorf("got: %s, expectTitle: %s", title, tt.expectTitle)
 			}
 
-			// note: email has inconsistency so it is not included in the tests yet
-			/*
-				if string(email) != tt.expectEmail {
-					t.Errorf("got: %s, expectEmail: %s", email, tt.expectEmail)
-				}*/
+			// examine party id
 			if string(partyId) != tt.expectPartyID {
 				t.Errorf("got: %s, expectPartyID: %s", partyId, tt.expectPartyID)
 			}
@@ -191,51 +197,30 @@ func TestAddRoleParty(t *testing.T) {
 			if firstRPRoleId != tt.expectRoleID {
 				t.Errorf("got: %s, expectroleId: %s", firstRPRoleId, tt.expectRoleID)
 			}
+
+			// examine first responsible party id
 			if string(firstRPPartyId) != tt.expectPartyID {
 				t.Errorf("got: %s, expectPartyID: %s", firstRPPartyId, tt.expectPartyID)
 			}
-
-			// todo: validate profile
-
-			// todo: test cases of inserting multiple parties and roles
 		})
-	}
-}
 
-func TestSetMerge(t *testing.T) {
-	p := &sdk_profile.Profile{}
-	type args struct {
-		profile *sdk_profile.Profile
-		asIs    string
-	}
-	tests := []struct {
-		name        string
-		args        args
-		expectValue string
-	}{
-		{
-			args: args{
-				profile: p,
-				asIs:    "true",
-			},
-			expectValue: "true",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			SetMerge(tt.args.profile, tt.args.asIs)
+		version := "2015-01-22"
+		oscalVersion := "1.0.0-milestone1"            // hardcoded oscal version
+		sourceType := "application/oscal.catalog+xml" // hardcoded source type
+		SetTitleVersion(p, version, oscalVersion, sourceType)
 
-			asis := p.Merge.AsIs
-			if string(asis) != tt.expectValue {
-				t.Errorf("got: %s, expectValue: %s", asis, tt.expectValue)
-			}
+		guardImport(p)
 
-			// todo: validate profile
-		})
+		// validate profile
+		valid := validateProfile(p)
+		if valid != true {
+			t.Errorf("profile not valid = %v", valid)
+		}
 	}
 }
 
 func TestAddControls(t *testing.T) {
+	p := &sdk_profile.Profile{}
 	type args struct {
 		profile   *sdk_profile.Profile
 		controls  []string
@@ -248,7 +233,7 @@ func TestAddControls(t *testing.T) {
 	}{
 		{
 			args: args{
-				profile:   &sdk_profile.Profile{},
+				profile:   p,
 				reference: "#catalog",
 				controls:  []string{"cp-1", "cp-10", "cp-2", "cp-3", "cp-4", "ir-1", "ir-2", "ir-3", "ir-4", "ir-5", "ir-6"},
 			},
@@ -270,12 +255,25 @@ func TestAddControls(t *testing.T) {
 				t.Errorf("controls mismatch:\n" + strings.Join(cs, ",") + "\n" + strings.Join(tt.expectIDs, ","))
 			}
 
-			// todo: validate profile
 		})
+
+		version := "2015-01-22"
+		oscalVersion := "1.0.0-milestone1"            // hardcoded oscal version
+		sourceType := "application/oscal.catalog+xml" // hardcoded source type
+		SetTitleVersion(p, version, oscalVersion, sourceType)
+
+		guardImport(p)
+
+		// validate profile
+		valid := validateProfile(p)
+		if valid != true {
+			t.Errorf("profile not valid = %v", valid)
+		}
 	}
 }
 
 func TestAddBackMatter(t *testing.T) {
+	p := &sdk_profile.Profile{}
 	type args struct {
 		profile *sdk_profile.Profile
 		id      string
@@ -293,7 +291,7 @@ func TestAddBackMatter(t *testing.T) {
 	}{
 		{
 			args: args{
-				profile: &sdk_profile.Profile{},
+				profile: p,
 				id:      "catalog",
 				desc:    "NIST Special Publication 800-53 Revision 4: Security and Privacy Controls for Federal Information Systems and Organizations",
 				link:    "NIST_SP-800-53_rev4_catalog.xml",
@@ -327,8 +325,20 @@ func TestAddBackMatter(t *testing.T) {
 				t.Errorf("got: %s, expectMedia: %s", resource.Id, tt.expectMedia)
 			}
 
-			// todo: test validation of this profile
 		})
+
+		version := "2015-01-22"
+		oscalVersion := "1.0.0-milestone1"            // hardcoded oscal version
+		sourceType := "application/oscal.catalog+xml" // hardcoded source type
+		SetTitleVersion(p, version, oscalVersion, sourceType)
+
+		guardImport(p)
+
+		// validate profile
+		valid := validateProfile(p)
+		if valid != true {
+			t.Errorf("profile not valid = %v", valid)
+		}
 	}
 }
 
@@ -349,46 +359,11 @@ func TestCreateProfile(t *testing.T) {
 	LoadFromFile(p, filePath)
 
 	// validate profile
-	xmlFile := filePath + ".xml"
-	valid := validateProfile(p, xmlFile)
+	valid := validateProfile(p)
 	if valid != true {
 		t.Errorf("CreateProfile() result not valid = %v", valid)
 	}
 
-	/*out, e := xml.MarshalIndent(p, "  ", "    ")
-	check(e)
-	xmlFile := filePath + ".xml"
-	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
-
-	// validate the xml file
-	valid, ioErr := Validate(xmlFile)
-	if valid != true {
-		t.Errorf("CreateProfile Validate() = %v, err: %v", valid, ioErr)
-	}
-	check(ioErr)*/
-}
-
-// handle error
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func validateProfile(p *Profile, filePath string) bool {
-	out, e := xml.MarshalIndent(p, "  ", "    ")
-	check(e)
-	xmlFile := filePath + ".xml"
-	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
-
-	// validate the xml file
-	valid, ioErr := Validate(xmlFile)
-
-	check(ioErr)
-
-	// os.Remove(xmlFile)
-
-	return valid
 }
 
 func TestValidate(t *testing.T) {
@@ -431,4 +406,34 @@ func TestValidate(t *testing.T) {
 
 		})
 	}
+}
+
+// helper function: track error
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+// helper function: validate profile
+func validateProfile(p *Profile) bool {
+
+	// validate profile
+	parent := context.DownloadDir
+	targetFile := parent + "/" + p.Id
+	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
+
+	out, e := xml.MarshalIndent(p, "  ", "    ")
+	check(e)
+	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
+
+	// validate the xml file
+	valid, ioErr := Validate(xmlFile)
+
+	check(ioErr)
+
+	// os.Remove(xmlFile)
+
+	return valid
 }
