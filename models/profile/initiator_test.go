@@ -89,11 +89,6 @@ func TestSetTitleVersion(t *testing.T) {
 
 	for _, tt := range tests {
 
-		fid := uuid.New().String()
-		SetID(p, "_"+fid)
-
-		guardImport(p)
-
 		t.Run(tt.name, func(t *testing.T) {
 
 			SetTitleVersion(tt.args.profile, tt.args.version, tt.args.oscalVersion, tt.args.title)
@@ -117,6 +112,11 @@ func TestSetTitleVersion(t *testing.T) {
 			}
 
 		})
+
+		// set id
+		fid := uuid.New().String()
+		SetID(p, "_"+fid)
+		guardImport(p)
 
 		// validate profile
 		valid := validateProfile(p)
@@ -209,6 +209,9 @@ func TestAddRoleParty(t *testing.T) {
 		sourceType := "application/oscal.catalog+xml" // hardcoded source type
 		SetTitleVersion(p, version, oscalVersion, sourceType)
 
+		// set id
+		fid := uuid.New().String()
+		SetID(p, "_"+fid)
 		guardImport(p)
 
 		// validate profile
@@ -262,6 +265,9 @@ func TestAddControls(t *testing.T) {
 		sourceType := "application/oscal.catalog+xml" // hardcoded source type
 		SetTitleVersion(p, version, oscalVersion, sourceType)
 
+		// set id
+		fid := uuid.New().String()
+		SetID(p, "_"+fid)
 		guardImport(p)
 
 		// validate profile
@@ -332,6 +338,9 @@ func TestAddBackMatter(t *testing.T) {
 		sourceType := "application/oscal.catalog+xml" // hardcoded source type
 		SetTitleVersion(p, version, oscalVersion, sourceType)
 
+		// set id
+		fid := uuid.New().String()
+		SetID(p, "_"+fid)
 		guardImport(p)
 
 		// validate profile
