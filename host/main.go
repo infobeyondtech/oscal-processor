@@ -9,6 +9,7 @@ import (
 
 	"github.com/infobeyondtech/oscal-processor/context"
 	"github.com/infobeyondtech/oscal-processor/models/profile"
+	"github.com/infobeyondtech/oscal-processor/models/profile_navigator"
 )
 
 type CreatProfileDTO struct {
@@ -86,6 +87,24 @@ func main() {
 			})
 
 	})
+	// Get Profile Navigator
+	r.POST("/profile/navigator/:uuid", func(c *gin.Context) {
+
+		// Load the profile
+		iid := c.Param("uuid")
+		dir := context.DownloadDir
+		inputSrc := dir + "/" + iid
+		inputSrc = context.ExpandPath(inputSrc)
+		p := &profile.Profile{}
+		profile.LoadFromFile(p, inputSrc)
+
+        // Get the profile's navigator
+        pn := &profile_navigator.ProfileNavigator{}
+        profile_navigator.CreateProfileNavigator(pn, p)
+
+        c.JSON(http.StatusOK, pn.Groups)
+
+	})
 	// Resolve profile
 	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
@@ -134,5 +153,6 @@ func main() {
 			return
 		}
 	})
-	r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+    r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
