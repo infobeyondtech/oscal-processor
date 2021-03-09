@@ -7,6 +7,7 @@ import (
     "fmt"
     "io/ioutil"
     "github.com/docker/oscalkit/types/oscal/catalog"
+    "github.com/docker/oscalkit/types/oscal"
 	_ "github.com/go-sql-driver/mysql"
     "github.com/alediaferia/stackgo"
 )
@@ -334,18 +335,31 @@ func main() {
      return
     }
 
-    c := catalog.Catalog{}
+    c := oscal.OSCAL{}
     marshalError := xml.Unmarshal([]byte(data), &c)
     if marshalError != nil {
      fmt.Printf("error 2: %v\n", marshalError)
      return
     }
 
-    CreatePartsTable(db, c)
-    CreateParamsTable(db, c)
-    CreateControlsToPartsTable(db, c)
-    CreateControlsToParamsTable(db, c)
-    CreatePartsToPartsTable(db, c)
+
+    for _, group := range c.Catalog.Groups {
+        for _, ctrl := range group.Controls {
+            fmt.Println(ctrl)
+            //for _, part := range ctrl.Parts {
+            //    fmt.Println(part)
+            //}
+        }
+    }
+
+
+
+
+    //CreatePartsTable(db, c)
+    //CreateParamsTable(db, c)
+    //CreateControlsToPartsTable(db, c)
+    //CreateControlsToParamsTable(db, c)
+    //CreatePartsToPartsTable(db, c)
     //CreatePartsToParagraphsTable(db, c)
 
 }

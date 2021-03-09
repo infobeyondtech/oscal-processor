@@ -66,9 +66,7 @@ func CreateProfileNavigator(profile_navigator *ProfileNavigator, profile *sdk_pr
 
     // Get the database handle
     var err error
-    //context.DB, err = sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube")
-    //context.DB, err = sql.Open("mysql", "infobeyond:1234@(74.132.12.81:3306)/cube")
-    context.DB, err = sql.Open("mysql",context.DBString)
+    context.DB, err = sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
