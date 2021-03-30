@@ -62,8 +62,6 @@
          <description>
             <p>Requires all components to send logs to the enterprise logging solution</p>
          </description>
-         <prop name="version">2.1</prop>
-         <prop name="last-modified-date">20181015</prop>
          <status state="operational"/>
          <responsible-role role-id="maintainer">
             <party-uuid>ec485dcf-2519-43f5-8e7d-014cc315332d</party-uuid>
