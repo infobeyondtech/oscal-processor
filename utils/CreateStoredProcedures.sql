@@ -2,36 +2,6 @@
 SET @@GLOBAL.max_sp_recursion_depth = 255;
 SET @@session.max_sp_recursion_depth = 255;
 
-DROP PROCEDURE IF EXISTS GetNumOfChildren;
-DELIMITER $$
-CREATE PROCEDURE GetNumOfChildren (
-	IN  parentid VARCHAR(20),
-   	INOUT result INT
-)
-BEGIN
-	# Get the number of children belonging to the part	
-	SELECT COUNT(*)
-	INTO result
-	FROM parts_parts
-	WHERE parts_parts.parent_partid = parentid;
-END$$
-DELIMITER ;
-
-DROP PROCEDURE IF EXISTS GetNumOfParams;
-DELIMITER $$
-CREATE PROCEDURE GetNumOfParams (
-	IN  controlid VARCHAR(20),
-   	INOUT result INT
-)
-BEGIN
-	# Get the number of params belonging to the control
-	SELECT COUNT(*)
-	INTO result
-	FROM controls_params
-	WHERE controls_params.controlid = controlid;
-END$$
-DELIMITER ;
-
 DROP PROCEDURE IF EXISTS GetParamsString;
 DELIMITER $$
 CREATE PROCEDURE GetParamsString (
