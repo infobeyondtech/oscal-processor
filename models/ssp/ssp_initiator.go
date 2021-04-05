@@ -3,11 +3,13 @@ package ssp
 import (
 	"encoding/xml"
 	"io/ioutil"
+	"fmt"
 
 	"github.com/google/uuid"
 
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
+	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 )
 
@@ -19,7 +21,6 @@ func CreateFreshSSP() (string, error) {
 
 	// set id
 	ssp.Id = fid
-	ssp.back
 
 	out, err1 := xml.MarshalIndent(ssp, "  ", "    ")
 	check(err1)
@@ -30,7 +31,74 @@ func CreateFreshSSP() (string, error) {
 	return fid, nil
 }
 
-// handle error
+func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
+
+}
+
+func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest ){
+
+
+}
+
+// initiate a ssp instance from an existing xml file
+func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
+	dat, e := ioutil.ReadFile(path)
+	if e != nil {
+		fmt.Printf("error: %v", e)
+		return
+	}
+
+	// unmarshal into data structure
+	marshalError := xml.Unmarshal([]byte(dat), &ssp)
+	if marshalError != nil {
+		fmt.Printf("error: %v", marshalError)
+		return
+	}
+}
+
+// insert an inventory item
+func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, item request_models.InsertInventoryItemRequest){
+
+}
+
+// insert an implemented requirement
+func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement request_models.InsertImplementedRequirementRequest){
+
+}
+
+// private func to add a component in system-implementation, check duplicates
+func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string){
+
+}
+
+// private func to add a user in system-implementation, check duplicates
+func AddUser(ssp *sdk_ssp.SystemSecurityPlan, userId string){
+
+}
+
+// private func to add a party in meta data, check duplicates
+func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
+
+} 
+
+// below are DB connection functions
+func FindUser(){
+
+}
+
+func FindParty(){
+
+}
+
+func FindComponent(){
+
+}
+
+func FindInventoryItem(){
+
+}
+
+// Handle error
 func check(e error) {
 	if e != nil {
 		panic(e)

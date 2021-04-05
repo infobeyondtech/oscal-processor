@@ -9,40 +9,8 @@ import (
 
 	"github.com/infobeyondtech/oscal-processor/context"
 	"github.com/infobeyondtech/oscal-processor/models/profile"
+	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
 )
-
-type CreatProfileRequest struct {
-	Baseline string   `json:"baseline" binding:"required"`
-	Controls []string `json:"controls" binding:"required"`
-	Catalogs []string `json:"catalogs" binding:"required"`
-
-	Title    string `json:"title" binding:"required"`
-	OrgUuid  string `json:"orgUuid" binding:"required"`
-	OrgName  string `json:"orgName" binding:"required"`
-	OrgEmail string `json:"orgEmail" binding:"required"`
-}
-
-type AddAddressRequest struct {
-	Addresses  []string `json:"addresses" binding:"required"`
-	City       string   `json:"city" binding:"required"`
-	State      string   `json:"state" binding:"required"`
-	PostalCode string   `json:"postalCode" binding:"required"`
-}
-
-type SetTitleVersionRequest struct {
-	UUID         string `json:"uuid" binding:"required"`
-	Title        string `json:"title" binding:"required"`
-	Version      string `json:"version" binding:"required"`
-	OscalVersion string `json:"oscalversion" binding:"required"`
-}
-
-type AddRolePartyRequest struct {
-	RoleID  string `json:"roleID" binding:"required"`
-	Title   string `json:"title" binding:"required"`
-	PartyID string `json:"partyId" binding:"required"`
-	OrgName string `json:"orgName" binding:"required"`
-	Email   string `json:"email" binding:"required"`
-}
 
 func main() {
 	r := gin.Default()
@@ -87,7 +55,7 @@ func main() {
 	})
 	// Create profile
 	r.POST("/profile/create", func(c *gin.Context) {
-		var json CreatProfileRequest
+		var json request_models.CreatProfileRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -133,7 +101,7 @@ func main() {
 	})
 	// Modify Metadata
 	r.POST("/profile/set-title", func(c *gin.Context) {
-		var json SetTitleVersionRequest
+		var json request_models.SetTitleVersionRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -155,7 +123,7 @@ func main() {
 		}
 	})
 	r.POST("/profile/add-address", func(c *gin.Context) {
-		var json AddAddressRequest
+		var json request_models.AddAddressRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -170,14 +138,14 @@ func main() {
 		profile.LoadFromFile(p, inputSrc)
 
 		// add address
-		er := profile.AddAddress(json.Addresses, json.City, json.State, json.PostalCode)
+		er := profile.AddAddress(p, json.Addresses, json.City, json.State, json.PostalCode)
 		if er != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
 			return
 		}
 	})
 	r.POST("/profile/add-role-party", func(c *gin.Context) {
-		var json AddRolePartyRequest
+		var json request_models.AddRolePartyRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -192,7 +160,7 @@ func main() {
 		profile.LoadFromFile(p, inputSrc)
 
 		// add role party
-		er := profile.AddRoleParty(json.RoleID, json.Title, json.PartyID, json.OrgName, json.Email)
+		er := profile.AddRoleParty(p, json.RoleID, json.Title, json.PartyID, json.OrgName, json.Email)
 		if er != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
 			return
