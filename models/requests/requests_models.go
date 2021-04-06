@@ -50,7 +50,7 @@ type InsertInventoryItemRequest struct {
 	UUID         string `json:"uuid" binding:"required"`
 	InventoryItemID string `json:"inventoryItemID" binding:"required"`
 	ImplementComponents []string `json:"implementComponents" binding:"required"`
-	ResponsibleParties []string `json:"responsibleParties" binding:"required"`
+	ResponsibleParties []RolePartyMap `json:"responsibleParties" binding:"required"`
 }
 
 type InsertImplementedRequirementRequest struct {
@@ -73,4 +73,9 @@ type ByComponent struct {
 type Statement struct {
 	StatementID string `json:"statementID" binding:"required"`
 	ByComponents []ByComponent `json:"bycomponents" binding:"required"`
+}
+
+type RolePartyMap struct {
+	RoleID string `json:"RoleID" binding:"required"`
+	PartyUUIDs []string `json:"PartyUUIDs" binding:"required"`
 }
