@@ -1,0 +1,1 @@
+{"id":"1","title":"Enterprise Logging, Monitoring, and Alerting Policy","uuid":"795533ab-9427-4abe-820f-0b571bacfe6d","description":"Requires all components to send logs to the enterprise logging solution","state":"operational","type":"policy"}
