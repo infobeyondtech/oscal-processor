@@ -71,10 +71,11 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 	for _, partyRoleMap := range request.ResponsibleParties {
 
 		sdk_party := &sdk_ssp.ResponsibleParty{}
-		sdk_party.RoleId = partyRoleMap.RoleID
 		
 		// insert user role detail in the header
-		AddUser(ssp, partyRoleMap.RoleID)
+		db_user := information.GetUser(partyRoleMap.UserUUID)
+		AddUser(ssp, db_user)
+		sdk_party.RoleId = db_user.RoleId
 		
 		for _, partyId := range partyRoleMap.PartyUUIDs{
 			sdk_party.PartyIds = append(sdk_party.PartyIds, PartyId(partyId))
@@ -95,7 +96,9 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 		AddComponent(ssp, component_id)
 	}
 	
-	// todo: insert inventory item into ssp
+	// insert inventory item into ssp systemimplementation section
+	GuardSystemImplementation(ssp)
+	ssp.SystemImplementation.SystemInventory.InventoryItems = append(ssp.SystemImplementation.SystemInventory.InventoryItems, *sdk_itm)
 }
 
 // insert an implemented requirement
@@ -115,34 +118,59 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string){
 }
 
 // private func to add a user in system-implementation, check duplicates
-func AddUser(ssp *sdk_ssp.SystemSecurityPlan, userId string){
-	db_user :=	information.GetUser(userId)
+func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
+	
+	sdk_user :=  &sdk_ssp.User{}
+	sdk_user.Title = Title(db_user.Title)
+	sdk_user.Id = db_user.UUID
+	sdk_user.RoleIds = []sdk_ssp.RoleId{sdk_ssp.RoleId(db_user.RoleId)}
 
-	// todo: convert to sdk_user
+	annotation := &Annotation {Name: "type", Value:db_user.Type }
+	sdk_user.Annotations = []sdk_ssp.Annotation{ *annotation }
 
-	// todo: insert into ssp header
+	// insert into ssp header
+	GuardSystemImplementation(ssp)
+	ssp.SystemImplementation.Users = append(ssp.SystemImplementation.Users, *sdk_user)
 }
 
 // private func to add a party in meta data, check duplicates
 func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
+	
 	db_party := information.GetParty(partyId);
+	sdk_party := &Party{}
+	sdk_party.Id = db_party.UUID
 
-	// todo: convert to sdk_party
+	// todo: party name and type are missing in the sdk
 
-	// todo: insert into ssp header
+
+	// insert into ssp header
+	GuardMetaData(ssp)
+	ssp.Metadata.Parties = append(ssp.Metadata.Parties, *sdk_party)
 } 
 
 
 func GuardMetaData(ssp *sdk_ssp.SystemSecurityPlan){
-
+	if(ssp.Metadata == nil){
+		ssp.Metadata = &sdk_ssp.Metadata{}
+	}
 }
 
 func GuardSystemImplementation(ssp *sdk_ssp.SystemSecurityPlan){
-
+	if(ssp.SystemImplementation == nil){
+		ssp.SystemImplementation = &sdk_ssp.SystemImplementation{}
+	}
 }
 
 func GuardControlImplementation(ssp *sdk_ssp.SystemSecurityPlan){
+	if(ssp.ControlImplementation == nil){
+		ssp.ControlImplementation = &sdk_ssp.ControlImplementation{}
+	}
+}
 
+func GuardSystemCharacteristics(ssp *sdk_ssp.SystemSecurityPlan){
+	if(ssp.SystemCharacteristics == nil){
+		ssp.SystemCharacteristics = &sdk_ssp.SystemCharacteristics{}
+	}
 }
 
 
@@ -224,3 +252,9 @@ type AsIs = sdk_profile.AsIs
 
 //
 type RolePartyMap = request_models.RolePartyMap
+
+//
+type Title = validation_root.Title
+
+//
+type Annotation  =validation_root.Annotation
