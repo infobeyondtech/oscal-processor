@@ -111,10 +111,20 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string){
 	db_component := information.GetComponent(componentId)
 	sdk_component := &sdk_ssp.Component{}
 	sdk_component.Id = db_component.UUID
+	sdk_component.Description =  &sdk_ssp.Markup{Raw:db_component.Description}
+	sdk_component.Status = &sdk_ssp.Status{State:db_component.State}
+	sdk_component.Title = Title(db_component.Title)
+	sdk_component.ComponentType = db_component.Type
 
-	// todo: convert to sdk_component
+	// version and last-modified property
+	versionProperty := &Prop{Name:"version", Value:db_component.Version}
+	lastModifiedProperty := &Prop{Name:"last-modified-date", Value:db_component.LastModified}
+	sdk_component.Properties = append(sdk_component.Properties, *versionProperty)
+	sdk_component.Properties = append(sdk_component.Properties, *lastModifiedProperty )
 
-	// todo: insert into ssp component collection
+	// insert into ssp component collection
+	GuardSystemImplementation(ssp)
+	ssp.SystemImplementation.Components = append(ssp.SystemImplementation.Components, *sdk_component)
 }
 
 // private func to add a user in system-implementation, check duplicates
@@ -140,8 +150,7 @@ func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
 	sdk_party := &Party{}
 	sdk_party.Id = db_party.UUID
 
-	// todo: party name and type are missing in the sdk
-
+	// todo: party name and type are missing in this sdk
 
 	// insert into ssp header
 	GuardMetaData(ssp)
