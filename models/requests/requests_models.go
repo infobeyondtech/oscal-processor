@@ -68,6 +68,7 @@ type ByComponent struct {
 	ComponentID string `json:"componentID" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	SetParameters []SetParameter `json:"setParameters" binding:"required"`
+	ResponsibleParties [] RolePartyMap `json:"responsibleParties" binding:"required"`
 }
 
 type Statement struct {

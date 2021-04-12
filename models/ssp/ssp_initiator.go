@@ -38,7 +38,6 @@ func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.Set
 
 func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest ){
 
-
 }
 
 // initiate a ssp instance from an existing xml file
@@ -103,7 +102,59 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 
 // insert an implemented requirement
 func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement request_models.InsertImplementedRequirementRequest){
+	sdk_requirement := &sdk_ssp.ImplementedRequirement{}
+	sdk_requirement.ControlId = requirement.ControlID
+	sdk_requirement.Id =  requirement.UUID
 
+	for _, statement := range requirement.Statements{			
+		// from request statement to sdk statement
+		sdk_statement := &sdk_ssp.Statement{}
+		sdk_statement.StatementId = statement.StatementID
+
+		for _, byComponent := range statement.ByComponents{
+			// from byComponent to sdk byComponent
+			sdk_byComponent := &sdk_ssp.ByComponent{}
+			sdk_byComponent.ComponentId = byComponent.ComponentID
+			sdk_byComponent.Description = &sdk_ssp.Markup{Raw:byComponent.Description}
+			
+			// component parameters
+			for _, param := range byComponent.SetParameters{
+				sdk_param := &sdk_ssp.SetParameter{}
+				// from setParams to sdk params
+				sdk_param.ParamId = param.ParamID
+				sdk_param.Value = sdk_ssp.Value(param.Value)
+
+				sdk_byComponent.ParameterSettings = append(sdk_byComponent.ParameterSettings, *sdk_param)
+			}
+
+			// responsible roles and users for a component
+			for _, partyRoleMap := range byComponent.ResponsibleParties {
+
+				sdk_role:= &sdk_ssp.ResponsibleRole{}
+				
+				// insert user role detail in the header
+				db_user := information.GetUser(partyRoleMap.UserUUID)
+				AddUser(ssp, db_user)
+				sdk_role.RoleId = db_user.RoleId
+				
+				for _, partyId := range partyRoleMap.PartyUUIDs{
+					sdk_role.PartyIds = append(sdk_role.PartyIds, PartyId(partyId))
+		
+					// insert party detail in the header
+					AddParty(ssp, partyId)
+				}
+		
+				sdk_byComponent.ResponsibleRoles = append(sdk_byComponent.ResponsibleRoles, *sdk_role)
+			}			
+
+			AddComponent(ssp, byComponent.ComponentID)
+			sdk_statement.ByComponents = append(sdk_statement.ByComponents, *sdk_byComponent)
+		}
+		sdk_requirement.Statements = append(sdk_requirement.Statements, *sdk_statement)
+	}
+
+	GuardControlImplementation(ssp)
+	ssp.ControlImplementation.ImplementedRequirements = append(ssp.ControlImplementation.ImplementedRequirements, *sdk_requirement)
 }
 
 // private func to add a component in system-implementation, check duplicates
