@@ -12,6 +12,7 @@ import (
 	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
+	"github.com/infobeyondtech/oscal-processor/context"
 )
 
 // Create an empty SSP
@@ -26,18 +27,18 @@ func CreateFreshSSP() (string, error) {
 	out, err1 := xml.MarshalIndent(ssp, "  ", "    ")
 	check(err1)
 
-	err := ioutil.WriteFile("ssp_test", out, 0644)
+	err := ioutil.WriteFile(fid, out, 0644)
 	check(err)
 
 	return fid, nil
 }
 
 func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
-
+	// todo: set title and version in metadata
 }
 
 func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest ){
-
+	// todo: set other fields in SystemCharacteristic
 }
 
 // initiate a ssp instance from an existing xml file
@@ -54,6 +55,22 @@ func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
 		fmt.Printf("error: %v", marshalError)
 		return
 	}
+}
+
+func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan){
+	parent := context.DownloadDir
+	if(ssp.Id == ""){
+		ssp.Id = uuid.New().String()
+	}	
+	targetFile := parent + "/" + ssp.Id
+	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
+
+	out, e := xml.MarshalIndent(ssp, "  ", "    ")
+	check(e)
+	
+	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
+	check(ioErr)
 }
 
 // insert an inventory item
@@ -116,6 +133,7 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 			sdk_byComponent := &sdk_ssp.ByComponent{}
 			sdk_byComponent.ComponentId = byComponent.ComponentID
 			sdk_byComponent.Description = &sdk_ssp.Markup{Raw:byComponent.Description}
+			responsibleRoles := []sdk_ssp.ResponsibleRole{}
 			
 			// component parameters
 			for _, param := range byComponent.SetParameters{
@@ -144,10 +162,11 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 					AddParty(ssp, partyId)
 				}
 		
-				sdk_byComponent.ResponsibleRoles = append(sdk_byComponent.ResponsibleRoles, *sdk_role)
+				//sdk_byComponent.ResponsibleRoles = append(sdk_byComponent.ResponsibleRoles, *sdk_role)
+				responsibleRoles = append(responsibleRoles, *sdk_role)
 			}			
 
-			AddComponent(ssp, byComponent.ComponentID)
+			AddComponent(ssp, byComponent.ComponentID, responsibleRoles)
 			sdk_statement.ByComponents = append(sdk_statement.ByComponents, *sdk_byComponent)
 		}
 		sdk_requirement.Statements = append(sdk_requirement.Statements, *sdk_statement)
@@ -158,7 +177,7 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 }
 
 // private func to add a component in system-implementation, check duplicates
-func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string){
+func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
 	db_component := information.GetComponent(componentId)
 	sdk_component := &sdk_ssp.Component{}
 	sdk_component.Id = db_component.UUID
@@ -172,6 +191,9 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string){
 	lastModifiedProperty := &Prop{Name:"last-modified-date", Value:db_component.LastModified}
 	sdk_component.Properties = append(sdk_component.Properties, *versionProperty)
 	sdk_component.Properties = append(sdk_component.Properties, *lastModifiedProperty )
+
+	// insert the responsible role
+	copy(sdk_component.ResponsibleRoles, responsibleRoles)
 
 	// insert into ssp component collection
 	GuardSystemImplementation(ssp)
@@ -318,3 +340,5 @@ type Title = validation_root.Title
 
 //
 type Annotation  =validation_root.Annotation
+
+type ResponsibleRole = validation_root.Res
