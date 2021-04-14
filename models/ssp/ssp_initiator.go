@@ -109,7 +109,7 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 		sdk_itm.ImplementedComponents = append(sdk_itm.ImplementedComponents, *implement_component)
 
 		// insert component detail in the header
-		AddComponent(ssp, component_id)
+		AddComponent(ssp, component_id, []sdk_ssp.ResponsibleRole{})	// todo: use role in the request
 	}
 	
 	// insert inventory item into ssp systemimplementation section
