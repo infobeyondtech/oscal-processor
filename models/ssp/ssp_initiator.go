@@ -341,4 +341,3 @@ type Title = validation_root.Title
 //
 type Annotation  =validation_root.Annotation
 
-type ResponsibleRole = validation_root.Res
