@@ -20,7 +20,7 @@ type AddAddressRequest struct {
 }
 
 type SetTitleVersionRequest struct {
-	UUID         string `json:"uuid" binding:"required"`
+	//UUID         string `json:"uuid" binding:"required"`
 	Title        string `json:"title" binding:"required"`
 	Version      string `json:"version" binding:"required"`
 	OscalVersion string `json:"oscalversion" binding:"required"`
@@ -34,8 +34,6 @@ type AddRolePartyRequest struct {
 	OrgName string `json:"orgName" binding:"required"`
 	Email   string `json:"email" binding:"required"`
 }
-
-
 
 // below are requests related to ssp
 type AddSystemCharacteristicReuqest struct{

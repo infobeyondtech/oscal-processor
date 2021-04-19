@@ -34,11 +34,25 @@ func CreateFreshSSP() (string, error) {
 }
 
 func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
-	// todo: set title and version in metadata
+	GuardMetaData(ssp)
+	
+	ssp.Metadata.Title = sdk_ssp.Title(request.Title)
+	ssp.Metadata.Version = Version(request.Version)
+	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
 }
 
 func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest ){
-	// todo: set other fields in SystemCharacteristic
+	GuardSystemCharacteristics(ssp)
+
+	ssp.SystemCharacteristics.SystemName = sdk_ssp.SystemName(request.SystemName)
+	ssp.SystemCharacteristics.Description = &sdk_ssp.Markup{Raw:request.Description}
+	ssp.SystemCharacteristics.SecuritySensitivityLevel = sdk_ssp.SecuritySensitivityLevel(request.SecurityLevel)
+
+	annotation := &Annotation {Name: "deployment-model", Value:request.DeploymentModel }
+	ssp.SystemCharacteristics.Annotations = append(ssp.SystemCharacteristics.Annotations, *annotation)
+
+	systemId := &sdk_ssp.SystemId{ IdentifierType: "https://ietf.org/rfc/rfc4122", Value:request.UUID}
+	ssp.SystemCharacteristics.SystemIds = append(ssp.SystemCharacteristics.SystemIds, *systemId)
 }
 
 // initiate a ssp instance from an existing xml file
@@ -57,7 +71,7 @@ func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
 	}
 }
 
-func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan){
+func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 	parent := context.DownloadDir
 	if(ssp.Id == ""){
 		ssp.Id = uuid.New().String()
@@ -71,6 +85,8 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan){
 	
 	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
 	check(ioErr)
+
+	return xmlFile
 }
 
 // insert an inventory item
@@ -107,11 +123,11 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 	for _, component_id := range request.ImplementComponents{
 		implement_component := &sdk_ssp.ImplementedComponent{ ComponentId : component_id }
 		sdk_itm.ImplementedComponents = append(sdk_itm.ImplementedComponents, *implement_component)
-
+		
 		// insert component detail in the header
-		AddComponent(ssp, component_id, []sdk_ssp.ResponsibleRole{})	// todo: use role in the request
+		AddComponent(ssp, component_id, []sdk_ssp.ResponsibleRole{})	
 	}
-	
+
 	// insert inventory item into ssp systemimplementation section
 	GuardSystemImplementation(ssp)
 	ssp.SystemImplementation.SystemInventory.InventoryItems = append(ssp.SystemImplementation.SystemInventory.InventoryItems, *sdk_itm)
@@ -230,7 +246,6 @@ func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
 	ssp.Metadata.Parties = append(ssp.Metadata.Parties, *sdk_party)
 } 
 
-
 func GuardMetaData(ssp *sdk_ssp.SystemSecurityPlan){
 	if(ssp.Metadata == nil){
 		ssp.Metadata = &sdk_ssp.Metadata{}
@@ -293,6 +308,9 @@ type Party = validation_root.Party
 // Org : field in Metadata
 type Org = validation_root.Org
 
+// Version : field in Metadata
+type Version = validation_root.Version
+
 // ResponsibleParty : field in Metadata
 type ResponsibleParty = validation_root.ResponsibleParty
 
@@ -313,6 +331,9 @@ type Resource = validation_root.Resource
 
 // RLink : field in BackMatter
 type RLink = validation_root.Rlink
+
+// OscalVersion: field in Metadata
+type OscalVersion = validation_root.OscalVersion
 
 // Desc : field in BackMatter
 type Desc = validation_root.Desc
