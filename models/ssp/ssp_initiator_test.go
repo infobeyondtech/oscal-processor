@@ -4,7 +4,6 @@ import (
 	"testing"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/google/uuid"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
 	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
@@ -125,6 +124,71 @@ func TestSetCharacteristics(t *testing.T){
 	assert.Equal(string(ssp_cpy.SystemCharacteristics.Annotations[0].Value), deploymentModel)
 	assert.Equal(string(ssp_cpy.SystemCharacteristics.SecuritySensitivityLevel), securitylevel)
 }
+
+func TestAddInventoryItem(t *testing.T){
+	assert := assert.New(t)
+	ssp := &sdk_ssp.SystemSecurityPlan{}
+	item_uid := "c9c32657-a0eb-4cf2-b5c1-20928983063c"
+	implementComponent_id := "795533ab-9427-4abe-820f-0b571bacfe6d"
+	responsibleParties := []RolePartyMap{}
+
+	// two responsible parties
+	party1 := RolePartyMap{ UserUUID : "9824089b-322c-456f-86c4-4111c4200f69", PartyUUIDs:[]string{"833ac398-5c9a-4e6b-acba-2a9c11399da0"}}
+	party2 := RolePartyMap{ UserUUID : "ae8de94c-835d-4303-83b1-114b6a117a07", PartyUUIDs:[]string{"3b2a5599-cc37-403f-ae36-5708fa804b27"}}
+	responsibleParties = append(responsibleParties, party1)
+	responsibleParties = append(responsibleParties, party2)
+
+	request := request_models.InsertInventoryItemRequest{
+		InventoryItemID : item_uid,
+		ImplementComponents : []string{implementComponent_id},
+		ResponsibleParties : responsibleParties,
+	}
+
+	AddInventoryItem(ssp, request)
+	path := WriteToFile(ssp)		
+	fmt.Printf("file path:" +path)
+
+	ssp_cpy := &sdk_ssp.SystemSecurityPlan{}
+	LoadFromFile(ssp_cpy, path)
+
+	first_itm := ssp_cpy.SystemImplementation.SystemInventory.InventoryItems[0]
+	assert.Equal(first_itm.Id, item_uid)
+	assert.Equal(first_itm.ImplementedComponents[0].ComponentId, implementComponent_id)
+	assert.Equal(len(first_itm.ResponsibleParties),2)
+}
+
+func TestAddImplementedRequirement(t *testing.T){
+	assert := assert.New(t)
+	ssp := &sdk_ssp.SystemSecurityPlan{}
+	statements := []request_models.Statement{}
+
+	uuid := "aaadb3ff-6ae8-4332-92db-211468c52af2"
+	control_id := "au-1"
+
+	// set parameters in statements
+	by_component := request_models.ByComponent{}
+	smt1 := request_models.Statement{ StatementID : "f3887a91-9ed3-425c-b305-21e4634a1c34", }	// todo: by_component
+	statements = append(statements, smt1)
+
+	request := request_models.InsertImplementedRequirementRequest{
+		UUID: uuid,
+		ControlID: control_id,
+		Statements: statements,
+	}
+
+	AddImplementedRequirement(ssp, request)
+	path := WriteToFile(ssp)		
+	fmt.Printf("file path:" +path)
+
+	ssp_cpy := &sdk_ssp.SystemSecurityPlan{}
+	LoadFromFile(ssp_cpy, path)
+
+	assert.Equal(ssp_cpy.ControlImplementation.ImplementedRequirements[0].ControlId, control_id)
+	assert.Equal(ssp_cpy.ControlImplementation.ImplementedRequirements[0].Id, uuid)
+
+}
+
+
 
 
 
