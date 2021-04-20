@@ -20,7 +20,7 @@ type AddAddressRequest struct {
 }
 
 type SetTitleVersionRequest struct {
-	UUID         string `json:"uuid" binding:"required"`
+	//UUID         string `json:"uuid" binding:"required"`
 	Title        string `json:"title" binding:"required"`
 	Version      string `json:"version" binding:"required"`
 	OscalVersion string `json:"oscalversion" binding:"required"`
@@ -35,8 +35,6 @@ type AddRolePartyRequest struct {
 	Email   string `json:"email" binding:"required"`
 }
 
-
-
 // below are requests related to ssp
 type AddSystemCharacteristicReuqest struct{
 	UUID string `json:"uuid" binding:"required"`
@@ -50,7 +48,7 @@ type InsertInventoryItemRequest struct {
 	UUID         string `json:"uuid" binding:"required"`
 	InventoryItemID string `json:"inventoryItemID" binding:"required"`
 	ImplementComponents []string `json:"implementComponents" binding:"required"`
-	ResponsibleParties []string `json:"responsibleParties" binding:"required"`
+	ResponsibleParties []RolePartyMap `json:"responsibleParties" binding:"required"`
 }
 
 type InsertImplementedRequirementRequest struct {
@@ -68,9 +66,15 @@ type ByComponent struct {
 	ComponentID string `json:"componentID" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	SetParameters []SetParameter `json:"setParameters" binding:"required"`
+	ResponsibleParties [] RolePartyMap `json:"responsibleParties" binding:"required"`
 }
 
 type Statement struct {
 	StatementID string `json:"statementID" binding:"required"`
 	ByComponents []ByComponent `json:"bycomponents" binding:"required"`
+}
+
+type RolePartyMap struct {
+	UserUUID string `json:"UserUUID" binding:"required"`
+	PartyUUIDs []string `json:"PartyUUIDs" binding:"required"`
 }

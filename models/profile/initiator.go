@@ -85,6 +85,19 @@ func LoadFromFile(profile *sdk_profile.Profile, path string) {
 	}
 }
 
+func WriteToFile(p *sdk_profile.Profile){
+	parent := context.DownloadDir
+	targetFile := parent + "/" + p.Id
+	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
+
+	out, e := xml.MarshalIndent(p, "  ", "    ")
+	check(e)
+	
+	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
+	check(ioErr)
+}
+
 func SetID(profile *sdk_profile.Profile, id string) {
 	profile.Id = id
 }
@@ -283,6 +296,13 @@ func Validate(path string) (bool, error) {
 	return true, nil
 }
 
+// helper function: track error
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 // Metadata : field in profile
 type Metadata = validation_root.Metadata
 
@@ -348,3 +368,5 @@ type Address = validation_root.Address
 
 // AsIs : field in Modify
 type AsIs = sdk_profile.AsIs
+
+
