@@ -4,7 +4,6 @@ import (
     "encoding/json"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
-    "fmt"
 )
 
 type Param struct {
@@ -34,23 +33,24 @@ type Control struct {
 }
 
 func GetControl(ctrlId string) (Control) {
+    // Open the DB
     db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube");
     if err != nil {
         panic(err.Error())
     }
+    // Call the Stored Procedure, GetControlTree
     var queryResult string;
     query, err := db.Query(`call GetControlTree('` + ctrlId + `', @result)`)
     if err != nil {
         panic(err.Error())
     }
+    // Get the result, Unmarshal, and return the Control
     query.Next()
     query.Scan(&queryResult)
-    fmt.Println(queryResult)
     result := Control{}
     marshalError := json.Unmarshal([]byte(queryResult), &result)
     if marshalError != nil {
         panic(marshalError)
     }
-    fmt.Println(result);
     return result;
 }
