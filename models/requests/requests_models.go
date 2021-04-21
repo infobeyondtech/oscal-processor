@@ -45,7 +45,6 @@ type AddSystemCharacteristicReuqest struct{
 }
 
 type InsertInventoryItemRequest struct {
-	UUID         string `json:"uuid" binding:"required"`
 	InventoryItemID string `json:"inventoryItemID" binding:"required"`
 	ImplementComponents []string `json:"implementComponents" binding:"required"`
 	ResponsibleParties []RolePartyMap `json:"responsibleParties" binding:"required"`

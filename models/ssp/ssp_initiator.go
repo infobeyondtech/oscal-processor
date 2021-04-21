@@ -35,7 +35,7 @@ func CreateFreshSSP() (string, error) {
 
 func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
 	GuardMetaData(ssp)
-	
+
 	ssp.Metadata.Title = sdk_ssp.Title(request.Title)
 	ssp.Metadata.Version = Version(request.Version)
 	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
