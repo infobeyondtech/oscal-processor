@@ -15,24 +15,6 @@ import (
 	"github.com/infobeyondtech/oscal-processor/context"
 )
 
-// Create an empty SSP
-func CreateFreshSSP() (string, error) {
-
-	fid := uuid.New().String()
-	ssp := &sdk_ssp.SystemSecurityPlan{}
-
-	// set id
-	ssp.Id = fid
-
-	out, err1 := xml.MarshalIndent(ssp, "  ", "    ")
-	check(err1)
-
-	err := ioutil.WriteFile(fid, out, 0644)
-	check(err)
-
-	return fid, nil
-}
-
 func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
 	GuardMetaData(ssp)
 
@@ -130,6 +112,9 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 
 	// insert inventory item into ssp systemimplementation section
 	GuardSystemImplementation(ssp)
+	if(ssp.SystemImplementation.SystemInventory==nil){
+		ssp.SystemImplementation.SystemInventory = &sdk_ssp.SystemInventory{}
+	}
 	ssp.SystemImplementation.SystemInventory.InventoryItems = append(ssp.SystemImplementation.SystemInventory.InventoryItems, *sdk_itm)
 }
 

@@ -111,7 +111,9 @@ func TestSetCharacteristics(t *testing.T){
 		UUID : uid,
 		SystemName : systemName,
 		Description : desc,
-		SecurityLevel : securitylevel}
+		SecurityLevel : securitylevel,
+		DeploymentModel : deploymentModel,
+	}
 	SetSystemCharacteristic(ssp, request)
 
 	path := WriteToFile(ssp)		
