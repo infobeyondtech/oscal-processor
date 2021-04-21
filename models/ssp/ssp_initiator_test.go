@@ -165,9 +165,24 @@ func TestAddImplementedRequirement(t *testing.T){
 	uuid := "aaadb3ff-6ae8-4332-92db-211468c52af2"
 	control_id := "au-1"
 
-	// set parameters in statements
-	by_component := request_models.ByComponent{}
-	smt1 := request_models.Statement{ StatementID : "f3887a91-9ed3-425c-b305-21e4634a1c34", }	// todo: by_component
+	// set parameters
+	parameter := request_models.SetParameter{ ParamID : "au-1_prm_1", Value: "all staff and contractors within the organization"}
+	parameters := []request_models.SetParameter{parameter}
+	
+	// users roles
+	parties := []string{"ec485dcf-2519-43f5-8e7d-014cc315332d"}
+	role := request_models.RolePartyMap{UserUUID:"46ee87f8-724d-42de-907a-670fcb8bd0e3", PartyUUIDs:parties}
+	roles := []request_models.RolePartyMap{role}
+	
+	by_component := request_models.ByComponent{
+		ComponentID : "795533ab-9427-4abe-820f-0b571bacfe6d",
+		Description : "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",		
+		SetParameters : parameters,
+		ResponsibleParties : roles,
+	}
+	by_components := []request_models.ByComponent{by_component}
+	smt1 := request_models.Statement{ StatementID : "f3887a91-9ed3-425c-b305-21e4634a1c34",
+		 ByComponents:by_components,}
 	statements = append(statements, smt1)
 
 	request := request_models.InsertImplementedRequirementRequest{
