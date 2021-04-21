@@ -9,13 +9,6 @@ import (
 	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
 )
 
-func TestCreateSSP(t *testing.T) {
-	fid, err := CreateFreshSSP()
-	check(err)
-	
-	fmt.Printf("fid:" +fid)
-}
-
 func TestAddUser(t *testing.T){
 	assert := assert.New(t)
 	ssp := &sdk_ssp.SystemSecurityPlan{}
