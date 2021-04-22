@@ -194,7 +194,7 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsib
 	sdk_component.Properties = append(sdk_component.Properties, *lastModifiedProperty )
 
 	// insert the responsible role
-	copy(sdk_component.ResponsibleRoles, responsibleRoles)
+	sdk_component.ResponsibleRoles = responsibleRoles
 
 	// insert into ssp component collection
 	GuardSystemImplementation(ssp)
