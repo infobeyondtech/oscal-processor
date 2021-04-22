@@ -79,7 +79,7 @@ func GetComponent(UUID string) (Component) {
     if err != nil {
         panic(err.Error())
     }
-    err = db.QueryRow(`SELECT * FROM oscal_component WHERE uuid = "` + UUID + `";`).
+    err = db.QueryRow(`SELECT id, title, uuid, description, state, type, last_modified, version FROM oscal_component WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
     if err != nil {
         panic(err.Error())
@@ -134,7 +134,7 @@ func GetInventoryItem(UUID string) (InventoryItem) {
     if err != nil {
         panic(err.Error())
     }
-    err = db.QueryRow(`SELECT * FROM oscal_inventory_item WHERE uuid = "` + UUID + `";`).
+    err = db.QueryRow(`SELECT id, asset_id, uuid, description FROM oscal_inventory_item WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.AssetId, &nullableResult.UUID, &nullableResult.Description)
     if err != nil {
         panic(err.Error())
@@ -169,7 +169,7 @@ func GetParty(UUID string) (Party) {
     if err != nil {
         panic(err.Error())
     }
-    err = db.QueryRow(`SELECT * FROM oscal_party WHERE uuid = "` + UUID + `";`).
+    err = db.QueryRow(`SELECT id, role_id, uuid, type FROM oscal_party WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.RoleId, &nullableResult.UUID, &nullableResult.Type)
     if err != nil {
         panic(err.Error())
@@ -204,7 +204,7 @@ func GetUser(UUID string) (User) {
     if err != nil {
         panic(err.Error())
     }
-    err = db.QueryRow(`SELECT * FROM oscal_user WHERE uuid = "` + UUID + `";`).
+    err = db.QueryRow(`SELECT id, title, type, role_id, uuid FROM oscal_user WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.Type,  &nullableResult.RoleId, &nullableResult.UUID)
     if err != nil {
         panic(err.Error())
