@@ -290,6 +290,7 @@ func IntegrationTest(t *testing.T){
 	// write to file
 	path := WriteToFile(ssp)		
 	fmt.Printf("file path: " +path)
+	assert.Equal(string(ssp.Metadata.Version), version)
 }
 
 
