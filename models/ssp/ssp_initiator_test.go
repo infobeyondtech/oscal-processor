@@ -208,7 +208,7 @@ func TestAddImplementedRequirement(t *testing.T){
 
 }
 
-func IntegrationTest(t *testing.T){
+func TestIntegration(t *testing.T){
 
 	// set title version in metadata
 	ssp := &sdk_ssp.SystemSecurityPlan{}
@@ -290,7 +290,6 @@ func IntegrationTest(t *testing.T){
 	// write to file
 	path := WriteToFile(ssp)		
 	fmt.Printf("file path: " +path)
-	assert.Equal(string(ssp.Metadata.Version), version)
 }
 
 
