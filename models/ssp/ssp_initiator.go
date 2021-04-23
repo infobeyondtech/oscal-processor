@@ -23,7 +23,7 @@ func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.Set
 	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
 }
 
-func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest ){
+func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest){
 	GuardSystemCharacteristics(ssp)
 
 	ssp.SystemCharacteristics.SystemName = sdk_ssp.SystemName(request.SystemName)
@@ -35,6 +35,18 @@ func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_mo
 
 	systemId := &sdk_ssp.SystemId{ IdentifierType: "https://ietf.org/rfc/rfc4122", Value:request.UUID}
 	ssp.SystemCharacteristics.SystemIds = append(ssp.SystemCharacteristics.SystemIds, *systemId)
+
+	GuardSystemInformation(ssp)
+
+	// initiate fields in impact info
+	impactInfo := &sdk_ssp.InformationType{}
+	impactInfo.Title = sdk_ssp.Title(request.SystemInformationTitle)
+	impactInfo.Description = &sdk_ssp.Markup{Raw:request.SystemInformationDescription}
+	impactInfo.ConfidentialityImpact = &sdk_ssp.ConfidentialityImpact{Base:sdk_ssp.Base(request.ConfidentialityImpact)}
+	impactInfo.AvailabilityImpact = &sdk_ssp.AvailabilityImpact{Base: sdk_ssp.Base(request.AvailabilityImpact)}
+	impactInfo.IntegrityImpact = &sdk_ssp.IntegrityImpact{Base: sdk_ssp.Base(request.IntegrityImpact)}
+
+	ssp.SystemCharacteristics.SystemInformation.InformationTypes = append(ssp.SystemCharacteristics.SystemInformation.InformationTypes, *impactInfo)
 }
 
 // initiate a ssp instance from an existing xml file
@@ -177,6 +189,8 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 	ssp.ControlImplementation.ImplementedRequirements = append(ssp.ControlImplementation.ImplementedRequirements, *sdk_requirement)
 }
 
+
+
 // private func to add a component in system-implementation, check duplicates
 func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
 	db_component := information.GetComponent(componentId)
@@ -252,6 +266,13 @@ func GuardControlImplementation(ssp *sdk_ssp.SystemSecurityPlan){
 func GuardSystemCharacteristics(ssp *sdk_ssp.SystemSecurityPlan){
 	if(ssp.SystemCharacteristics == nil){
 		ssp.SystemCharacteristics = &sdk_ssp.SystemCharacteristics{}
+	}
+}
+
+func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan){
+	GuardSystemCharacteristics(ssp)
+	if(ssp.SystemCharacteristics.SystemInformation == nil){
+		ssp.SystemCharacteristics.SystemInformation = &sdk_ssp.SystemInformation{}
 	}
 }
 

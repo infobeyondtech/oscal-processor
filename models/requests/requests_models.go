@@ -42,6 +42,12 @@ type AddSystemCharacteristicReuqest struct{
 	Description string `json:"description" binding:"required"`
 	DeploymentModel string `json:"deploymentModel" binding:"required"`
 	SecurityLevel string `json:"securityLevel" binding:"required"`
+
+	SystemInformationTitle string `json:"systemInformationTitle" binding:"required"`
+	SystemInformationDescription string `json:"systemInformationDescription" binding:"required"`
+	ConfidentialityImpact string `json:"confidentialityImpact" binding:"required"`
+	IntegrityImpact string `json:"integrityImpact" binding:"required"`
+	AvailabilityImpact string `json:"availabilityImpact" binding:"required"`
 }
 
 type InsertInventoryItemRequest struct {
