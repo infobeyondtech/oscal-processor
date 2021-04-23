@@ -2,14 +2,17 @@ package main
 
 import (
 	"net/http"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+    //"encoding/json"
 
 	"github.com/infobeyondtech/oscal-processor/context"
 	"github.com/infobeyondtech/oscal-processor/models/profile"
 	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
+	"github.com/infobeyondtech/oscal-processor/models/profile_navigator"
+	"github.com/infobeyondtech/oscal-processor/models/control"
+	"github.com/infobeyondtech/oscal-processor/models/param_value"
 )
 
 func main() {
@@ -74,6 +77,45 @@ func main() {
 			})
 
 	})
+	// Get Profile Navigator
+	r.POST("/profile/navigator/:uuid", func(c *gin.Context) {
+
+		// Load the profile
+		iid := c.Param("uuid")
+		dir := context.DownloadDir
+		inputSrc := dir + "/" + iid
+		inputSrc = context.ExpandPath(inputSrc)
+		p := &profile.Profile{}
+		profile.LoadFromFile(p, inputSrc)
+
+        // Get the profile's navigator
+        pn := &profile_navigator.ProfileNavigator{}
+        profile_navigator.CreateProfileNavigator(pn, p)
+
+        c.JSON(http.StatusOK, pn.Groups)
+
+	})
+	// Get Control
+	r.POST("/control/:controlid", func(c *gin.Context) {
+		id := c.Param("controlid")
+        ctrl := control.GetControl(id)
+        c.JSON(http.StatusOK, ctrl)
+	})
+	// Get ParamValue
+    r.POST("/getparam/:uuid/:paramid", func(c *gin.Context) {
+		uuid := c.Param("uuid")
+		paramid := c.Param("paramid")
+        pv := param_value.GetParamValue(uuid, paramid)
+        c.JSON(http.StatusOK, pv)
+	})
+	// Set ParamValue
+    r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+		uuid := c.Param("uuid")
+		paramid := c.Param("paramid")
+        value := c.Param("value")
+        pv := param_value.SetParamValue(uuid, paramid, value)
+        c.JSON(http.StatusOK, pv)
+	})
 	// Resolve profile
 	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
@@ -100,28 +142,28 @@ func main() {
 		}
 	})
 	// Modify Metadata
-	r.POST("/profile/set-title", func(c *gin.Context) {
-		var json request_models.SetTitleVersionRequest
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	//r.POST("/profile/set-title", func(c *gin.Context) {
+	//	var json request_models.SetTitleVersionRequest
+	//	if err := c.ShouldBindJSON(&json); err != nil {
+	//		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//		return
+	//	}
 
-		// load from file
-		iid := json.UUID
-		dir := context.DownloadDir
-		inputSrc := dir + "/" + iid
-		inputSrc = context.ExpandPath(inputSrc)
-		p := &profile.Profile{}
-		profile.LoadFromFile(p, inputSrc)
+	//	// load from file
+	//	iid := json.UUID
+	//	dir := context.DownloadDir
+	//	inputSrc := dir + "/" + iid
+	//	inputSrc = context.ExpandPath(inputSrc)
+	//	p := &profile.Profile{}
+	//	profile.LoadFromFile(p, inputSrc)
 
-		// Set title and version
-		er := profile.SetTitleVersion(p, json.Version, json.OscalVersion, json.Title)
-		if er != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
-			return
-		}
-	})
+	//	// Set title and version
+	//	er := profile.SetTitleVersion(p, json.Version, json.OscalVersion, json.Title)
+	//	if er != nil {
+	//		c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
+	//		return
+	//	}
+	//})
 	r.POST("/profile/add-address", func(c *gin.Context) {
 		var json request_models.AddAddressRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
@@ -166,5 +208,6 @@ func main() {
 			return
 		}
 	})
-	r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+    r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

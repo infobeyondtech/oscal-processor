@@ -14,9 +14,9 @@ type NullableParamValue struct {
 }
 
 type ParamValue struct {
-    fileid string `xml:"id,attr,omitempty" json:"id,omitempty"`
-    paramid string `xml:"label,omitempty" json:"label,omitempty"`
-    value string `xml:"label,omitempty" json:"label,omitempty"`
+    Fileid string `xml:"fileid,attr,omitempty" json:"fileid,omitempty"`
+    Paramid string `xml:"paramid,omitempty" json:"paramid,omitempty"`
+    Value string `xml:"value,omitempty" json:"value,omitempty"`
 }
 
 func SetParamValue(fileid string, paramid string, value string) (ParamValue) {
@@ -28,6 +28,9 @@ func SetParamValue(fileid string, paramid string, value string) (ParamValue) {
 
     // TODO: Do we need to error check to make sure the
     //       fileid, and paramid are valid?
+
+    // TODO: Check to see if value already exisits in DB
+    //       Update if so
 
     query := `INSERT INTO params_values(fileid, paramid, value) Values("`
     query += fileid
@@ -63,26 +66,22 @@ func GetParamValue(fileid string, paramid string) (ParamValue) {
     if err != nil {
         panic(err.Error())
     }
+    // Validate the query response
     if nullableResult.fileid.Valid {
-        result.fileid = nullableResult.fileid.String
+        result.Fileid = nullableResult.fileid.String
     } else {
-        result.fileid = "";
+        result.Fileid = "";
     }
     if nullableResult.paramid.Valid {
-        result.paramid = nullableResult.paramid.String
+        result.Paramid = nullableResult.paramid.String
     } else {
-        result.paramid = "";
+        result.Paramid = "";
     }
     if nullableResult.value.Valid {
-        result.value = nullableResult.value.String
+        result.Value = nullableResult.value.String
     } else {
-        result.value = "";
+        result.Value = "";
     }
 
     return result;
 }
-
-//func main() {
-//    //SetParamValue("fileid1", "paramid1", "value1")
-//    fmt.Println(GetParamValue("fileid1", "paramid1"))
-//}
