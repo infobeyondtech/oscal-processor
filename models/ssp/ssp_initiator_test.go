@@ -214,7 +214,7 @@ func TestIntegration(t *testing.T){
 	ssp := &sdk_ssp.SystemSecurityPlan{}
 	title := "Enterprise Logging and Auditing System Security Plan"
 	version := "1.0"
-	oscal_version := "1.0.0-rc1"
+	oscal_version := "1.0.0-m1"
 	request := request_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version}
 	SetTitleVersion(ssp, request)
 
@@ -260,7 +260,7 @@ func TestIntegration(t *testing.T){
 		ResponsibleParties : roles,
 	}
 	by_components := []request_models.ByComponent{by_component}
-	smt1 := request_models.Statement{ StatementID : "f3887a91-9ed3-425c-b305-21e4634a1c34",
+	smt1 := request_models.Statement{ StatementID : "au-1smt.a",
 		 ByComponents:by_components,}
 	statements = append(statements, smt1)
 

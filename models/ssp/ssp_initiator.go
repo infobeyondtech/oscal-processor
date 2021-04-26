@@ -193,6 +193,30 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 
 // private func to add a component in system-implementation, check duplicates
 func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
+
+	// checkt existing components
+	for _, component := range ssp.SystemImplementation.Components{
+		if(component.Id == componentId){
+			// merge roles within a component and finish		
+			toAppend := []sdk_ssp.ResponsibleRole {}
+			
+			for _, newRole := range responsibleRoles{
+				duplicate := false
+				for _, existRole := range component.ResponsibleRoles{
+					if(newRole.RoleId == existRole.RoleId){
+						duplicate = true
+						break
+					}
+				}
+				if(!duplicate){
+					toAppend = append(toAppend, newRole)
+				}
+			}
+			component.ResponsibleRoles = append(component.ResponsibleRoles, toAppend...)
+			return
+		}
+	}
+
 	db_component := information.GetComponent(componentId)
 	sdk_component := &sdk_ssp.Component{}
 	sdk_component.Id = db_component.UUID
@@ -217,7 +241,15 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsib
 
 // private func to add a user in system-implementation, check duplicates
 func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
+
+	// no duplicate users
+	for _, user := range ssp.SystemImplementation.Users{
+		if(user.Id == db_user.UUID){
+			return
+		}		
+	}
 	
+	// get user info from DB
 	sdk_user :=  &sdk_ssp.User{}
 	sdk_user.Title = Title(db_user.Title)
 	sdk_user.Id = db_user.UUID
@@ -233,12 +265,25 @@ func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
 
 // private func to add a party in meta data, check duplicates
 func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
+
+	// no duplicate parties
+	for _, party := range ssp.Metadata.Parties{
+		if(party.Id == partyId){
+			return
+		}		
+	}
 	
+	// get party info from DB
 	db_party := information.GetParty(partyId);
 	sdk_party := &Party{}
 	sdk_party.Id = db_party.UUID
 
-	// todo: party name and type are missing in this sdk
+	// party name and type are missing in this sdk
+	// using properties field in sdk_party for party name and type
+	nameProperty := &Prop{Name:"name", Value:db_party.RoleId}
+	typeProperty := &Prop{Name:"type", Value:db_party.Type}
+	sdk_party.Properties = append(sdk_party.Properties, *nameProperty)
+	sdk_party.Properties = append(sdk_party.Properties, *typeProperty)
 
 	// insert into ssp header
 	GuardMetaData(ssp)
@@ -276,13 +321,14 @@ func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan){
 	}
 }
 
-
 // Handle error
 func check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
+
+
 
 // ImplementedComponent
 type ImplementedComponent = sdk_ssp.ImplementedComponent
