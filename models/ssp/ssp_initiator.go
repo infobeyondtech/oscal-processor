@@ -4,9 +4,9 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
-
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
 	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
@@ -65,6 +65,29 @@ func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
 	}
 }
 
+// initiate a ssp instance for the given file id
+// todo: test this function
+func LoadFromFileById(ssp *sdk_ssp.SystemSecurityPlan, fileId string){
+	parent := context.DownloadDir
+	targetFile := parent + "/" + fileId
+	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
+
+	dat, e := ioutil.ReadFile(xmlFile)
+	if e != nil {
+		fmt.Printf("error: %v", e)
+		return
+	}
+
+	// unmarshal into data structure
+	marshalError := xml.Unmarshal([]byte(dat), &ssp)
+	if marshalError != nil {
+		fmt.Printf("error: %v", marshalError)
+		return
+	}
+}
+
+// marshal a ssp into a xml file, returns the xml path
 func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 	parent := context.DownloadDir
 	if(ssp.Id == ""){
@@ -74,6 +97,12 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 	targetFile = context.ExpandPath(targetFile)
 	xmlFile := targetFile + ".xml"
 
+	// set modification date
+	dt := time.Now()
+	GuardMetaData(ssp)
+	ssp.Metadata.LastModified = validation_root.LastModified(dt.String())
+
+	// marshal to xml
 	out, e := xml.MarshalIndent(ssp, "  ", "    ")
 	check(e)
 	

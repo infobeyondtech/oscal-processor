@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
     //"encoding/json"
 
 	"github.com/infobeyondtech/oscal-processor/context"
@@ -13,6 +14,8 @@ import (
 	"github.com/infobeyondtech/oscal-processor/models/profile_navigator"
 	"github.com/infobeyondtech/oscal-processor/models/control"
 	"github.com/infobeyondtech/oscal-processor/models/param_value"
+	sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
+	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
 )
 
 func main() {
@@ -78,7 +81,7 @@ func main() {
 
 	})
 	// Get Profile Navigator
-	r.POST("/profile/navigator/:uuid", func(c *gin.Context) {
+	r.GET("/profile/navigator/:uuid", func(c *gin.Context) {
 
 		// Load the profile
 		iid := c.Param("uuid")
@@ -96,13 +99,13 @@ func main() {
 
 	})
 	// Get Control
-	r.POST("/control/:controlid", func(c *gin.Context) {
+	r.GET("/control/:controlid", func(c *gin.Context) {
 		id := c.Param("controlid")
         ctrl := control.GetControl(id)
         c.JSON(http.StatusOK, ctrl)
 	})
 	// Get ParamValue
-    r.POST("/getparam/:uuid/:paramid", func(c *gin.Context) {
+    r.GET("/getparam/:uuid/:paramid", func(c *gin.Context) {
 		uuid := c.Param("uuid")
 		paramid := c.Param("paramid")
         pv := param_value.GetParamValue(uuid, paramid)
@@ -141,29 +144,6 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	})
-	// Modify Metadata
-	//r.POST("/profile/set-title", func(c *gin.Context) {
-	//	var json request_models.SetTitleVersionRequest
-	//	if err := c.ShouldBindJSON(&json); err != nil {
-	//		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	//		return
-	//	}
-
-	//	// load from file
-	//	iid := json.UUID
-	//	dir := context.DownloadDir
-	//	inputSrc := dir + "/" + iid
-	//	inputSrc = context.ExpandPath(inputSrc)
-	//	p := &profile.Profile{}
-	//	profile.LoadFromFile(p, inputSrc)
-
-	//	// Set title and version
-	//	er := profile.SetTitleVersion(p, json.Version, json.OscalVersion, json.Title)
-	//	if er != nil {
-	//		c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
-	//		return
-	//	}
-	//})
 	r.POST("/profile/add-address", func(c *gin.Context) {
 		var json request_models.AddAddressRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
@@ -185,6 +165,13 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
 			return
 		}
+
+		// give it a new uuid
+		p.Id = uuid.New().String()
+		profile.WriteToFile(p)
+
+		// return file id
+		c.JSON(http.StatusOK, p.Id)
 	})
 	r.POST("/profile/add-role-party", func(c *gin.Context) {
 		var json request_models.AddRolePartyRequest
@@ -207,6 +194,95 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": er.Error()})
 			return
 		}
+
+		// give it a new uuid
+		p.Id = uuid.New().String()
+		profile.WriteToFile(p)
+
+		// return file id
+		c.JSON(http.StatusOK, p.Id)
+	})
+	r.POST("/ssp/create", func(c *gin.Context){
+		var json request_models.SetTitleVersionRequest
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		ssp := &sdk_ssp.SystemSecurityPlan{}
+		ssp.Id = uuid.New().String()
+		
+		version := json.Version
+		oscal_version := "1.0.0-m1"	// do not let user specify oscal version at this moment
+		title := json.Title
+		request := request_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version}
+		
+		// operation
+		sspEngine.SetTitleVersion(ssp, request)
+		sspEngine.WriteToFile(ssp)
+
+		// return file id
+		c.JSON(http.StatusOK, ssp.Id)
+	})
+	r.POST("/ssp/set-characteristic", func(c *gin.Context){
+		var json request_models.AddSystemCharacteristicReuqest
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// load from file, give a new file id
+		fileId := json.FileID
+		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		sspEngine.LoadFromFileById(ssp, fileId)
+		ssp.Id = uuid.New().String()
+		
+		// operation
+		sspEngine.SetSystemCharacteristic(ssp, json)
+		sspEngine.WriteToFile(ssp)
+
+		// return file id
+		c.JSON(http.StatusOK, ssp.Id)
+	})
+	r.POST("/ssp/addInventoryItem", func(c *gin.Context){
+		var json request_models.InsertInventoryItemRequest
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// load from file, give a new file id
+		fileId := json.FileID
+		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		sspEngine.LoadFromFileById(ssp, fileId)
+		ssp.Id = uuid.New().String()
+
+		// operation
+		sspEngine.AddInventoryItem(ssp, json)
+		sspEngine.WriteToFile(ssp)
+
+		// return file id
+		c.JSON(http.StatusOK, ssp.Id)
+	})
+	r.POST("/ssp/addImplementedRequirement", func(c *gin.Context){
+		var json request_models.InsertImplementedRequirementRequest
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// load from file, give a new file id
+		fileId := json.FileID
+		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		sspEngine.LoadFromFileById(ssp, fileId)
+		ssp.Id = uuid.New().String()
+
+		// operation
+		sspEngine.AddImplementedRequirement(ssp, json)
+		sspEngine.WriteToFile(ssp)
+
+		// return file id
+		c.JSON(http.StatusOK, ssp.Id)
 	})
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
     r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")

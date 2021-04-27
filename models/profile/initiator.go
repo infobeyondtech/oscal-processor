@@ -85,7 +85,7 @@ func LoadFromFile(profile *sdk_profile.Profile, path string) {
 	}
 }
 
-func WriteToFile(p *sdk_profile.Profile){
+func WriteToFile(p *sdk_profile.Profile) string{
 	parent := context.DownloadDir
 	targetFile := parent + "/" + p.Id
 	targetFile = context.ExpandPath(targetFile)
@@ -93,9 +93,16 @@ func WriteToFile(p *sdk_profile.Profile){
 
 	out, e := xml.MarshalIndent(p, "  ", "    ")
 	check(e)
+
+	// set modification date
+	dt := time.Now()
+	guardMetadata(p)
+	p.Metadata.LastModified = validation_root.LastModified(dt.String())
 	
 	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
 	check(ioErr)
+
+	return xmlFile
 }
 
 func SetID(profile *sdk_profile.Profile, id string) {
