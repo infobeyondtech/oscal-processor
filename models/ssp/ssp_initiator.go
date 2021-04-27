@@ -193,6 +193,7 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 
 // private func to add a component in system-implementation, check duplicates
 func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
+	GuardSystemImplementation(ssp)
 
 	// checkt existing components
 	for _, component := range ssp.SystemImplementation.Components{
@@ -234,13 +235,13 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsib
 	// insert the responsible role
 	sdk_component.ResponsibleRoles = responsibleRoles
 
-	// insert into ssp component collection
-	GuardSystemImplementation(ssp)
+	// insert into ssp component collection	
 	ssp.SystemImplementation.Components = append(ssp.SystemImplementation.Components, *sdk_component)
 }
 
 // private func to add a user in system-implementation, check duplicates
 func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
+	GuardSystemImplementation(ssp)
 
 	// no duplicate users
 	for _, user := range ssp.SystemImplementation.Users{
@@ -259,12 +260,12 @@ func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
 	sdk_user.Annotations = []sdk_ssp.Annotation{ *annotation }
 
 	// insert into ssp header
-	GuardSystemImplementation(ssp)
 	ssp.SystemImplementation.Users = append(ssp.SystemImplementation.Users, *sdk_user)
 }
 
 // private func to add a party in meta data, check duplicates
 func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
+	GuardMetaData(ssp)
 
 	// no duplicate parties
 	for _, party := range ssp.Metadata.Parties{
@@ -286,7 +287,6 @@ func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
 	sdk_party.Properties = append(sdk_party.Properties, *typeProperty)
 
 	// insert into ssp header
-	GuardMetaData(ssp)
 	ssp.Metadata.Parties = append(ssp.Metadata.Parties, *sdk_party)
 } 
 
