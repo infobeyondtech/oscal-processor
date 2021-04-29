@@ -35,6 +35,11 @@ type AddRolePartyRequest struct {
 	Email   string `json:"email" binding:"required"`
 }
 
+type AddControlRequest struct{
+	UUID    string `json:"uuid" binding:"required"`
+	ControlIDs []string `json:"controlIDs" binding:"required"`
+}
+
 // below are requests related to ssp
 type AddSystemCharacteristicReuqest struct{
 	FileID string `json:"fileID" binding:"required"`

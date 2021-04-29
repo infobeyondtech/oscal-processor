@@ -202,6 +202,31 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, p.Id)
 	})
+	r.POST("/profile/add-control", func(c *gin.Context){
+		var json request_models.AddControlRequest
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// load from file
+		iid := json.UUID
+		dir := context.DownloadDir
+		inputSrc := dir + "/" + iid
+		inputSrc = context.ExpandPath(inputSrc)
+		p := &profile.Profile{}
+		profile.LoadFromFile(p, inputSrc)
+
+		// add controls
+		profile.AddControls(p, json.ControlIDs, "#catalog")
+
+		// give it a new uuid
+		p.Id = uuid.New().String()
+		profile.WriteToFile(p)
+
+		// return file id
+		c.JSON(http.StatusOK, p.Id)
+	})
 	r.POST("/ssp/create", func(c *gin.Context){
 		var json request_models.SetTitleVersionRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
@@ -284,6 +309,9 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
+
+	// todo: add controls to a profile
+
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
     r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

@@ -214,7 +214,7 @@ func TestIntegration(t *testing.T){
 	ssp := &sdk_ssp.SystemSecurityPlan{}
 	title := "Enterprise Logging and Auditing System Security Plan"
 	version := "1.0"
-	oscal_version := "1.0.0-m1"
+	oscal_version := "1.0.0-milestone1"
 	request := request_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version}
 	SetTitleVersion(ssp, request)
 
