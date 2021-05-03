@@ -91,3 +91,8 @@ type RolePartyMap struct {
 	UserUUID string `json:"UserUUID" binding:"required"`
 	PartyUUIDs []string `json:"PartyUUIDs" binding:"required"`
 }
+
+type RemoveElementRequest struct{
+	FileID string `json:"fileID" binding:"required"`
+	ElementID string `json:"elementID" binding:"required"`
+}

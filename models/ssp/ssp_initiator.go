@@ -66,7 +66,6 @@ func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
 }
 
 // initiate a ssp instance for the given file id
-// todo: test this function
 func LoadFromFileById(ssp *sdk_ssp.SystemSecurityPlan, fileId string){
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fileId
@@ -218,8 +217,6 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement requ
 	ssp.ControlImplementation.ImplementedRequirements = append(ssp.ControlImplementation.ImplementedRequirements, *sdk_requirement)
 }
 
-
-
 // private func to add a component in system-implementation, check duplicates
 func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
 	GuardSystemImplementation(ssp)
@@ -357,6 +354,72 @@ func check(e error) {
 	}
 }
 
+// remove an implemented requirement
+// todo: test this method
+func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId string){
+	// check if element container in the xml exist
+	if(ssp.ControlImplementation==nil){
+		return
+	}
+
+	// find the index of the element
+	index := -1
+	for i:=0;i<len(ssp.ControlImplementation.ImplementedRequirements);i++{
+		if(ssp.ControlImplementation.ImplementedRequirements[i].Id == reqId){
+			index = i
+			break
+		}
+	}
+	if(index == -1){
+		return	// didn't find the element
+	}
+
+	// handle the case where the target element is the only element left
+	if(index==0 || len(ssp.ControlImplementation.ImplementedRequirements)==1){
+		ssp.ControlImplementation = nil
+		return
+	}else{
+		// remove that slice at index
+		ssp.ControlImplementation.ImplementedRequirements[index] = ssp.ControlImplementation.ImplementedRequirements[len(ssp.ControlImplementation.ImplementedRequirements)-1]
+		ssp.ControlImplementation.ImplementedRequirements = ssp.ControlImplementation.ImplementedRequirements[:len(ssp.ControlImplementation.ImplementedRequirements)-1]
+		return
+	}
+}
+
+// remove an inventory item 
+// todo: test this method
+func RemoveInventoryItemAt(ssp *sdk_ssp.SystemSecurityPlan, itemId string){
+	// check if element container in the xml exist
+	if(ssp.SystemImplementation==nil){
+		return
+	}
+	if(ssp.SystemImplementation.SystemInventory==nil){
+		return
+	}
+
+	// find the index of the element
+	index := -1
+	for i:=0;i<len(ssp.SystemImplementation.SystemInventory.InventoryItems);i++{
+		if(ssp.SystemImplementation.SystemInventory.InventoryItems[i].Id == itemId){
+			index = i
+			break
+		}
+	}
+	if(index == -1){
+		return // didn't find the element
+	}
+
+	// handle the case where the target element is the only element left
+	if(index==0 || len(ssp.SystemImplementation.SystemInventory.InventoryItems)==1){
+		ssp.SystemImplementation.SystemInventory = nil
+		return
+	}else{
+		// remove that slice at index
+		ssp.SystemImplementation.SystemInventory.InventoryItems[index] = ssp.SystemImplementation.SystemInventory.InventoryItems[len(ssp.SystemImplementation.SystemInventory.InventoryItems)-1]
+		ssp.SystemImplementation.SystemInventory.InventoryItems = ssp.SystemImplementation.SystemInventory.InventoryItems[:len(ssp.SystemImplementation.SystemInventory.InventoryItems)-1]
+		return
+	}
+}
 
 
 // ImplementedComponent
