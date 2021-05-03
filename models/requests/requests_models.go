@@ -35,8 +35,14 @@ type AddRolePartyRequest struct {
 	Email   string `json:"email" binding:"required"`
 }
 
+type AddControlRequest struct{
+	UUID    string `json:"uuid" binding:"required"`
+	ControlIDs []string `json:"controlIDs" binding:"required"`
+}
+
 // below are requests related to ssp
 type AddSystemCharacteristicReuqest struct{
+	FileID string `json:"fileID" binding:"required"`
 	UUID string `json:"uuid" binding:"required"`
 	SystemName string `json:"systemName" binding:"required"`
 	Description string `json:"description" binding:"required"`
@@ -51,12 +57,14 @@ type AddSystemCharacteristicReuqest struct{
 }
 
 type InsertInventoryItemRequest struct {
+	FileID string `json:"fileID" binding:"required"`
 	InventoryItemID string `json:"inventoryItemID" binding:"required"`
 	ImplementComponents []string `json:"implementComponents" binding:"required"`
 	ResponsibleParties []RolePartyMap `json:"responsibleParties" binding:"required"`
 }
 
 type InsertImplementedRequirementRequest struct {
+	FileID string `json:"fileID" binding:"required"`
 	UUID         string `json:"uuid" binding:"required"`
 	ControlID string `json:"controlID" binding:"required"`
 	Statements []Statement `json:"statements" binding:"required"`
@@ -82,4 +90,9 @@ type Statement struct {
 type RolePartyMap struct {
 	UserUUID string `json:"UserUUID" binding:"required"`
 	PartyUUIDs []string `json:"PartyUUIDs" binding:"required"`
+}
+
+type RemoveElementRequest struct{
+	FileID string `json:"fileID" binding:"required"`
+	ElementID string `json:"elementID" binding:"required"`
 }
