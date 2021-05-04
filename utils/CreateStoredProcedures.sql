@@ -100,7 +100,6 @@ DELIMITER $$
 CREATE PROCEDURE GetControlTree (
 	IN  controlid VARCHAR(20),
     INOUT result TEXT
-   	#INOUT result VARCHAR(65535)
 )
 BEGIN
 	DECLARE numOfChildren INT;
@@ -146,8 +145,93 @@ BEGIN
 END$$
 DELIMITER ;
 
-#call GetControlTree('ac-2', @result);
-call GetPartTree('ac', 'ac-2_smt', @result);
+DROP PROCEDURE IF EXISTS GetEnhacmentParams;
+DELIMITER $$
+CREATE PROCEDURE GetEnhacmentParams (
+	IN  enhid VARCHAR(20),
+   	INOUT result VARCHAR(2000)
+)
+BEGIN
+	DECLARE finished INTEGER DEFAULT 0;
+    DECLARE currParamId VARCHAR(20);
+    DECLARE firstParam BOOL DEFAULT TRUE;
+    DECLARE currLabel VARCHAR(100);
+    DECLARE currEnhancementParam
+		CURSOR FOR 
+			SELECT enhancements_params.paramid
+            FROM enhancements_params
+            WHERE enhancements_params.enhid = enhid;
+	
+     DECLARE CONTINUE HANDLER 
+        FOR NOT FOUND SET finished = 1;
+        
+	SET result = '"parameters": [';    
+    OPEN currEnhancementParam;
+	getEnhancementParam: LOOP
+		FETCH currEnhancementParam INTO currParamId;
+		IF finished = 1 THEN 
+			LEAVE getEnhancementParam;
+		END IF;
+        IF !firstParam THEN
+			SET result = CONCAT(result, ', ');
+        END IF;
+        SET firstParam = FALSE;
+		SELECT label from params where paramid = currParamId into currLabel;
+        SET result = CONCAT(result, '{"id": "', currParamId, '", "label": "', currLabel, '"}');
+	END LOOP getEnhancementParam;
+    SET result = CONCAT(result, '], ');
+END$$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS GetEnhancementTree;
+DELIMITER $$
+CREATE PROCEDURE GetEnhancementTree (
+	IN  enhid VARCHAR(20),
+    INOUT result TEXT
+)
+BEGIN
+	DECLARE numOfChildren INT;
+    DECLARE finished INTEGER DEFAULT 0;
+    DECLARE currPartId VARCHAR(20);
+    DECLARE partTree VARCHAR(20000) DEFAULT "";
+    DECLARE firstRun BOOL DEFAULT TRUE;
+    DECLARE paramsString VARCHAR(2000);
+    
+   	DECLARE currEnhancementChild
+		CURSOR FOR 
+			SELECT enhancements_parts.partid
+            FROM enhancements_parts
+            WHERE enhancements_parts.enhid = enhid;         
+	DECLARE CONTINUE HANDLER 
+        FOR NOT FOUND SET finished = 1;	
+	
+    # Set the enhancement's id and parameter value in the 
+    # resulting JSON object and open it's parts array
+    SET result = CONCAT('{ "id": "', enhid, '", ');    
+    CALL GetEnhacmentParams(enhid, paramsString);
+    SET result = CONCAT(result, paramsString);
+    SET result = CONCAT(result, '"parts": [');
+    
+	OPEN currEnhancementChild;
+	getEnhancementChild: LOOP
+		FETCH currEnhancementChild INTO currPartId;
+		IF finished = 1 THEN 
+			LEAVE getEnhancementChild;
+		END IF;
+        IF !firstRun THEN
+			SET result = CONCAT(result, ", ");
+		END IF;
+        SET firstRun = FALSE;
+		SET partTree = "";
+		CALL GetPartTree(enhid, currPartId, partTree);
+		SET result = CONCAT(result, partTree);		         
+	END LOOP getEnhancementChild;
+	CLOSE currEnhancementChild;
+    SET result = CONCAT(result, "]}");
+    SELECT result;
+END$$
+DELIMITER ;
+call GetEnhancementTree('ac-2.1', @result);
 select @result;
 
 

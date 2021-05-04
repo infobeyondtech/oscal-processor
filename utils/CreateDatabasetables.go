@@ -4,13 +4,14 @@ import (
     "os"
 	"database/sql"
     //"encoding/xml"
-    //"encoding/json"
+    "encoding/json"
     "fmt"
-    //"io/ioutil"
-    "github.com/docker/oscalkit/types/oscal/catalog"
-    //"github.com/docker/oscalkit/types/oscal"
+    "io/ioutil"
+    //"github.com/docker/oscalkit/types/oscal/catalog"
+   catalog "github.com/docker/oscalkit/types/oscal/catalog"
 	_ "github.com/go-sql-driver/mysql"
     "github.com/alediaferia/stackgo"
+    //"io/ioutil"
 )
 
 type Param struct {
@@ -42,48 +43,95 @@ type MyControl struct {
 func GetAllControls(c catalog.Catalog) []catalog.Control {
 
     result := make([]catalog.Control, 0)
-    visited := make(map[string]bool)
-    control_stack := stackgo.NewStack()
+    //visited := make(map[string]bool)
+    //control_stack := stackgo.NewStack()
 
     // Add 0-depth controls from catalog to stack
     for _, group := range c.Groups {
         for _, ctrl := range group.Controls {
             // Skipping controls without an Id
             if ctrl.Id != "" {
-                control_stack.Push(ctrl)
+                //control_stack.Push(ctrl)
+                result = append(result, ctrl)
             }
         }
     }
 
-    for control_stack.Size() > 0 {
-        curr_control := control_stack.Pop().(catalog.Control)
-        _, isVisited := visited[curr_control.Id]
-        if !isVisited {
-            visited[curr_control.Id] = true
-            result = append(result, curr_control)
-            for _, child_control := range curr_control.Controls {
-                // Skipping controls without an Id
-                if child_control.Id != "" {
-                    _, isVisitedChild := visited[child_control.Id]
-                    if !isVisitedChild {
-                        control_stack.Push(child_control)
-                    } else {
-                        fmt.Println("GetAllControls Warning: Trying to add already visited child_control: " + child_control.Id)
-                    }
-                }
-            }
-        } else {
-            fmt.Println("GetAllControls Warning: Trying to add already visited control: " + curr_control.Id)
-        }
-    }
+    //for control_stack.Size() > 0 {
+    //    curr_control := control_stack.Pop().(catalog.Control)
+    //    _, isVisited := visited[curr_control.Id]
+    //    if !isVisited {
+    //        visited[curr_control.Id] = true
+    //        result = append(result, curr_control)
+    //        for _, child_control := range curr_control.Controls {
+    //            // Skipping controls without an Id
+    //            if child_control.Id != "" {
+    //                _, isVisitedChild := visited[child_control.Id]
+    //                if !isVisitedChild {
+    //                    control_stack.Push(child_control)
+    //                } else {
+    //                    fmt.Println("GetAllControls Warning: Trying to add already visited child_control: " + child_control.Id)
+    //                }
+    //            }
+    //        }
+    //    } else {
+    //        fmt.Println("GetAllControls Warning: Trying to add already visited control: " + curr_control.Id)
+    //    }
+    //}
 
     return result
 
 }
 
+
+func GetAllEnhancements(c catalog.Catalog) []catalog.Control {
+
+    result := make([]catalog.Control, 0)
+    for _, curr_ctrl := range GetAllControls(c) {
+        for _, child_ctrl := range curr_ctrl.Controls {
+            result = append(result, child_ctrl)
+        }
+
+    }
+    return result
+}
+
+
+func CreateControlstoEnhancementsTable(db *sql.DB, c catalog.Catalog) {
+
+    _,err := db.Exec("CREATE TABLE IF NOT EXISTS controls_enhancements(controlid varchar(20), enhid varchar(20))")
+    if err != nil {
+        fmt.Println(err.Error())
+    } else {
+        fmt.Println("DB tabled created successfully..")
+    }
+
+    //visited := make(map[string]bool)
+
+    for _, curr_ctrl := range GetAllControls(c) {
+        for _, child_control := range curr_ctrl.Controls {
+            if child_control.Id != "" {
+                query := `INSERT INTO controls_enhancements(controlid, enhid) Values("`
+                query += curr_ctrl.Id
+                query += `", "`
+                query += child_control.Id
+                query += `")`
+                _,err = db.Exec(query)
+                if err != nil {
+                    fmt.Println(err.Error())
+                    fmt.Println("Caused by: " + query)
+                    os.Exit(0)
+                }
+            }
+        }
+
+    }
+}
+
+
 func CreatePartsTable(db *sql.DB, c catalog.Catalog) {
 
-    _,err := db.Exec("CREATE TABLE IF NOT EXISTS parts(partid varchar(20), name varchar(20), PRIMARY KEY(partid))")
+    _,err := db.Exec("CREATE TABLE IF NOT EXISTS parts(partid varchar(20), name varchar(20), prose TEXT, PRIMARY KEY(partid))")
     if err != nil {
         fmt.Println(err.Error())
     } else {
@@ -105,10 +153,16 @@ func CreatePartsTable(db *sql.DB, c catalog.Catalog) {
             _, isVisited := visited[curr_part.Id]
             if !isVisited {
                 visited[curr_part.Id] = true
-                query := `INSERT INTO parts(partid, name) Values("`
+                query := `INSERT INTO parts(partid, name, prose) Values("`
                 query += curr_part.Id
                 query += `", "`
                 query += curr_part.Name
+                query += `", "`
+                if curr_part.Prose == nil {
+                    query += ""
+                } else {
+                    query += curr_part.Prose.Raw
+                }
                 query += `")`
                 _,err = db.Exec(query)
                 if err != nil {
@@ -188,6 +242,65 @@ func CreateControlsToPartsTable(db *sql.DB, c catalog.Catalog) {
         }
     }
 }
+
+func CreateEnhancementsToPartsTable(db *sql.DB, c catalog.Catalog) {
+    _,err := db.Exec("CREATE TABLE IF NOT EXISTS `enhancements_parts`(enhid varchar(20), partid varchar(20))")
+    if err != nil {
+        fmt.Println(err.Error())
+    } else {
+        fmt.Println("DB tabled created successfully..")
+    }
+
+    // For all Enhancements
+    for _, ctrl := range GetAllEnhancements(c) {
+        // For all parts that are directly children of ctrl
+        for _, part := range ctrl.Parts {
+            // Skipping Parts without Ids
+            if part.Id != "" {
+                query := "INSERT INTO `enhancements_parts`(enhid, partid) Values(\""
+                query += ctrl.Id
+                query += `", "`
+                query += part.Id
+                query += `")`
+                _,err = db.Exec(query)
+                if err != nil {
+                    fmt.Println(err.Error())
+                    fmt.Println("Caused by: " + query)
+                    os.Exit(0)
+                }
+            }
+        }
+    }
+}
+
+
+func CreateEnhancementsToParamsTable(db *sql.DB, c catalog.Catalog) {
+
+    _,err := db.Exec("CREATE TABLE IF NOT EXISTS `enhancements_params`(enhid varchar(20), paramid varchar(20), PRIMARY KEY(paramid))")
+    if err != nil {
+        fmt.Println(err.Error())
+    } else {
+        fmt.Println("DB tabled created successfully..")
+    }
+
+    for _, ctrl := range GetAllEnhancements(c) {
+        for _, param := range ctrl.Parameters {
+            query := "INSERT INTO `enhancements_params`(enhid, paramid) Values(\""
+            query += ctrl.Id
+            query += `", "`
+            query += param.Id
+            query += `")`
+            _,err = db.Exec(query)
+            if err != nil {
+                fmt.Println(err.Error())
+                fmt.Println("Caused by: " + query)
+                os.Exit(0)
+            }
+        }
+    }
+}
+
+
 
 func CreateControlsToParamsTable(db *sql.DB, c catalog.Catalog) {
 
@@ -333,9 +446,9 @@ func main() {
 
     //toLoad := "NIST_SP-800-53_rev4_catalog.xml"
     //toLoad := "ac-1-control.json";
-    //toLoad := "NIST_SP-800-53_rev4_catalog.json"
+    toLoad := "NIST_SP-800-53_rev4_catalog.json"
 
-    db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube")
+    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube")
     if err != nil {
         panic(err.Error())
     }
@@ -347,7 +460,7 @@ func main() {
         panic(err.Error())
     }
 
-    CreateParamsToValuesTable(db)
+    //CreateParamsToValuesTable(db)
 
     //var result string;
     //query, err := db.Query(`call GetControlTree('ac-2', @result)`)
@@ -363,22 +476,27 @@ func main() {
     //query.Scan(&result);
     //fmt.Println(result);
 
-    //data, e := ioutil.ReadFile(toLoad)
-    //if e != nil {
-    // fmt.Printf("error 1: %v\n", e)
-    // return
-    //}
+    data, e := ioutil.ReadFile(toLoad)
+    if e != nil {
+     fmt.Printf("error 1: %v\n", e)
+     return
+    }
 
-    //data:= `{ "id": "ac-1", "parameters": [ { "id": "ac-1_prm_1", "label": "organization-defined personnel or roles" }, { "id": "ac-1_prm_2", "label": "organization-defined frequency" }, { "id": "ac-1_prm_3", "label": "organization-defined frequency" } ], "parts": [ { "id": "ac-1_smt", "name": "statement", "prose": "The organization", "parts": [ { "id": "ac-1_smt.a", "name": "item", "prose": "Develops, documents, and disseminates to {{ ac-1_prm_1 }}", "parts": [ { "id": "ac-1_smt.a.1", "name": "item", "prose": "An access control policy that addresses purpose, scope, roles, responsibilities, management commitment, coordination among organizational entities, and compliance; an", "parts": [] }, { "id": "ac-1_smt.a.2", "name": "item", "prose": "Procedures to facilitate the implementation of the access control policy and associated access controls; an", "parts": [] } ] }, { "id": "ac-1_smt.b", "name": "item", "prose": "Reviews and updates the current", "parts": [ { "id": "ac-1_smt.b.1", "name": "item", "prose": "Access control policy {{ ac-1_prm_2 }}; an", "parts": [] }, { "id": "ac-1_smt.b.2", "name": "item", "prose": "Access control procedures {{ ac-1_prm_3 }}", "parts": [] } ] } ] }, { "id": "ac-1_gdn", "name": "guidance", "prose": "This control addresses the establishment of policy and procedures for the effective implementation of selected security controls and control enhancements in the AC family. Policy and procedures reflect applicable federal laws, Executive Orders, directives, regulations, policies, standards, and guidance. Security program policies and procedures at the organization level may make the need for system-specific policies and procedures unnecessary. The policy can be included as part of the general information security policy for organizations or conversely, can be represented by multiple policies reflecting the complex nature of certain organizations. The procedures can be established for the security program in general and for particular information systems, if needed. The organizational risk management strategy is a key factor in establishing policy and procedures", "parts": [] }, { "id": "ac-1_obj", "name": "objective", "prose": "Determine if the organization", "parts": [ { "id": "ac-1.a_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.a.1_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.a.1_obj.1", "name": "objective", "prose": "develops and documents an access control policy that addresses", "parts": [ { "id": "ac-1.a.1_obj.1.a", "name": "objective", "prose": "purpose", "parts": [] }, { "id": "ac-1.a.1_obj.1.b", "name": "objective", "prose": "scope", "parts": [] }, { "id": "ac-1.a.1_obj.1.c", "name": "objective", "prose": "roles", "parts": [] }, { "id": "ac-1.a.1_obj.1.d", "name": "objective", "prose": "responsibilities", "parts": [] }, { "id": "ac-1.a.1_obj.1.e", "name": "objective", "prose": "management commitment", "parts": [] }, { "id": "ac-1.a.1_obj.1.f", "name": "objective", "prose": "coordination among organizational entities", "parts": [] }, { "id": "ac-1.a.1_obj.1.g", "name": "objective", "prose": "compliance", "parts": [] } ] }, { "id": "ac-1.a.1_obj.2", "name": "objective", "prose": "defines personnel or roles to whom the access control policy are to be disseminated", "parts": [] }, { "id": "ac-1.a.1_obj.3", "name": "objective", "prose": "disseminates the access control policy to organization-defined personnel or roles", "parts": [] } ] }, { "id": "ac-1.a.2_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.a.2_obj.1", "name": "objective", "prose": "develops and documents procedures to facilitate the implementation of the access control policy and associated access control controls", "parts": [] }, { "id": "ac-1.a.2_obj.2", "name": "objective", "prose": "defines personnel or roles to whom the procedures are to be disseminated", "parts": [] }, { "id": "ac-1.a.2_obj.3", "name": "objective", "prose": "disseminates the procedures to organization-defined personnel or roles", "parts": [] } ] } ] }, { "id": "ac-1.b_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.b.1_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.b.1_obj.1", "name": "objective", "prose": "defines the frequency to review and update the current access control policy", "parts": [] }, { "id": "ac-1.b.1_obj.2", "name": "objective", "prose": "reviews and updates the current access control policy with the organization-defined frequency", "parts": [] } ] }, { "id": "ac-1.b.2_obj", "name": "objective", "prose": "", "parts": [ { "id": "ac-1.b.2_obj.1", "name": "objective", "prose": "defines the frequency to review and update the current access control procedures; an", "parts": [] }, { "id": "ac-1.b.2_obj.2", "name": "objective", "prose": "reviews and updates the current access control procedures with the organization-defined frequency", "parts": [] } ] } ] } ] } ] }`
-    ////data := `{"id": "ac-1", "class": "test"}`
-    ////data := `{ "id": "ac-1", "class": "SP800-53", "title": "Access Control Policy and Procedures", "parameters": [ { "id": "ac-1_prm_1", "label": "organization-defined personnel or roles" }, { "id": "ac-1_prm_2", "label": "organization-defined frequency" }, { "id": "ac-1_prm_3", "label": "organization-defined frequency" } ], "properties": [ { "name": "label", "value": "AC-1" }, { "name": "sort-id", "value": "ac-01" } ], "links": [ { "href": "#ref050", "rel": "reference", "text": "NIST Special Publication 800-12" }, { "href": "#ref044", "rel": "reference", "text": "NIST Special Publication 800-100" } ], "parts": [ { "id": "ac-1_smt", "name": "statement", "prose": "The organization:", "parts": [ { "id": "ac-1_smt.a", "name": "item", "properties": [ { "name": "label", "value": "a." } ], "prose": "Develops, documents, and disseminates to {{ ac-1_prm_1 }}:", "parts": [ { "id": "ac-1_smt.a.1", "name": "item", "properties": [ { "name": "label", "value": "1." } ], "prose": "An access control policy that addresses purpose, scope, roles, responsibilities, management commitment, coordination among organizational entities, and compliance; and" }, { "id": "ac-1_smt.a.2", "name": "item", "properties": [ { "name": "label", "value": "2." } ], "prose": "Procedures to facilitate the implementation of the access control policy and associated access controls; and" } ] }, { "id": "ac-1_smt.b", "name": "item", "properties": [ { "name": "label", "value": "b." } ], "prose": "Reviews and updates the current:", "parts": [ { "id": "ac-1_smt.b.1", "name": "item", "properties": [ { "name": "label", "value": "1." } ], "prose": "Access control policy {{ ac-1_prm_2 }}; and" }, { "id": "ac-1_smt.b.2", "name": "item", "properties": [ { "name": "label", "value": "2." } ], "prose": "Access control procedures {{ ac-1_prm_3 }}." } ] } ] }, { "id": "ac-1_gdn", "name": "guidance", "prose": "This control addresses the establishment of policy and procedures for the effective implementation of selected security controls and control enhancements in the AC family. Policy and procedures reflect applicable federal laws, Executive Orders, directives, regulations, policies, standards, and guidance. Security program policies and procedures at the organization level may make the need for system-specific policies and procedures unnecessary. The policy can be included as part of the general information security policy for organizations or conversely, can be represented by multiple policies reflecting the complex nature of certain organizations. The procedures can be established for the security program in general and for particular information systems, if needed. The organizational risk management strategy is a key factor in establishing policy and procedures.", "links": [ { "href": "#pm-9", "rel": "related", "text": "PM-9" } ] }, { "id": "ac-1_obj", "name": "objective", "prose": "Determine if the organization:", "parts": [ { "id": "ac-1.a_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)" } ], "parts": [ { "id": "ac-1.a.1_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)" } ], "parts": [ { "id": "ac-1.a.1_obj.1", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1]" } ], "prose": "develops and documents an access control policy that addresses:", "parts": [ { "id": "ac-1.a.1_obj.1.a", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][a]" } ], "prose": "purpose;" }, { "id": "ac-1.a.1_obj.1.b", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][b]" } ], "prose": "scope;" }, { "id": "ac-1.a.1_obj.1.c", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][c]" } ], "prose": "roles;" }, { "id": "ac-1.a.1_obj.1.d", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][d]" } ], "prose": "responsibilities;" }, { "id": "ac-1.a.1_obj.1.e", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][e]" } ], "prose": "management commitment;" }, { "id": "ac-1.a.1_obj.1.f", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][f]" } ], "prose": "coordination among organizational entities;" }, { "id": "ac-1.a.1_obj.1.g", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[1][g]" } ], "prose": "compliance;" } ] }, { "id": "ac-1.a.1_obj.2", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[2]" } ], "prose": "defines personnel or roles to whom the access control policy are to be disseminated;" }, { "id": "ac-1.a.1_obj.3", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(1)[3]" } ], "prose": "disseminates the access control policy to organization-defined personnel or roles;" } ] }, { "id": "ac-1.a.2_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(2)" } ], "parts": [ { "id": "ac-1.a.2_obj.1", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(2)[1]" } ], "prose": "develops and documents procedures to facilitate the implementation of the access control policy and associated access control controls;" }, { "id": "ac-1.a.2_obj.2", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(2)[2]" } ], "prose": "defines personnel or roles to whom the procedures are to be disseminated;" }, { "id": "ac-1.a.2_obj.3", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(a)(2)[3]" } ], "prose": "disseminates the procedures to organization-defined personnel or roles;" } ] } ] }, { "id": "ac-1.b_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)" } ], "parts": [ { "id": "ac-1.b.1_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(1)" } ], "parts": [ { "id": "ac-1.b.1_obj.1", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(1)[1]" } ], "prose": "defines the frequency to review and update the current access control policy;" }, { "id": "ac-1.b.1_obj.2", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(1)[2]" } ], "prose": "reviews and updates the current access control policy with the organization-defined frequency;" } ] }, { "id": "ac-1.b.2_obj", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(2)" } ], "parts": [ { "id": "ac-1.b.2_obj.1", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(2)[1]" } ], "prose": "defines the frequency to review and update the current access control procedures; and" }, { "id": "ac-1.b.2_obj.2", "name": "objective", "properties": [ { "name": "label", "value": "AC-1(b)(2)[2]" } ], "prose": "reviews and updates the current access control procedures with the organization-defined frequency." } ] } ] } ] }, { "name": "assessment", "properties": [ { "name": "method", "value": "EXAMINE" } ], "parts": [ { "name": "objects", "prose": "Access control policy and procedures\\n\\nother relevant documents or records" } ] }, { "name": "assessment", "properties": [ { "name": "method", "value": "INTERVIEW" } ], "parts": [ { "name": "objects", "prose": "Organizational personnel with access control responsibilities\\n\\norganizational personnel with information security responsibilities" } ] } ] }`
-    //c := MyControl{}
-    //c := catalog.Catalog{}
-    //marshalError := json.Unmarshal([]byte(result), &c)
-    //if marshalError != nil {
-    // fmt.Printf("error 2: %v\n", marshalError)
-    // return
-    //}
+    c := catalog.Catalog{}
+    //var c string
+
+    //var c catalog.Catalog
+    marshalError := json.Unmarshal([]byte(data), &c)
+    if marshalError != nil {
+     fmt.Printf("error 2: %v\n", marshalError)
+     return
+    }
+
+    //fmt.Println(data)
+
+    //fmt.Print(data)
+
+    fmt.Println(c)
 
     //fmt.Print(c);
 
@@ -388,5 +506,9 @@ func main() {
     //CreateControlsToParamsTable(db, c)
     //CreatePartsToPartsTable(db, c)
     //CreatePartsToParagraphsTable(db, c)
+
+    //CreateControlstoEnhancementsTable(db, c)
+    //CreateEnhancementsToPartsTable(db, c)
+    //CreateEnhancementsToParamsTable(db, c)
 
 }

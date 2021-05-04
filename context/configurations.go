@@ -2,7 +2,6 @@ package context
 
 import (
 	"os/user"
-    "database/sql"
 	"path/filepath"
 	"strings"
 )
@@ -19,7 +18,6 @@ const (
 
 var usr, _ = user.Current()
 var dir = usr.HomeDir
-var DB *sql.DB
 
 /*
 ExpandPath resolves the tidle in the given path.
