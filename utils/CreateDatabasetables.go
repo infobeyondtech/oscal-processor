@@ -128,7 +128,7 @@ func CreateControlstoEnhancementsTable(db *sql.DB, c catalog.Catalog) {
     }
 }
 
-
+// Not Correct
 func CreatePartsTable(db *sql.DB, c catalog.Catalog) {
 
     _,err := db.Exec("CREATE TABLE IF NOT EXISTS parts(partid varchar(20), name varchar(20), prose TEXT, PRIMARY KEY(partid))")
