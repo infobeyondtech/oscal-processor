@@ -1,18 +1,105 @@
 package main
 
 import (
-    "os"
 	"database/sql"
-    //"encoding/xml"
-    "encoding/json"
-    "fmt"
-    "io/ioutil"
-    //"github.com/docker/oscalkit/types/oscal/catalog"
-   catalog "github.com/docker/oscalkit/types/oscal/catalog"
+	"encoding/xml"
+	"os"
+	"strconv"
+	"strings"
+
+	"fmt"
+	"github.com/alediaferia/stackgo"
+	"io/ioutil"
+	//"github.com/docker/oscalkit/types/oscal/catalog"
+	catalog "github.com/docker/oscalkit/types/oscal/catalog"
 	_ "github.com/go-sql-driver/mysql"
-    "github.com/alediaferia/stackgo"
-    //"io/ioutil"
+	//"io/ioutil"
 )
+
+type Controls struct {
+	XMLName        xml.Name `xml:"controls"`
+	Text           string   `xml:",chardata"`
+	Xmlns          string   `xml:"xmlns,attr"`
+	Controls       string   `xml:"controls,attr"`
+	Xhtml          string   `xml:"xhtml,attr"`
+	Xsi            string   `xml:"xsi,attr"`
+	PubDate        string   `xml:"pub_date,attr"`
+	SchemaLocation string   `xml:"schemaLocation,attr"`
+	Control        []struct {
+		Text           string   `xml:",chardata"`
+		Family         string   `xml:"family"`
+		Number         string   `xml:"number"`
+		Title          string   `xml:"title"`
+		Priority       string   `xml:"priority"`
+		BaselineImpact []string `xml:"baseline-impact"`
+		Statement      struct {
+			Text        string `xml:",chardata"`
+			Description string `xml:"description"`
+			Statement   []struct {
+				Text        string `xml:",chardata"`
+				Number      string `xml:"number"`
+				Description string `xml:"description"`
+				Statement   []struct {
+					Text        string `xml:",chardata"`
+					Number      string `xml:"number"`
+					Description string `xml:"description"`
+				} `xml:"statement"`
+			} `xml:"statement"`
+		} `xml:"statement"`
+		SupplementalGuidance struct {
+			Text        string   `xml:",chardata"`
+			Description string   `xml:"description"`
+			Related     []string `xml:"related"`
+		} `xml:"supplemental-guidance"`
+		References struct {
+			Text      string `xml:",chardata"`
+			Reference []struct {
+				Text string `xml:",chardata"`
+				Item struct {
+					Text string `xml:",chardata"`
+					Lang string `xml:"lang,attr"`
+					Href string `xml:"href,attr"`
+				} `xml:"item"`
+			} `xml:"reference"`
+		} `xml:"references"`
+		ControlEnhancements struct {
+			Text               string `xml:",chardata"`
+			ControlEnhancement []struct {
+				Text           string   `xml:",chardata"`
+				Number         string   `xml:"number"`
+				Title          string   `xml:"title"`
+				BaselineImpact []string `xml:"baseline-impact"`
+				Statement      struct {
+					Text        string `xml:",chardata"`
+					Description string `xml:"description"`
+					Statement   []struct {
+						Text        string `xml:",chardata"`
+						Number      string `xml:"number"`
+						Description string `xml:"description"`
+						Statement   []struct {
+							Text        string `xml:",chardata"`
+							Number      string `xml:"number"`
+							Description string `xml:"description"`
+						} `xml:"statement"`
+					} `xml:"statement"`
+				} `xml:"statement"`
+				SupplementalGuidance struct {
+					Text        string   `xml:",chardata"`
+					Description string   `xml:"description"`
+					Related     []string `xml:"related"`
+				} `xml:"supplemental-guidance"`
+				Withdrawn struct {
+					Text             string   `xml:",chardata"`
+					IncorporatedInto []string `xml:"incorporated-into"`
+				} `xml:"withdrawn"`
+			} `xml:"control-enhancement"`
+		} `xml:"control-enhancements"`
+		Withdrawn struct {
+			Text             string   `xml:",chardata"`
+			IncorporatedInto []string `xml:"incorporated-into"`
+		} `xml:"withdrawn"`
+	} `xml:"control"`
+}
 
 type Param struct {
     // Unique identifier of the containing object
@@ -432,6 +519,7 @@ func CreatePartsToParagraphsTable(db *sql.DB, c catalog.Catalog) {
     }
 }
 
+
 func CreateParamsToValuesTable(db *sql.DB) {
 
     _,err := db.Exec("CREATE TABLE IF NOT EXISTS `params_values`(fileid varchar(20), paramid varchar(20), value varchar(100))")
@@ -442,13 +530,70 @@ func CreateParamsToValuesTable(db *sql.DB) {
     }
 }
 
+func CreateNist800_53_rev4_enhancements(db *sql.DB) {
+
+    _,err := db.Exec("CREATE TABLE IF NOT EXISTS `nist800_53_rev4_enhancements`(enh_id TEXT, low INT DEFAULT NULL, moderate INT DEFAULT NULL, high INT DEFAULT NULL)")
+    if err != nil {
+        fmt.Println(err.Error())
+    } else {
+        fmt.Println("DB tabled created successfully..")
+    }
+	toLoad := "800-53-rev4-controls.xml"
+	data, e := ioutil.ReadFile(toLoad)
+	if e != nil {
+		fmt.Printf("error 1: %v\n", e)
+		return
+	}
+	controls := Controls{}
+	marshalError := xml.Unmarshal([]byte(data), &controls)
+	if marshalError != nil {
+		fmt.Printf("error 2: %v\n", marshalError)
+		return
+	}
+
+	for _, ctrls := range controls.Control {
+		for _, enh := range ctrls.ControlEnhancements.ControlEnhancement {
+			ctrlId := strings.Split(enh.Number, " ")[0]
+			enhId := strings.ReplaceAll(strings.Split(enh.Number, " ")[1], "(", "")
+			enhId = strings.ReplaceAll(enhId, ")", "")
+			enhId = strings.ToLower(ctrlId + "." + enhId)
+			low, moderate, high := 0, 0, 0
+			for _, impact := range enh.BaselineImpact {
+				if (strings.Compare(impact, "LOW") == 0) {
+					low = 1
+				} else if (strings.Compare(impact, "MODERATE") == 0) {
+					moderate = 1
+				} else if (strings.Compare(impact, "HIGH") == 0) {
+					high = 1
+				}
+			}
+			query := `INSERT INTO nist800_53_rev4_enhancements(enh_id, low, moderate, high) Values("`
+			query += enhId
+			query += `", "`
+			query += strconv.Itoa(low)
+			query += `", "`
+			query += strconv.Itoa(moderate)
+			query += `", "`
+			query += strconv.Itoa(high)
+			query += `")`
+			_,err = db.Exec(query)
+			if err != nil {
+				fmt.Println(err.Error())
+				fmt.Println("Caused by: " + query)
+				os.Exit(0)
+			}
+		}
+	}
+}
+
 func main() {
 
-    //toLoad := "NIST_SP-800-53_rev4_catalog.xml"
+	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
     //toLoad := "ac-1-control.json";
-    toLoad := "NIST_SP-800-53_rev4_catalog.json"
+    //toLoad := "NIST_SP-800-53_rev4_catalog.json"
+	//toLoad := "800-53-rev4-controls.xml"
 
-    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube")
+	db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube")
     if err != nil {
         panic(err.Error())
     }
@@ -459,6 +604,8 @@ func main() {
     if err != nil {
         panic(err.Error())
     }
+
+    CreateNist800_53_rev4_enhancements(db)
 
     //CreateParamsToValuesTable(db)
 
@@ -476,27 +623,40 @@ func main() {
     //query.Scan(&result);
     //fmt.Println(result);
 
-    data, e := ioutil.ReadFile(toLoad)
-    if e != nil {
-     fmt.Printf("error 1: %v\n", e)
-     return
-    }
+    //data, e := ioutil.ReadFile(toLoad)
+    //if e != nil {
+    // fmt.Printf("error 1: %v\n", e)
+    // return
+    //}
+    ////fmt.Println(data)
 
-    c := catalog.Catalog{}
-    //var c string
+    //controls := Controls{}
+	//marshalError := xml.Unmarshal([]byte(data), &controls)
+	//if marshalError != nil {
+	// fmt.Printf("error 2: %v\n", marshalError)
+	// return
+	//}
+	//fmt.Println(controls.Control[1].ControlEnhancements.ControlEnhancement[0].BaselineImpact)
 
-    //var c catalog.Catalog
-    marshalError := json.Unmarshal([]byte(data), &c)
-    if marshalError != nil {
-     fmt.Printf("error 2: %v\n", marshalError)
-     return
-    }
+	//for _, val := range controls.
 
-    //fmt.Println(data)
+	////fmt.Println(data)
 
-    //fmt.Print(data)
+	//c := catalog.Catalog{}
+    ////var c string
 
-    fmt.Println(c)
+    ////var c catalog.Catalog
+    //marshalError := json.Unmarshal([]byte(data), &c)
+    //if marshalError != nil {
+    // fmt.Printf("error 2: %v\n", marshalError)
+    // return
+    //}
+
+    ////fmt.Println(data)
+
+    ////fmt.Print(data)
+
+    //fmt.Println(c)
 
     //fmt.Print(c);
 
