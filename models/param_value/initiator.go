@@ -3,8 +3,9 @@ package param_value
 import (
     //"encoding/json"
     "database/sql"
-    _ "github.com/go-sql-driver/mysql"
     "fmt"
+    _ "github.com/go-sql-driver/mysql"
+    "github.com/infobeyondtech/oscal-processor/context"
 )
 
 type NullableParamValue struct {
@@ -21,17 +22,15 @@ type ParamValue struct {
 
 func SetParamValue(fileid string, paramid string, value string) (ParamValue) {
     // Open the DB
-    db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
-
+    defer db.Close()
     // TODO: Do we need to error check to make sure the
     //       fileid, and paramid are valid?
-
     // TODO: Check to see if value already exisits in DB
     //       Update if so
-
     query := `INSERT INTO params_values(fileid, paramid, value) Values("`
     query += fileid
     query += `", "`
@@ -45,18 +44,20 @@ func SetParamValue(fileid string, paramid string, value string) (ParamValue) {
         panic(err.Error())
     }
     result := ParamValue{fileid, paramid, value}
-    return result;
+    db.Close()
+    return result
 }
 
 func GetParamValue(fileid string, paramid string) (ParamValue) {
     var result ParamValue
     var nullableResult NullableParamValue
     // Open the DB
-    db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
-    query := `SELECT * FROM params_values WHERE fileid = "`
+    defer db.Close()
+    query := `SELECT fileid, paramid, params_values.value FROM params_values WHERE fileid = "`
     query += fileid
     query += `" and paramid = "`
     query += paramid
@@ -70,18 +71,17 @@ func GetParamValue(fileid string, paramid string) (ParamValue) {
     if nullableResult.fileid.Valid {
         result.Fileid = nullableResult.fileid.String
     } else {
-        result.Fileid = "";
+        result.Fileid = ""
     }
     if nullableResult.paramid.Valid {
         result.Paramid = nullableResult.paramid.String
     } else {
-        result.Paramid = "";
+        result.Paramid = ""
     }
     if nullableResult.value.Valid {
         result.Value = nullableResult.value.String
     } else {
-        result.Value = "";
+        result.Value = ""
     }
-
-    return result;
+    return result
 }

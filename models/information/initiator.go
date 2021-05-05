@@ -4,6 +4,7 @@ import (
     //"encoding/json"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
+    "github.com/infobeyondtech/oscal-processor/context"
 )
 
 type NullableComponent struct {
@@ -72,13 +73,14 @@ type User struct {
     UUID string `json:"uuid,omitempty"`
 }
 
-func GetComponent(UUID string) (Component) {
+func GetComponent(UUID string) Component {
     var result Component
     var nullableResult NullableComponent
-    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
+    defer db.Close()
     err = db.QueryRow(`SELECT id, title, uuid, description, state, type, last_modified, version FROM oscal_component WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
     if err != nil {
@@ -87,53 +89,54 @@ func GetComponent(UUID string) (Component) {
     if nullableResult.Id.Valid {
         result.Id = nullableResult.Id.String
     } else {
-        result.Id = "";
+        result.Id = ""
     }
     if nullableResult.Title.Valid {
         result.Title = nullableResult.Title.String
     } else {
-        result.Title = "";
+        result.Title = ""
     }
     if nullableResult.UUID.Valid {
         result.UUID = nullableResult.UUID.String
     } else {
-        result.UUID = "";
+        result.UUID = ""
     }
     if nullableResult.Description.Valid {
         result.Description = nullableResult.Description.String
     } else {
-        result.Description = "";
+        result.Description = ""
     }
     if nullableResult.State.Valid {
         result.State = nullableResult.State.String
     } else {
-        result.State = "";
+        result.State = ""
     }
     if nullableResult.Type.Valid {
         result.Type = nullableResult.Type.String
     } else {
-        result.Type = "";
+        result.Type = ""
     }
     if nullableResult.LastModified.Valid {
         result.LastModified = nullableResult.LastModified.String
     } else {
-        result.LastModified = "";
+        result.LastModified = ""
     }
     if nullableResult.Version.Valid {
         result.Version = nullableResult.Version.String
     } else {
-        result.Version = "";
+        result.Version = ""
     }
-    return result;
+    return result
 }
 
-func GetInventoryItem(UUID string) (InventoryItem) {
+func GetInventoryItem(UUID string) InventoryItem {
     var result InventoryItem
     var nullableResult NullableInventoryItem
-    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
+    defer db.Close()
     err = db.QueryRow(`SELECT id, asset_id, uuid, description FROM oscal_inventory_item WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.AssetId, &nullableResult.UUID, &nullableResult.Description)
     if err != nil {
@@ -142,33 +145,34 @@ func GetInventoryItem(UUID string) (InventoryItem) {
     if nullableResult.Id.Valid {
         result.Id = nullableResult.Id.String
     } else {
-        result.Id = "";
+        result.Id = ""
     }
     if nullableResult.AssetId.Valid {
         result.AssetId = nullableResult.AssetId.String
     } else {
-        result.AssetId = "";
+        result.AssetId = ""
     }
     if nullableResult.UUID.Valid {
         result.UUID = nullableResult.UUID.String
     } else {
-        result.UUID = "";
+        result.UUID = ""
     }
     if nullableResult.Description.Valid {
         result.Description = nullableResult.Description.String
     } else {
-        result.Description = "";
+        result.Description = ""
     }
-    return result;
+    return result
 }
 
-func GetParty(UUID string) (Party) {
+func GetParty(UUID string) Party {
     var result Party
     var nullableResult NullableParty
-    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
+    defer db.Close()
     err = db.QueryRow(`SELECT id, role_id, uuid, type FROM oscal_party WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.RoleId, &nullableResult.UUID, &nullableResult.Type)
     if err != nil {
@@ -177,33 +181,34 @@ func GetParty(UUID string) (Party) {
     if nullableResult.Id.Valid {
         result.Id = nullableResult.Id.String
     } else {
-        result.Id = "";
+        result.Id = ""
     }
     if nullableResult.RoleId.Valid {
         result.RoleId = nullableResult.RoleId.String
     } else {
-        result.RoleId = "";
+        result.RoleId = ""
     }
     if nullableResult.UUID.Valid {
         result.UUID = nullableResult.UUID.String
     } else {
-        result.UUID = "";
+        result.UUID = ""
     }
     if nullableResult.Type.Valid {
         result.Type = nullableResult.Type.String
     } else {
-        result.Type = "";
+        result.Type = ""
     }
-    return result;
+    return result
 }
 
-func GetUser(UUID string) (User) {
+func GetUser(UUID string) User {
     var result User
     var nullableResult NullableUser
-    db, err := sql.Open("mysql", "infobeyond:1234@(192.168.1.124:3306)/cube");
+    db, err := sql.Open("mysql", context.DBSource)
     if err != nil {
         panic(err.Error())
     }
+    defer db.Close()
     err = db.QueryRow(`SELECT id, title, type, role_id, uuid FROM oscal_user WHERE uuid = "` + UUID + `";`).
         Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.Type,  &nullableResult.RoleId, &nullableResult.UUID)
     if err != nil {
@@ -212,35 +217,27 @@ func GetUser(UUID string) (User) {
     if nullableResult.Id.Valid {
         result.Id = nullableResult.Id.String
     } else {
-        result.Id = "";
+        result.Id = ""
     }
     if nullableResult.Title.Valid {
         result.Title = nullableResult.Title.String
     } else {
-        result.Title = "";
+        result.Title = ""
     }
     if nullableResult.Type.Valid {
         result.Type = nullableResult.Type.String
     } else {
-        result.Type = "";
+        result.Type = ""
     }
     if nullableResult.RoleId.Valid {
         result.RoleId = nullableResult.RoleId.String
     } else {
-        result.RoleId = "";
+        result.RoleId = ""
     }
     if nullableResult.UUID.Valid {
         result.UUID = nullableResult.UUID.String
     } else {
-        result.UUID = "";
+        result.UUID = ""
     }
-    return result;
+    return result
 }
-
-//func main() {
-//    fmt.Println(GetComponent("795533ab-9427-4abe-820f-0b571bacfe6d"))
-//    //fmt.Println(GetInventoryItem("c9c32657-a0eb-4cf2-b5c1-20928983063c"))
-//    //fmt.Println(GetParty("3b2a5599-cc37-403f-ae36-5708fa804b27"))
-//    //fmt.Println(GetUser("9824089b-322c-456f-86c4-4111c4200f69"))
-//
-//}

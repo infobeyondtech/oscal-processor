@@ -1,13 +1,11 @@
 package main
 
 import (
-	"net/http"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-
-    //"encoding/json"
-
+	"net/http"
+	//"encoding/json"
 	"github.com/infobeyondtech/oscal-processor/context"
 	"github.com/infobeyondtech/oscal-processor/models/profile"
 	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
@@ -101,8 +99,13 @@ func main() {
 	// Get Control
 	r.GET("/control/:controlid", func(c *gin.Context) {
 		id := c.Param("controlid")
-        ctrl := control.GetControl(id)
+        ctrl := control.GetControl(id, false)
         c.JSON(http.StatusOK, ctrl)
+	})
+	r.POST("/control_enhancement/:enhid", func(c *gin.Context) {
+		id := c.Param("enhid")
+		ctrl := control.GetControl(id, true)
+		c.JSON(http.StatusOK, ctrl)
 	})
 	// Get ParamValue
     r.GET("/getparam/:uuid/:paramid", func(c *gin.Context) {
@@ -113,6 +116,8 @@ func main() {
 	})
 	// Set ParamValue
     r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or 
+        // the profile's implementation?
 		uuid := c.Param("uuid")
 		paramid := c.Param("paramid")
         value := c.Param("value")

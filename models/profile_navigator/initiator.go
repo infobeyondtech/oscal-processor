@@ -1,13 +1,11 @@
 package profile_navigator
 
 import (
-    //"encoding/xml"
-    //"encoding/json"
     "database/sql"
-    _ "github.com/go-sql-driver/mysql"
     "fmt"
-	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
-	"github.com/infobeyondtech/oscal-processor/context"
+    sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
+    _ "github.com/go-sql-driver/mysql"
+    "github.com/infobeyondtech/oscal-processor/context"
 )
 
 type ProfileNavigator struct {
@@ -20,19 +18,21 @@ type Group struct {
 
 func getControlGroupName(control_id string) string {
     var group_name string
-    query := "Select families.description "
-    query += "From controls "
-    query += "INNER JOIN families "
-    query += "ON controls.families_id = families.id "
-    query += "WHERE controls.name = \""
+    db, _ := sql.Open("mysql", context.DBSource)
+    query := `Select families.description `
+    query += `From controls `
+    query += `INNER JOIN families `
+    query += `ON controls.families_id = families.id `
+    query += `WHERE controls.name = '`
     query += control_id
-    query += "\""
-    err := context.DB.QueryRow(query).Scan(&group_name)
+    query += `'`
+    err := db.QueryRow(query).Scan(&group_name)
     if err != nil {
-     fmt.Println(err.Error())
-     fmt.Println(query)
-     fmt.Println()
+     //fmt.Println(err.Error())
+     //fmt.Println(query)
+     //fmt.Println()
     }
+    db.Close()
     return group_name
 }
 
@@ -63,29 +63,11 @@ func getProfileControlIds(p *sdk_profile.Profile) []string {
 }
 
 func CreateProfileNavigator(profile_navigator *ProfileNavigator, profile *sdk_profile.Profile) {
-
-    // Get the database handle
-    var err error
-    context.DB, err = sql.Open("mysql", context.DBSource)
-    if err != nil {
-        panic(err.Error())
-    }
-
-    // Open doesn't open a connection. Validate DSN data:
-    err = context.DB.Ping()
-    if err != nil {
-        panic(err.Error())
-    }
-
-    // Initialize the pn's groups and all of the 
-    // profile's controls to them
     profile_navigator.Groups = make(map[string]*Group)
     ctrl_ids := getProfileControlIds(profile)
     for _, id := range ctrl_ids {
         profile_navigator.addControl(id)
     }
-
-    context.DB.Close()
 }
 
 func (pn ProfileNavigator) Print() {
