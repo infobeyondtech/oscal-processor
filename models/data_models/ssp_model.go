@@ -2,13 +2,17 @@ package data_models
 
 type SystemSecurityPlanModel struct{
 	ImportProfile string `json:"importProfile" binding:"required"`
+	MetaDataModel MetaData `json:"metaDataModel" binding:"required"`
+	SystemCharacteristicModel SystemCharacteristic `json:"SystemCharacteristicModel" binding:"required"`
+	SystemImplementationModel SystemImplementation `json:"systemImplementationModel" binding:"required"`
+	ControlImplementationModel ControlImplementation `json:"controlImplementationModel" binding:"required"`
 }
 
 type SystemCharacteristic struct{
-	UUID string `json:"uuid" binding:"required"`
+	//UUID string `json:"uuid" binding:"required"`
 	SystemName string `json:"systemName" binding:"required"`
 	Description string `json:"description" binding:"required"`
-	DeploymentModel string `json:"deploymentModel" binding:"required"`
+	//DeploymentModel string `json:"deploymentModel" binding:"required"`
 	SecurityLevel string `json:"securityLevel" binding:"required"`
 
 	SystemInformationTitle string `json:"systemInformationTitle" binding:"required"`

@@ -347,6 +347,62 @@ func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan){
 	}
 }
 
+func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurityPlanModel{
+	// load from file
+	ssp := &sdk_ssp.SystemSecurityPlan{}
+	sspModel := SystemSecurityPlanModel{}
+	dat, e := ioutil.ReadFile(path)
+	if e != nil {
+		fmt.Printf("error: %v", e)
+		return sspModel
+	}
+
+	// unmarshal into data structure
+	marshalError := xml.Unmarshal([]byte(dat), &ssp)
+	if marshalError != nil {
+		fmt.Printf("error: %v", marshalError)
+		return sspModel
+	}
+
+	// turn into data model
+	sspModel.ImportProfile = profileName
+	sspModel.MetaDataModel = data_models.MetaData{}
+	sspModel.SystemCharacteristicModel = data_models.SystemCharacteristic{}
+	sspModel.SystemImplementationModel = data_models.SystemImplementation{}
+	sspModel.ControlImplementationModel = data_models.ControlImplementation{}
+
+	// metadata
+	sspModel.MetaDataModel.Version = string(ssp.Metadata.Version)
+	sspModel.MetaDataModel.OscalVersion = string(ssp.Metadata.OscalVersion)
+	sspModel.MetaDataModel.Title = string(ssp.Metadata.Title)
+	sspModel.MetaDataModel.LastModified = string(ssp.Metadata.LastModified)
+	for _, party := range ssp.Metadata.Parties{
+		partyModel := data_models.Party{
+			Uuid: party.Id,	// todo: find type and name property from properties
+		}
+		sspModel.MetaDataModel.Parties = append(sspModel.MetaDataModel.Parties, partyModel)
+	}
+
+	// System Characteristic
+	informationValue := ssp.SystemCharacteristics.SystemInformation.InformationTypes[0]
+	sspModel.SystemCharacteristicModel.SystemName = string(ssp.SystemCharacteristics.SystemName)
+	sspModel.SystemCharacteristicModel.Description = string(ssp.SystemCharacteristics.Description.Raw)
+	sspModel.SystemCharacteristicModel.SecurityLevel = string(ssp.SystemCharacteristics.SecuritySensitivityLevel)
+
+	sspModel.SystemCharacteristicModel.SystemInformationTitle = string(informationValue.Title)
+	sspModel.SystemCharacteristicModel.SystemInformationDescription = string(informationValue.Description.Raw)
+	sspModel.SystemCharacteristicModel.IntegrityImpact = string(informationValue.IntegrityImpact.Base)
+	sspModel.SystemCharacteristicModel.ConfidentialityImpact = string(informationValue.ConfidentialityImpact.Base)
+	sspModel.SystemCharacteristicModel.AvailabilityImpact = string(informationValue.AvailabilityImpact.Base)
+
+	// System Implementation
+	//sspModel.SystemImplementationModel.Users
+	//sspModel.SystemImplementationModel.Components
+	//sspModel.SystemImplementationModel.InventoryItems
+
+	return sspModel
+}
+
 // Handle error
 func check(e error) {
 	if e != nil {
@@ -355,7 +411,6 @@ func check(e error) {
 }
 
 // remove an implemented requirement
-// todo: test this method
 func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId string){
 	// check if element container in the xml exist
 	if(ssp.ControlImplementation==nil){
@@ -387,7 +442,6 @@ func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId strin
 }
 
 // remove an inventory item 
-// todo: test this method
 func RemoveInventoryItemAt(ssp *sdk_ssp.SystemSecurityPlan, itemId string){
 	// check if element container in the xml exist
 	if(ssp.SystemImplementation==nil){
@@ -505,4 +559,7 @@ type Title = validation_root.Title
 
 //
 type Annotation  =validation_root.Annotation
+
+// 
+type SystemSecurityPlanModel = data_models.SystemSecurityPlanModel
 
