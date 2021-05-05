@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
-	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
+	request_models "github.com/infobeyondtech/oscal-processor/models/data_models"
 )
 
 func TestAddUser(t *testing.T){

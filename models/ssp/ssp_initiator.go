@@ -9,13 +9,13 @@ import (
 	"github.com/google/uuid"
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
-	request_models "github.com/infobeyondtech/oscal-processor/models/requests"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 	"github.com/infobeyondtech/oscal-processor/context"
 )
 
-func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.SetTitleVersionRequest){
+func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request data_models.SetTitleVersionRequest){
 	GuardMetaData(ssp)
 
 	ssp.Metadata.Title = sdk_ssp.Title(request.Title)
@@ -23,7 +23,7 @@ func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request request_models.Set
 	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
 }
 
-func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request request_models.AddSystemCharacteristicReuqest){
+func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_models.AddSystemCharacteristicReuqest){
 	GuardSystemCharacteristics(ssp)
 
 	ssp.SystemCharacteristics.SystemName = sdk_ssp.SystemName(request.SystemName)
@@ -112,7 +112,7 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 }
 
 // insert an inventory item
-func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.InsertInventoryItemRequest){
+func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InsertInventoryItemRequest){
 	sdk_itm := &sdk_ssp.InventoryItem{}	
 
 	// fetch inventory information for item
@@ -159,7 +159,7 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request request_models.In
 }
 
 // insert an implemented requirement
-func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement request_models.InsertImplementedRequirementRequest){
+func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.InsertImplementedRequirementRequest){
 	sdk_requirement := &sdk_ssp.ImplementedRequirement{}
 	sdk_requirement.ControlId = requirement.ControlID
 	sdk_requirement.Id =  requirement.UUID
@@ -498,7 +498,7 @@ type Address = validation_root.Address
 type AsIs = sdk_profile.AsIs
 
 //
-type RolePartyMap = request_models.RolePartyMap
+type RolePartyMap = data_models.RolePartyMap
 
 //
 type Title = validation_root.Title

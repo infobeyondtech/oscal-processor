@@ -1,4 +1,4 @@
-package request_models
+package data_models
 
 type CreatProfileRequest struct {
 	Baseline string   `json:"baseline" binding:"required"`
