@@ -371,6 +371,8 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	sspModel.SystemImplementationModel = data_models.SystemImplementation{}
 	sspModel.ControlImplementationModel = data_models.ControlImplementation{}
 
+	// todo: add guard to ssp loaded from the file
+
 	// metadata
 	sspModel.MetaDataModel.Version = string(ssp.Metadata.Version)
 	sspModel.MetaDataModel.OscalVersion = string(ssp.Metadata.OscalVersion)
@@ -396,9 +398,54 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	sspModel.SystemCharacteristicModel.AvailabilityImpact = string(informationValue.AvailabilityImpact.Base)
 
 	// System Implementation
-	//sspModel.SystemImplementationModel.Users
-	//sspModel.SystemImplementationModel.Components
-	//sspModel.SystemImplementationModel.InventoryItems
+	for _, user := range ssp.SystemImplementation.Users{
+		userModel := data_models.User{
+			Uuid: user.Id,
+			Title: string(user.Title),
+			Type: string(user.Annotations[0].Value),
+			RoleId: string(user.RoleIds[0]),			
+		}
+		sspModel.SystemImplementationModel.Users = append(sspModel.SystemImplementationModel.Users, userModel)
+	}
+
+	// sspModel.SystemImplementationModel.Components
+	for _, component := range ssp.SystemImplementation.Components{
+		componentModel := data_models.Component{
+			Uuid : component.Id,
+			Type : component.ComponentType,
+			Title : string(component.Title),
+			Description : string(component.Description.Raw),
+			Status : component.Status.State,
+		}
+		// responsible roles
+		for _, role := range component.ResponsibleRoles{
+			ResponsibleRole := data_models.ResponsibleRole{
+				RoleId: role.RoleId,
+				// todo: remodel party
+			}
+			componentModel.ResponsibleRoles = append(componentModel.ResponsibleRoles, ResponsibleRole)
+		}
+		sspModel.SystemImplementationModel.Components = append(sspModel.SystemImplementationModel.Components, componentModel)
+	}
+
+	// sspModel.SystemImplementationModel.InventoryItems
+	for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems{
+		itemModel := data_models.InventoryItem{
+			Uuid : item.Id,
+			Description : item.Description.Raw,
+			AssetId : item.AssetId,
+			
+		}
+		for _,impl := range item.ImplementedComponents{
+			itemModel.ImplementComponentIds = append(itemModel.ImplementComponentIds, impl.ComponentId)
+		}
+
+		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
+	}
+
+	// Control Implementation
+	// sspModel.ControlImplementationModel.ImplementedRequirements
+
 
 	return sspModel
 }

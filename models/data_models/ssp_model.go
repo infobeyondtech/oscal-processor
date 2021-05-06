@@ -74,6 +74,7 @@ type InventoryItem struct{
 	Uuid string `json:"uuid" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	AssetId string `json:"assetId" binding:"required"`
+	ImplementComponentIds []string `json:"implementComponentIds" binding:"required"`
 
 	ResponsibleParties []ResponsibleParty `json:"responsibleParties" binding:"required"`
 }
