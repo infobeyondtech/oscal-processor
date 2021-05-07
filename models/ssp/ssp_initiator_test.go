@@ -281,9 +281,8 @@ func TestRemoveImplemented(t *testing.T){
 	fmt.Printf("file path:" +path)
 }
 
-
 func TestIntegration(t *testing.T){
-
+	assert := assert.New(t)
 	// set title version in metadata
 	ssp := &sdk_ssp.SystemSecurityPlan{}
 	title := "Enterprise Logging and Auditing System Security Plan"
@@ -364,6 +363,14 @@ func TestIntegration(t *testing.T){
 	// write to file
 	path := WriteToFile(ssp)		
 	fmt.Printf("file path: " +path)
+
+	// load ssp model from file
+	profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile.xml"
+	sspModel:= MakeSystemSecurityPlanModel(path, profileName)
+
+	assert.Equal(sspModel.MetaDataModel.Title, ssp.Metadata.Title)
+
+	// todo: check more fields
 }
 
 

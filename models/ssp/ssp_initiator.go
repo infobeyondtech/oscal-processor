@@ -371,43 +371,53 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	sspModel.SystemImplementationModel = data_models.SystemImplementation{}
 	sspModel.ControlImplementationModel = data_models.ControlImplementation{}
 
-	// todo: add guard to ssp loaded from the file
-
 	// metadata
-	sspModel.MetaDataModel.Version = string(ssp.Metadata.Version)
-	sspModel.MetaDataModel.OscalVersion = string(ssp.Metadata.OscalVersion)
-	sspModel.MetaDataModel.Title = string(ssp.Metadata.Title)
-	sspModel.MetaDataModel.LastModified = string(ssp.Metadata.LastModified)
-	for _, party := range ssp.Metadata.Parties{
-		partyModel := data_models.Party{
-			Uuid: party.Id,	// todo: find type and name property from properties
-		}
-		sspModel.MetaDataModel.Parties = append(sspModel.MetaDataModel.Parties, partyModel)
+	if(ssp.Metadata!=nil){
+		sspModel.MetaDataModel.Version = string(ssp.Metadata.Version)
+		sspModel.MetaDataModel.OscalVersion = string(ssp.Metadata.OscalVersion)
+		sspModel.MetaDataModel.Title = string(ssp.Metadata.Title)
+		sspModel.MetaDataModel.LastModified = string(ssp.Metadata.LastModified)
+		for _, party := range ssp.Metadata.Parties{
+			// find type and name property from properties
+			partyName := findPropValue(party.Properties, "name")
+			partyType := findPropValue(party.Properties, "type")
+			partyModel := data_models.Party{
+				Uuid: party.Id,	
+				Name: partyName,
+				Type: partyType,
+			}
+			sspModel.MetaDataModel.Parties = append(sspModel.MetaDataModel.Parties, partyModel)
+		}	
 	}
 
 	// System Characteristic
-	informationValue := ssp.SystemCharacteristics.SystemInformation.InformationTypes[0]
-	sspModel.SystemCharacteristicModel.SystemName = string(ssp.SystemCharacteristics.SystemName)
-	sspModel.SystemCharacteristicModel.Description = string(ssp.SystemCharacteristics.Description.Raw)
-	sspModel.SystemCharacteristicModel.SecurityLevel = string(ssp.SystemCharacteristics.SecuritySensitivityLevel)
+	if(ssp.SystemCharacteristics!= nil && ssp.SystemCharacteristics.SystemInformation != nil){
 
-	sspModel.SystemCharacteristicModel.SystemInformationTitle = string(informationValue.Title)
-	sspModel.SystemCharacteristicModel.SystemInformationDescription = string(informationValue.Description.Raw)
-	sspModel.SystemCharacteristicModel.IntegrityImpact = string(informationValue.IntegrityImpact.Base)
-	sspModel.SystemCharacteristicModel.ConfidentialityImpact = string(informationValue.ConfidentialityImpact.Base)
-	sspModel.SystemCharacteristicModel.AvailabilityImpact = string(informationValue.AvailabilityImpact.Base)
+		informationValue := ssp.SystemCharacteristics.SystemInformation.InformationTypes[0]
+		sspModel.SystemCharacteristicModel.SystemName = string(ssp.SystemCharacteristics.SystemName)
+		sspModel.SystemCharacteristicModel.Description = string(ssp.SystemCharacteristics.Description.Raw)
+    	sspModel.SystemCharacteristicModel.SecurityLevel = string(ssp.SystemCharacteristics.SecuritySensitivityLevel)
 
-	// System Implementation
-	for _, user := range ssp.SystemImplementation.Users{
-		userModel := data_models.User{
-			Uuid: user.Id,
-			Title: string(user.Title),
-			Type: string(user.Annotations[0].Value),
-			RoleId: string(user.RoleIds[0]),			
-		}
-		sspModel.SystemImplementationModel.Users = append(sspModel.SystemImplementationModel.Users, userModel)
+		sspModel.SystemCharacteristicModel.SystemInformationTitle = string(informationValue.Title)
+		sspModel.SystemCharacteristicModel.SystemInformationDescription = string(informationValue.Description.Raw)
+		sspModel.SystemCharacteristicModel.IntegrityImpact = string(informationValue.IntegrityImpact.Base)
+		sspModel.SystemCharacteristicModel.ConfidentialityImpact = string(informationValue.ConfidentialityImpact.Base)
+		sspModel.SystemCharacteristicModel.AvailabilityImpact = string(informationValue.AvailabilityImpact.Base)
 	}
 
+	// System Implementation
+	if(ssp.SystemImplementation!=nil){
+		
+	for _, user := range ssp.SystemImplementation.Users{
+	userModel := data_models.User{
+		Uuid: user.Id,
+		Title: string(user.Title),
+		Type: string(user.Annotations[0].Value),
+		RoleId: string(user.RoleIds[0]),			
+	}
+	sspModel.SystemImplementationModel.Users = append(sspModel.SystemImplementationModel.Users, userModel)
+	}	
+	
 	// sspModel.SystemImplementationModel.Components
 	for _, component := range ssp.SystemImplementation.Components{
 		componentModel := data_models.Component{
@@ -421,7 +431,9 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 		for _, role := range component.ResponsibleRoles{
 			ResponsibleRole := data_models.ResponsibleRole{
 				RoleId: role.RoleId,
-				// todo: remodel party
+			}
+			for _, partyId := range role.PartyIds{
+				ResponsibleRole.PartyIds = append(ResponsibleRole.PartyIds, string(partyId))
 			}
 			componentModel.ResponsibleRoles = append(componentModel.ResponsibleRoles, ResponsibleRole)
 		}
@@ -433,19 +445,52 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 		itemModel := data_models.InventoryItem{
 			Uuid : item.Id,
 			Description : item.Description.Raw,
-			AssetId : item.AssetId,
-			
+			AssetId : item.AssetId,		
 		}
 		for _,impl := range item.ImplementedComponents{
 			itemModel.ImplementComponentIds = append(itemModel.ImplementComponentIds, impl.ComponentId)
 		}
-
 		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
+	}
+	
 	}
 
 	// Control Implementation
 	// sspModel.ControlImplementationModel.ImplementedRequirements
+	if(ssp.ControlImplementation!=nil){
+	for _, req := range ssp.ControlImplementation.ImplementedRequirements{
+		reqModel := data_models.ImplementedRequirement{
+			Uuid: req.Id,
+			ControlId: req.ControlId,
+		}
 
+		// statements
+		for _, statement := range req.Statements{
+			statementModel := data_models.StatementModel{
+				StatementId : statement.StatementId,
+			}
+			// byComponents array
+			for _, bycomponent := range statement.ByComponents{
+				bycomponentModel := data_models.ByComponentModel{
+					ComponentUuid : bycomponent.ComponentId,
+					Description : bycomponent.Description.Raw,					
+				}
+				// setParameter arary
+				for _, setParam:= range bycomponent.ParameterSettings{
+					paramModel := data_models.Parameter{
+						ParamId: setParam.ParamId,
+						Value: string(setParam.Value),
+					}
+					bycomponentModel.Parameters = append(bycomponentModel.Parameters, paramModel)
+				}
+				statementModel.ByComponents = append(statementModel.ByComponents, bycomponentModel)
+			}
+			reqModel.Statements = append(reqModel.Statements, statementModel)
+		}
+
+		sspModel.ControlImplementationModel.ImplementedRequirements = append(sspModel.ControlImplementationModel.ImplementedRequirements, reqModel)
+	}
+	}
 
 	return sspModel
 }
@@ -455,6 +500,19 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+// find the value in a property array
+func findPropValue(properties []Prop, key string) string{
+	if(properties==nil){
+		return ""
+	}
+	for _, prop := range properties{
+		if(prop.Name == key){
+			return prop.Value
+		}
+	}
+	return ""
 }
 
 // remove an implemented requirement

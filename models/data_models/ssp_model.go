@@ -67,7 +67,7 @@ type Component struct {
 
 type ResponsibleRole struct{
 	RoleId string `json:"roleId" binding:"required"`
-	PartyUuid string `json:"partyUuid" binding:"required"`
+	PartyIds []string `json:"partyIds" binding:"required"`
 }
 
 type InventoryItem struct{
@@ -92,7 +92,7 @@ type ImplementedRequirement struct{
 }
 
 type StatementModel struct {
-	StatementId string 	 `json:"statementId" binding:"required"`
+	StatementId string `json:"statementId" binding:"required"`
 
 	ByComponents []ByComponentModel `json:"byComponents" binding:"required"`
 }
