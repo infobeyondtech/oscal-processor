@@ -368,9 +368,24 @@ func TestIntegration(t *testing.T){
 	profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile.xml"
 	sspModel:= MakeSystemSecurityPlanModel(path, profileName)
 
-	assert.Equal(sspModel.MetaDataModel.Title, ssp.Metadata.Title)
-
-	// todo: check more fields
+	// check fields
+	// metadata
+	assert.Equal(sspModel.MetaDataModel.Title, string(ssp.Metadata.Title))
+	assert.Equal(len(sspModel.MetaDataModel.Parties), 3)
+	// system characteristics
+	assert.Equal(sspModel.SystemCharacteristicModel.SystemName, systemName)
+	assert.Equal(sspModel.SystemCharacteristicModel.IntegrityImpact, integrityImpact)
+	assert.Equal(sspModel.SystemCharacteristicModel.SecurityLevel, securitylevel)
+	// system implementation
+	assert.Equal(len(sspModel.SystemImplementationModel.Users),3)
+	assert.Equal(len(sspModel.SystemImplementationModel.Components),1)
+	assert.Equal(len(sspModel.SystemImplementationModel.InventoryItems),1)
+	assert.Equal(len(sspModel.SystemImplementationModel.InventoryItems[0].ResponsibleParties),2)
+	// control implementation
+	assert.Equal(len(sspModel.ControlImplementationModel.ImplementedRequirements),1)
+	assert.Equal(len(sspModel.ControlImplementationModel.ImplementedRequirements[0].Statements),1)
+	assert.Equal(len(sspModel.ControlImplementationModel.ImplementedRequirements[0].Statements[0].ByComponents),1)
+	assert.Equal(len(sspModel.ControlImplementationModel.ImplementedRequirements[0].Statements[0].ByComponents[0].Parameters),1)
 }
 
 
