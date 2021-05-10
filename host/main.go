@@ -316,6 +316,15 @@ func main() {
 	})
 	r.GET("/ssp/view-ssp", func(c *gin.Context){
 		// todo: define a struct to for ssp
+		fid := c.Param("fid")
+		parent := context.DownloadDir
+		targetFile := parent + "/" + fid
+		targetFile = context.ExpandPath(targetFile)
+		xmlFile := targetFile + ".xml"
+
+		profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile"
+
+		sspEngine.MakeSystemSecurityPlanModel(xmlFile, profileName)
 	})
 	r.POST("/ssp/remove-inventory-item", func(c *gin.Context){
 		var json data_models.RemoveElementRequest

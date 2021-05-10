@@ -406,8 +406,7 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	}
 
 	// System Implementation
-	if(ssp.SystemImplementation!=nil){
-		
+	if(ssp.SystemImplementation!=nil){		
 	for _, user := range ssp.SystemImplementation.Users{
 	userModel := data_models.User{
 		Uuid: user.Id,
@@ -452,7 +451,6 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 		}
 		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
 	}
-	
 	}
 
 	// Control Implementation
