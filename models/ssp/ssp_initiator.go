@@ -449,6 +449,14 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 		for _,impl := range item.ImplementedComponents{
 			itemModel.ImplementComponentIds = append(itemModel.ImplementComponentIds, impl.ComponentId)
 		}
+		// set item.ResponsibleParties
+		for _,party := range item.ResponsibleParties{
+			partyModel := data_models.ResponsibleParty{
+				RoleId : party.RoleId,
+				PartyUuid : string(party.PartyIds[0]),	// might need to change to array here
+			}
+			itemModel.ResponsibleParties = append(itemModel.ResponsibleParties,partyModel )
+		}
 		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
 	}
 	}

@@ -315,7 +315,6 @@ func main() {
 		c.JSON(http.StatusOK, ssp.Id)
 	})
 	r.GET("/ssp/view-ssp", func(c *gin.Context){
-		// todo: define a struct to for ssp
 		fid := c.Param("fid")
 		parent := context.DownloadDir
 		targetFile := parent + "/" + fid
