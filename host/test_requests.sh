@@ -22,20 +22,20 @@
 
 # Control Test
 #curl -i -H "Content-Type: application/json" \
-#    -X POST \
+#    -X GET \
 #http://localhost:8080/control/ac-1
 
 # Enhancement Test
-curl -i -H "Content-Type: application/json" \
-    -X POST \
-http://localhost:8080/control_enhancement/ac-2.2
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:8080/control_enhancement/ac-2.2
 
 # Get Param Test
 #curl -i -H "Content-Type: application/json" \
-#    -X POST \
+#    -X GET \
 #http://localhost:8080/getparam/fileid1/paramid1
 
 # Set Param Test
-#curl -i -H "Content-Type: application/json" \
-#    -X POST \
-#http://localhost:8080/setparam/fileid2/paramid2/value3
+curl -i -H "Content-Type: application/json" \
+    -X GET \
+http://localhost:8080/setparam/fileid2/paramid2/value3

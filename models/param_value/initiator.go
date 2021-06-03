@@ -44,7 +44,6 @@ func SetParamValue(fileid string, paramid string, value string) (ParamValue) {
         panic(err.Error())
     }
     result := ParamValue{fileid, paramid, value}
-    db.Close()
     return result
 }
 

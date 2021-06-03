@@ -102,7 +102,7 @@ func main() {
         ctrl := control.GetControl(id, false)
         c.JSON(http.StatusOK, ctrl)
 	})
-	r.POST("/control_enhancement/:enhid", func(c *gin.Context) {
+	r.GET("/control_enhancement/:enhid", func(c *gin.Context) {
 		id := c.Param("enhid")
 		ctrl := control.GetControl(id, true)
 		c.JSON(http.StatusOK, ctrl)
@@ -115,7 +115,7 @@ func main() {
         c.JSON(http.StatusOK, pv)
 	})
 	// Set ParamValue
-    r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+    r.GET("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
         // TODO: Does this need to set the parameter in either profile or 
         // the profile's implementation?
 		uuid := c.Param("uuid")

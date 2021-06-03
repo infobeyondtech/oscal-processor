@@ -387,10 +387,7 @@ func CreateEnhancementsToParamsTable(db *sql.DB, c catalog.Catalog) {
     }
 }
 
-
-
 func CreateControlsToParamsTable(db *sql.DB, c catalog.Catalog) {
-
     _,err := db.Exec("CREATE TABLE IF NOT EXISTS `controls_params`(controlid varchar(20), paramid varchar(20), PRIMARY KEY(paramid))")
     if err != nil {
         fmt.Println(err.Error())
