@@ -25,6 +25,11 @@ RUN apk add ca-certificates
 
 COPY --from=build_base /tmp/app/main /app/main
 
+RUN mkdir -p /root/oscal_processing_space/tmp
+RUN mkdir -p /root/oscal_processing_space/uploads
+RUN mkdir -p /root/oscal_processing_space/downloads
+COPY container_root_files /root
+
 # This container exposes port 8080 to the outside world
 EXPOSE 8080
 
