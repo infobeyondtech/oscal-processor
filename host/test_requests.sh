@@ -1,8 +1,16 @@
 # Create Profile Test
-#curl -i -H "Content-Type: application/json" \
-#-X POST -d  \
-#'{"controls": ["ac-1"], "baseline": "Fedramp", "catalogs": ["800-53"]}' \
-#http://localhost:8080/profile/create
+curl -i -H "Content-Type: application/json" \
+-X POST -d  \
+'{
+    "baseline": "Fedramp",
+    "controls": ["ac-1"],
+    "catalogs": ["800-53"],
+    "title": "test_title",
+    "orgUuid": "test_orgUuid",
+    "orgName": "test_orgName",
+    "orgEmail": "test_orgEmail"
+}' \
+http://localhost:8080/profile/create
 
 # Profile Navigator Test
 #curl -i -H "Content-Type: application/json" \
@@ -21,21 +29,20 @@
 #http://localhost:8080/upload
 
 # Control Test
-#curl -i -H "Content-Type: application/json" \
-#    -X POST \
-#http://localhost:8080/control/ac-1
+#curl -i -H "Content-Type: application/json" \ #    -X GET \
+#http://localhost:8080/control/ac-2
 
 # Enhancement Test
-curl -i -H "Content-Type: application/json" \
-    -X POST \
-http://localhost:8080/control_enhancement/ac-2.2
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:8080/control_enhancement/ac-2.2
 
 # Get Param Test
 #curl -i -H "Content-Type: application/json" \
-#    -X POST \
+#    -X GET \
 #http://localhost:8080/getparam/fileid1/paramid1
 
 # Set Param Test
 #curl -i -H "Content-Type: application/json" \
-#    -X POST \
+#    -X GET \
 #http://localhost:8080/setparam/fileid2/paramid2/value3
