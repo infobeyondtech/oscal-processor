@@ -1,19 +1,22 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"net/http"
+
 	//"encoding/json"
-	"github.com/infobeyondtech/oscal-processor/context"
-	"github.com/infobeyondtech/oscal-processor/models/profile"
-	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
-	"github.com/infobeyondtech/oscal-processor/models/profile_navigator"
-	"github.com/infobeyondtech/oscal-processor/models/control"
-	"github.com/infobeyondtech/oscal-processor/models/param_value"
-	sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
+	"github.com/infobeyondtech/oscal-processor/context"
+	"github.com/infobeyondtech/oscal-processor/models/control"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
+	"github.com/infobeyondtech/oscal-processor/models/information"
+	"github.com/infobeyondtech/oscal-processor/models/param_value"
+	"github.com/infobeyondtech/oscal-processor/models/profile"
+	"github.com/infobeyondtech/oscal-processor/models/profile_navigator"
+	sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
 )
 
 func main() {
@@ -89,18 +92,18 @@ func main() {
 		p := &profile.Profile{}
 		profile.LoadFromFile(p, inputSrc)
 
-        // Get the profile's navigator
-        pn := &profile_navigator.ProfileNavigator{}
-        profile_navigator.CreateProfileNavigator(pn, p)
+		// Get the profile's navigator
+		pn := &profile_navigator.ProfileNavigator{}
+		profile_navigator.CreateProfileNavigator(pn, p)
 
-        c.JSON(http.StatusOK, pn.Groups)
+		c.JSON(http.StatusOK, pn.Groups)
 
 	})
 	// Get Control
 	r.GET("/control/:controlid", func(c *gin.Context) {
 		id := c.Param("controlid")
-        ctrl := control.GetControl(id, false)
-        c.JSON(http.StatusOK, ctrl)
+		ctrl := control.GetControl(id, false)
+		c.JSON(http.StatusOK, ctrl)
 	})
 	r.GET("/control_enhancement/:enhid", func(c *gin.Context) {
 		id := c.Param("enhid")
@@ -108,22 +111,23 @@ func main() {
 		c.JSON(http.StatusOK, ctrl)
 	})
 	// Get ParamValue
-    r.GET("/getparam/:uuid/:paramid", func(c *gin.Context) {
+	r.GET("/getparam/:uuid/:paramid", func(c *gin.Context) {
 		uuid := c.Param("uuid")
 		paramid := c.Param("paramid")
-        pv := param_value.GetParamValue(uuid, paramid)
-        c.JSON(http.StatusOK, pv)
+		pv := param_value.GetParamValue(uuid, paramid)
+		c.JSON(http.StatusOK, pv)
 	})
 	// Set ParamValue
-    r.GET("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
-        // TODO: Does this need to set the parameter in either profile or 
-        // the profile's implementation?
+	r.GET("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+		// TODO: Does this need to set the parameter in either profile or
+		// the profile's implementation?
 		uuid := c.Param("uuid")
 		paramid := c.Param("paramid")
-        value := c.Param("value")
-        pv := param_value.SetParamValue(uuid, paramid, value)
-        c.JSON(http.StatusOK, pv)
+		value := c.Param("value")
+		pv := param_value.SetParamValue(uuid, paramid, value)
+		c.JSON(http.StatusOK, pv)
 	})
+
 	// Resolve profile
 	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
@@ -207,7 +211,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, p.Id)
 	})
-	r.POST("/profile/add-control", func(c *gin.Context){
+	r.POST("/profile/add-control", func(c *gin.Context) {
 		var json data_models.AddControlRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -232,7 +236,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, p.Id)
 	})
-	r.POST("/ssp/create", func(c *gin.Context){
+	r.POST("/ssp/create", func(c *gin.Context) {
 		var json data_models.SetTitleVersionRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -241,12 +245,12 @@ func main() {
 
 		ssp := &sdk_ssp.SystemSecurityPlan{}
 		ssp.Id = uuid.New().String()
-		
+
 		version := json.Version
-		oscal_version := "1.0.0-m1"	// do not let user specify oscal version at this moment
+		oscal_version := "1.0.0-m1" // do not let user specify oscal version at this moment
 		title := json.Title
-		request := data_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version}
-		
+		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version}
+
 		// operation
 		sspEngine.SetTitleVersion(ssp, request)
 		sspEngine.WriteToFile(ssp)
@@ -254,7 +258,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.POST("/ssp/set-characteristic", func(c *gin.Context){
+	r.POST("/ssp/set-characteristic", func(c *gin.Context) {
 		var json data_models.AddSystemCharacteristicReuqest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -263,10 +267,10 @@ func main() {
 
 		// load from file, give a new file id
 		fileId := json.FileID
-		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		ssp := &sdk_ssp.SystemSecurityPlan{}
 		sspEngine.LoadFromFileById(ssp, fileId)
 		ssp.Id = uuid.New().String()
-		
+
 		// operation
 		sspEngine.SetSystemCharacteristic(ssp, json)
 		sspEngine.WriteToFile(ssp)
@@ -274,7 +278,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.POST("/ssp/add-inventory-item", func(c *gin.Context){
+	r.POST("/ssp/add-inventory-item", func(c *gin.Context) {
 		var json data_models.InsertInventoryItemRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -283,7 +287,7 @@ func main() {
 
 		// load from file, give a new file id
 		fileId := json.FileID
-		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		ssp := &sdk_ssp.SystemSecurityPlan{}
 		sspEngine.LoadFromFileById(ssp, fileId)
 		ssp.Id = uuid.New().String()
 
@@ -294,7 +298,8 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.POST("/ssp/add-implemented-requirement", func(c *gin.Context){
+
+	r.POST("/ssp/add-implemented-requirement", func(c *gin.Context) {
 		var json data_models.InsertImplementedRequirementRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -303,7 +308,7 @@ func main() {
 
 		// load from file, give a new file id
 		fileId := json.FileID
-		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		ssp := &sdk_ssp.SystemSecurityPlan{}
 		sspEngine.LoadFromFileById(ssp, fileId)
 		ssp.Id = uuid.New().String()
 
@@ -314,7 +319,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.GET("/ssp/view-ssp", func(c *gin.Context){
+	r.GET("/ssp/view-ssp", func(c *gin.Context) {
 		fid := c.Param("fid")
 		parent := context.DownloadDir
 		targetFile := parent + "/" + fid
@@ -325,7 +330,7 @@ func main() {
 
 		sspEngine.MakeSystemSecurityPlanModel(xmlFile, profileName)
 	})
-	r.POST("/ssp/remove-inventory-item", func(c *gin.Context){
+	r.POST("/ssp/remove-inventory-item", func(c *gin.Context) {
 		var json data_models.RemoveElementRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -335,7 +340,7 @@ func main() {
 		// load from file, give a new file id
 		fileId := json.FileID
 		elementId := json.ElementID
-		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		ssp := &sdk_ssp.SystemSecurityPlan{}
 		sspEngine.LoadFromFileById(ssp, fileId)
 		ssp.Id = uuid.New().String()
 
@@ -346,7 +351,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.POST("/ssp/remove-implemented-requirement", func(c *gin.Context){
+	r.POST("/ssp/remove-implemented-requirement", func(c *gin.Context) {
 		var json data_models.RemoveElementRequest
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -356,7 +361,7 @@ func main() {
 		// load from file, give a new file id
 		fileId := json.FileID
 		elementId := json.ElementID
-		ssp := &sdk_ssp.SystemSecurityPlan{}	
+		ssp := &sdk_ssp.SystemSecurityPlan{}
 		sspEngine.LoadFromFileById(ssp, fileId)
 		ssp.Id = uuid.New().String()
 
@@ -368,6 +373,53 @@ func main() {
 		c.JSON(http.StatusOK, ssp.Id)
 	})
 
+	r.GET("/infomation/find-component/", func(c *gin.Context) {
+		filter := c.Request.URL.Query().Get("filter")
+		if len(filter) < 1 {
+			pv := information.FindAllComponent(filter)
+			c.JSON(http.StatusOK, pv)
+		} else {
+			pv := information.FindComponent(filter)
+			c.JSON(http.StatusOK, pv)
+		}
+	})
+	r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
+		filter := c.Request.URL.Query().Get("filter")
+		if len(filter) < 1 {
+			pv := information.FindAllInventoryItem(filter)
+			c.JSON(http.StatusOK, pv)
+		} else {
+			pv := information.FindInventoryItem(filter)
+			c.JSON(http.StatusOK, pv)
+		}
+	})
+	r.GET("/infomation/find-party/", func(c *gin.Context) {
+		filter := c.Request.URL.Query().Get("filter")
+		if len(filter) < 1 {
+			pv := information.FindAllParty(filter)
+			c.JSON(http.StatusOK, pv)
+		} else {
+			pv := information.FindParty(filter)
+			c.JSON(http.StatusOK, pv)
+		}
+	})
+	r.GET("/infomation/find-user/", func(c *gin.Context) {
+		filter := c.Request.URL.Query().Get("filter")
+		if len(filter) < 1 {
+			pv := information.FindAllUser(filter)
+			c.JSON(http.StatusOK, pv)
+		} else {
+			pv := information.FindUser(filter)
+			c.JSON(http.StatusOK, pv)
+		}
+	})
+
+	r.GET("/get-params/:fileid", func(c *gin.Context) {
+		fileid := c.Param("fileid")
+		pv := param_value.GetParam(fileid)
+		c.JSON(http.StatusOK, pv)
+	})
+
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-    r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
