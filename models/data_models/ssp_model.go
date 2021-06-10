@@ -3,40 +3,38 @@ package data_models
 type SystemSecurityPlanModel struct{
 	ImportProfile string `json:"importProfile" binding:"required"`
 	MetaDataModel MetaData `json:"metaDataModel" binding:"required"`
-	SystemCharacteristicModel SystemCharacteristic `json:"SystemCharacteristicModel" binding:"required"`
-	SystemImplementationModel SystemImplementation `json:"systemImplementationModel" binding:"required"`
-	ControlImplementationModel ControlImplementation `json:"controlImplementationModel" binding:"required"`
+	SystemCharacteristicModel SystemCharacteristic `json:"SystemCharacteristicModel"`
+	SystemImplementationModel SystemImplementation `json:"systemImplementationModel"`
+	ControlImplementationModel ControlImplementation `json:"controlImplementationModel"`
 }
 
 type SystemCharacteristic struct{
-	//UUID string `json:"uuid" binding:"required"`
 	SystemName string `json:"systemName" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	//DeploymentModel string `json:"deploymentModel" binding:"required"`
-	SecurityLevel string `json:"securityLevel" binding:"required"`
+	Description string `json:"description"`
+	SecurityLevel string `json:"securityLevel"`
 
-	SystemInformationTitle string `json:"systemInformationTitle" binding:"required"`
-	SystemInformationDescription string `json:"systemInformationDescription" binding:"required"`
-	ConfidentialityImpact string `json:"confidentialityImpact" binding:"required"`
-	IntegrityImpact string `json:"integrityImpact" binding:"required"`
-	AvailabilityImpact string `json:"availabilityImpact" binding:"required"`
+	SystemInformationTitle string `json:"systemInformationTitle"`
+	SystemInformationDescription string `json:"systemInformationDescription"`
+	ConfidentialityImpact string `json:"confidentialityImpact"`
+	IntegrityImpact string `json:"integrityImpact" `
+	AvailabilityImpact string `json:"availabilityImpact"`
 }
 
 type MetaData struct{
-	Title        string `json:"title" binding:"required"`
-	Version      string `json:"version" binding:"required"`
-	OscalVersion string `json:"oscalversion" binding:"required"`
-	LastModified string `json:"lastModified" binding:"required"`
+	Title        string `json:"title"`
+	Version      string `json:"version"`
+	OscalVersion string `json:"oscalversion"`
+	LastModified string `json:"lastModified"`
 
-	Parties [] Party `json:"parties" binding:"required"`
+	Parties []Party `json:"parties"`
 }
 
 type SystemImplementation struct{
-	Users []User `json:"users" binding:"required"`
+	Users []User `json:"users"`
 
-	Components []Component `json:"components" binding:"required"`
+	Components []Component `json:"components"`
 
-	InventoryItems []InventoryItem `json:"inventoryItems" binding:"required"`
+	InventoryItems []InventoryItem `json:"inventoryItems"`
 }
 
 type ControlImplementation struct{
@@ -46,23 +44,23 @@ type ControlImplementation struct{
 type Party struct{
 	Name string `json:"name" binding:"required"`
 	Uuid string `json:"uuid" binding:"required"`
-	Type string `json:"type" binding:"required"`
+	Type string `json:"type"`
 }
 
 type User struct{
 	Uuid string `json:"uuid" binding:"required"`
-	Title string `json:"title" binding:"required"`
-	Type string `json:"type" binding:"required"`
-	RoleId string  `json:"roleId" binding:"required"`
+	Title string `json:"title"`
+	Type string `json:"type"`
+	RoleId string  `json:"roleId" `
 }
 
 type Component struct {
 	Uuid string `json:"uuid" binding:"required"`
-	Type string `json:"type" binding:"required"`
-	Title string `json:"title" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	Status string `json:"status" binding:"required"`
-	ResponsibleRoles [] ResponsibleRole `json:"responsibleRoles" binding:"required"`
+	Type string `json:"type"`
+	Title string `json:"title"`
+	Description string `json:"description"`
+	Status string `json:"status"`
+	ResponsibleRoles [] ResponsibleRole `json:"responsibleRoles"`
 }
 
 type ResponsibleRole struct{
@@ -72,11 +70,11 @@ type ResponsibleRole struct{
 
 type InventoryItem struct{
 	Uuid string `json:"uuid" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	AssetId string `json:"assetId" binding:"required"`
+	Description string `json:"description"`
+	AssetId string `json:"assetId"`
 	ImplementComponentIds []string `json:"implementComponentIds" binding:"required"`
 
-	ResponsibleParties []ResponsibleParty `json:"responsibleParties" binding:"required"`
+	ResponsibleParties []ResponsibleParty `json:"responsibleParties"`
 }
 
 type ResponsibleParty struct{
@@ -88,7 +86,7 @@ type ImplementedRequirement struct{
 	ControlId string `json:"controlId" binding:"required"`
 	Uuid string `json:"uuid" binding:"required"`
 
-	Statements []StatementModel `json:"statements" binding:"required"`
+	Statements []StatementModel `json:"statements"`
 }
 
 type StatementModel struct {
@@ -98,10 +96,10 @@ type StatementModel struct {
 }
 
 type ByComponentModel struct{
-	Description string  `json:"description" binding:"required"`
+	Description string  `json:"description"`
 	ComponentUuid string  `json:"componentUuid" binding:"required"`
 
-	Parameters []Parameter `json:"parameters" binding:"required"`
+	Parameters []Parameter `json:"parameters"`
 }
 
 type Parameter struct {

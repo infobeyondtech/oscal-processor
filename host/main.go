@@ -314,7 +314,7 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.GET("/ssp/view-ssp", func(c *gin.Context){
+	r.GET("/ssp/view-ssp/:fid", func(c *gin.Context){
 		fid := c.Param("fid")
 		parent := context.DownloadDir
 		targetFile := parent + "/" + fid
