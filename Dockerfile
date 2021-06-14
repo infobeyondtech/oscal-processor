@@ -32,6 +32,6 @@ COPY test.xml /root/oscal_processing_space/downloads/test.xml
 COPY container_root_files /root
 
 # This container exposes port 8080 to the outside world
-EXPOSE 8080
+EXPOSE 9050
 
 CMD ["/app/main"]
