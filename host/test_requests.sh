@@ -13,9 +13,9 @@
 #http://localhost:8080/profile/create
 
 # Profile Navigator Test
-#curl -i -H "Content-Type: application/json" \
-#    -X POST \
-#http://localhost:8080/profile/navigator/e47dd5bd-ee87-433b-acb4-877877079ea9
+curl -i -H "Content-Type: application/json" \
+    -X GET \
+http://localhost:8080/profile/navigator/test.xml
 
 # Resolve Profile Test
 #curl -i -H "Content-Type: application/json" \
@@ -29,8 +29,8 @@
 #http://localhost:8080/upload
 
 # Control Test
-curl -i -H "Content-Type: application/json" \ #    -X GET \
-http://localhost:8080/control/ac-2
+#curl -i -H "Content-Type: application/json" \ #    -X GET \
+#http://localhost:8080/control/ac-2
 
 # Enhancement Test
 #curl -i -H "Content-Type: application/json" \
