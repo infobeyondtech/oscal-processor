@@ -23,9 +23,10 @@ curl -i \
     > ps -eaf | grep oscal-processor
     > kill xxx
 
-  - change to the directory oscal-processor/host
+  - change to the directory ~/go/src/github.com/infobeyondtech/oscal-processor/host
   - Build 
     > go build -o oscal-processor-engine main.go
   - Run 
     > nohup ./oscal-processor-engine &
   
+

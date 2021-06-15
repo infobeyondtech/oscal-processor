@@ -3,7 +3,7 @@ package data_models
 type SystemSecurityPlanModel struct{
 	ImportProfile string `json:"importProfile" binding:"required"`
 	MetaDataModel MetaData `json:"metaDataModel" binding:"required"`
-	SystemCharacteristicModel SystemCharacteristic `json:"SystemCharacteristicModel"`
+	SystemCharacteristicModel SystemCharacteristic `json:"systemCharacteristicModel"`
 	SystemImplementationModel SystemImplementation `json:"systemImplementationModel"`
 	ControlImplementationModel ControlImplementation `json:"controlImplementationModel"`
 }

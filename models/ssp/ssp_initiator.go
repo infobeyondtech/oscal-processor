@@ -21,6 +21,9 @@ func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request data_models.SetTit
 	ssp.Metadata.Title = sdk_ssp.Title(request.Title)
 	ssp.Metadata.Version = Version(request.Version)
 	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
+
+	// downloadPath := context.DownloadDir + "/" + request.ProfileId
+	ssp.ImportProfile = &sdk_ssp.ImportProfile{Href:request.ProfileId}
 }
 
 func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_models.AddSystemCharacteristicReuqest){
@@ -347,7 +350,7 @@ func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan){
 	}
 }
 
-func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurityPlanModel{
+func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel{
 	// load from file
 	ssp := &sdk_ssp.SystemSecurityPlan{}
 	sspModel := SystemSecurityPlanModel{}
@@ -365,7 +368,7 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	}
 
 	// turn into data model
-	sspModel.ImportProfile = profileName
+	sspModel.ImportProfile = ssp.ImportProfile.Href
 	sspModel.MetaDataModel = data_models.MetaData{}
 	sspModel.SystemCharacteristicModel = data_models.SystemCharacteristic{}
 	sspModel.SystemImplementationModel = data_models.SystemImplementation{}

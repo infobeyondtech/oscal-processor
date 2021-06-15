@@ -22,8 +22,9 @@ type AddAddressRequest struct {
 type SetTitleVersionRequest struct {
 	//UUID         string `json:"uuid" binding:"required"`
 	Title        string `json:"title" binding:"required"`
+	ProfileId 	 string `json:"profileId" binding:"required"`
 	Version      string `json:"version"`
-	OscalVersion string `json:"oscalversion"`
+	OscalVersion string `json:"oscalVersion"`	
 }
 
 type AddRolePartyRequest struct {

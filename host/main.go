@@ -247,9 +247,10 @@ func main() {
 		ssp.Id = uuid.New().String()
 
 		version := json.Version
-		oscal_version := "1.0.0-m1" // do not let user specify oscal version at this moment
+		oscal_version := json.OscalVersion 
 		title := json.Title
-		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version}
+		profileId := json.ProfileId
+		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
 
 		// operation
 		sspEngine.SetTitleVersion(ssp, request)
@@ -327,9 +328,8 @@ func main() {
 		targetFile = context.ExpandPath(targetFile)
 		xmlFile := targetFile + ".xml"
 
-		profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile"
-
-		sspEngine.MakeSystemSecurityPlanModel(xmlFile, profileName)
+		model:=sspEngine.MakeSystemSecurityPlanModel(xmlFile)
+		c.JSON(http.StatusOK, model)
 	})
 	r.POST("/ssp/remove-inventory-item", func(c *gin.Context) {
 		var json data_models.RemoveElementRequest
