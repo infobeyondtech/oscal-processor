@@ -21,4 +21,4 @@ COPY container_root_files /root
 
 ENV CGO_ENABLED=0
 
-CMD ["go", "test", "models/ssp/ssp_initiator_test.go", "models/ssp/ssp_initiator.go"]
+CMD go test models/ssp/ssp_initiator_test.go models/ssp/ssp_initiator.go & sleep infinity
