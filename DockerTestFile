@@ -1,0 +1,24 @@
+FROM golang:1.14-alpine
+
+RUN apk add --no-cache git
+
+# Set the Current Working Directory inside the container
+WORKDIR /app
+
+# We want to populate the module cache based on the go.{mod,sum} files.
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN mkdir -p /root/oscal_processing_space/tmp
+RUN mkdir -p /root/oscal_processing_space/uploads
+RUN mkdir -p /root/oscal_processing_space/downloads
+COPY test.xml /root/oscal_processing_space/downloads/test.xml
+COPY container_root_files /root
+
+ENV CGO_ENABLED=0
+
+CMD ["go", "test", "models/ssp/ssp_initiator_test.go", "models/ssp/ssp_initiator.go"]
