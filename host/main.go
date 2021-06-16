@@ -118,7 +118,7 @@ func main() {
 		c.JSON(http.StatusOK, pv)
 	})
 	// Set ParamValue
-	r.GET("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+	r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
 		// TODO: Does this need to set the parameter in either profile or
 		// the profile's implementation?
 		uuid := c.Param("uuid")
