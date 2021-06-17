@@ -30,7 +30,7 @@ func TestAddUser(t *testing.T){
 	LoadFromFile(ssp_cpy, path)
 	firstUser := ssp_cpy.SystemImplementation.Users[0]	
 
-	assert.Equal(string(firstUser.Title), title)
+	assert.Equal(string(firstUser.Title), title) 
 	assert.Equal(string(firstUser.RoleIds[0]), roleId)
 }
 
@@ -365,8 +365,8 @@ func TestIntegration(t *testing.T){
 	fmt.Printf("file path: " +path)
 
 	// load ssp model from file
-	profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile.xml"
-	sspModel:= MakeSystemSecurityPlanModel(path, profileName)
+	// profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile.xml"
+	sspModel:= MakeSystemSecurityPlanModel(path)
 
 	// check fields
 	// metadata

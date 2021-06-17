@@ -22,8 +22,9 @@ type AddAddressRequest struct {
 type SetTitleVersionRequest struct {
 	//UUID         string `json:"uuid" binding:"required"`
 	Title        string `json:"title" binding:"required"`
-	Version      string `json:"version" binding:"required"`
-	OscalVersion string `json:"oscalversion" binding:"required"`
+	ProfileId 	 string `json:"profileId" binding:"required"`
+	Version      string `json:"version"`
+	OscalVersion string `json:"oscalVersion"`	
 }
 
 type AddRolePartyRequest struct {
@@ -44,30 +45,30 @@ type AddControlRequest struct{
 type AddSystemCharacteristicReuqest struct{
 	FileID string `json:"fileID" binding:"required"`
 	UUID string `json:"uuid" binding:"required"`
-	SystemName string `json:"systemName" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	DeploymentModel string `json:"deploymentModel" binding:"required"`
-	SecurityLevel string `json:"securityLevel" binding:"required"`
+	SystemName string `json:"systemName"`
+	Description string `json:"description"`
+	DeploymentModel string `json:"deploymentModel"`
+	SecurityLevel string `json:"securityLevel"`
 
-	SystemInformationTitle string `json:"systemInformationTitle" binding:"required"`
-	SystemInformationDescription string `json:"systemInformationDescription" binding:"required"`
-	ConfidentialityImpact string `json:"confidentialityImpact" binding:"required"`
-	IntegrityImpact string `json:"integrityImpact" binding:"required"`
-	AvailabilityImpact string `json:"availabilityImpact" binding:"required"`
+	SystemInformationTitle string `json:"systemInformationTitle"`
+	SystemInformationDescription string `json:"systemInformationDescription"`
+	ConfidentialityImpact string `json:"confidentialityImpact"`
+	IntegrityImpact string `json:"integrityImpact"`
+	AvailabilityImpact string `json:"availabilityImpact"`
 }
 
 type InsertInventoryItemRequest struct {
 	FileID string `json:"fileID" binding:"required"`
 	InventoryItemID string `json:"inventoryItemID" binding:"required"`
 	ImplementComponents []string `json:"implementComponents" binding:"required"`
-	ResponsibleParties []RolePartyMap `json:"responsibleParties" binding:"required"`
+	ResponsibleParties []RolePartyMap `json:"responsibleParties"`
 }
 
 type InsertImplementedRequirementRequest struct {
 	FileID string `json:"fileID" binding:"required"`
 	UUID         string `json:"uuid" binding:"required"`
 	ControlID string `json:"controlID" binding:"required"`
-	Statements []Statement `json:"statements" binding:"required"`
+	Statements []Statement `json:"statements"`
 }
 
 type SetParameter struct {
@@ -77,9 +78,9 @@ type SetParameter struct {
 
 type ByComponent struct {
 	ComponentID string `json:"componentID" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	SetParameters []SetParameter `json:"setParameters" binding:"required"`
-	ResponsibleParties [] RolePartyMap `json:"responsibleParties" binding:"required"`
+	Description string `json:"description"`
+	SetParameters []SetParameter `json:"setParameters"`
+	ResponsibleParties [] RolePartyMap `json:"responsibleParties"`
 }
 
 type Statement struct {

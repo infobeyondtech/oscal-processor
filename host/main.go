@@ -118,7 +118,7 @@ func main() {
 		c.JSON(http.StatusOK, pv)
 	})
 	// Set ParamValue
-	r.GET("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+	r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
 		// TODO: Does this need to set the parameter in either profile or
 		// the profile's implementation?
 		uuid := c.Param("uuid")
@@ -247,9 +247,10 @@ func main() {
 		ssp.Id = uuid.New().String()
 
 		version := json.Version
-		oscal_version := "1.0.0-m1" // do not let user specify oscal version at this moment
+		oscal_version := json.OscalVersion 
 		title := json.Title
-		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version}
+		profileId := json.ProfileId
+		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
 
 		// operation
 		sspEngine.SetTitleVersion(ssp, request)
@@ -319,16 +320,16 @@ func main() {
 		// return file id
 		c.JSON(http.StatusOK, ssp.Id)
 	})
-	r.GET("/ssp/view-ssp", func(c *gin.Context) {
+
+	r.GET("/ssp/view-ssp/:fid", func(c *gin.Context) {
 		fid := c.Param("fid")
 		parent := context.DownloadDir
 		targetFile := parent + "/" + fid
 		targetFile = context.ExpandPath(targetFile)
 		xmlFile := targetFile + ".xml"
 
-		profileName := "NIST_SP-800-53_rev4_MODERATE-baseline_profile"
-
-		sspEngine.MakeSystemSecurityPlanModel(xmlFile, profileName)
+		model:=sspEngine.MakeSystemSecurityPlanModel(xmlFile)
+		c.JSON(http.StatusOK, model)
 	})
 	r.POST("/ssp/remove-inventory-item", func(c *gin.Context) {
 		var json data_models.RemoveElementRequest
@@ -433,5 +434,5 @@ func main() {
 	})
 
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-	r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run("0.0.0.0:9050") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
