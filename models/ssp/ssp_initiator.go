@@ -2,20 +2,21 @@ package ssp
 
 import (
 	"encoding/xml"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"time"
 
-	"github.com/google/uuid"
 	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
 	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
-	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
-	information "github.com/infobeyondtech/oscal-processor/models/information"
 	"github.com/docker/oscalkit/types/oscal/validation_root"
+	"github.com/google/uuid"
 	"github.com/infobeyondtech/oscal-processor/context"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
+	ssp_models "github.com/infobeyondtech/oscal-processor/models/data_models/ssp_model"
+	information "github.com/infobeyondtech/oscal-processor/models/information"
 )
 
-func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request data_models.SetTitleVersionRequest){
+func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request data_models.SetTitleVersionRequest) {
 	GuardMetaData(ssp)
 
 	ssp.Metadata.Title = sdk_ssp.Title(request.Title)
@@ -23,17 +24,17 @@ func SetTitleVersion(ssp *sdk_ssp.SystemSecurityPlan, request data_models.SetTit
 	ssp.Metadata.OscalVersion = OscalVersion(request.OscalVersion)
 }
 
-func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_models.AddSystemCharacteristicReuqest){
+func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_models.AddSystemCharacteristicReuqest) {
 	GuardSystemCharacteristics(ssp)
 
 	ssp.SystemCharacteristics.SystemName = sdk_ssp.SystemName(request.SystemName)
-	ssp.SystemCharacteristics.Description = &sdk_ssp.Markup{Raw:request.Description}
+	ssp.SystemCharacteristics.Description = &sdk_ssp.Markup{Raw: request.Description}
 	ssp.SystemCharacteristics.SecuritySensitivityLevel = sdk_ssp.SecuritySensitivityLevel(request.SecurityLevel)
 
-	annotation := &Annotation {Name: "deployment-model", Value:request.DeploymentModel }
+	annotation := &Annotation{Name: "deployment-model", Value: request.DeploymentModel}
 	ssp.SystemCharacteristics.Annotations = append(ssp.SystemCharacteristics.Annotations, *annotation)
 
-	systemId := &sdk_ssp.SystemId{ IdentifierType: "https://ietf.org/rfc/rfc4122", Value:request.UUID}
+	systemId := &sdk_ssp.SystemId{IdentifierType: "https://ietf.org/rfc/rfc4122", Value: request.UUID}
 	ssp.SystemCharacteristics.SystemIds = append(ssp.SystemCharacteristics.SystemIds, *systemId)
 
 	GuardSystemInformation(ssp)
@@ -41,8 +42,8 @@ func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_model
 	// initiate fields in impact info
 	impactInfo := &sdk_ssp.InformationType{}
 	impactInfo.Title = sdk_ssp.Title(request.SystemInformationTitle)
-	impactInfo.Description = &sdk_ssp.Markup{Raw:request.SystemInformationDescription}
-	impactInfo.ConfidentialityImpact = &sdk_ssp.ConfidentialityImpact{Base:sdk_ssp.Base(request.ConfidentialityImpact)}
+	impactInfo.Description = &sdk_ssp.Markup{Raw: request.SystemInformationDescription}
+	impactInfo.ConfidentialityImpact = &sdk_ssp.ConfidentialityImpact{Base: sdk_ssp.Base(request.ConfidentialityImpact)}
 	impactInfo.AvailabilityImpact = &sdk_ssp.AvailabilityImpact{Base: sdk_ssp.Base(request.AvailabilityImpact)}
 	impactInfo.IntegrityImpact = &sdk_ssp.IntegrityImpact{Base: sdk_ssp.Base(request.IntegrityImpact)}
 
@@ -50,7 +51,7 @@ func SetSystemCharacteristic(ssp *sdk_ssp.SystemSecurityPlan, request data_model
 }
 
 // initiate a ssp instance from an existing xml file
-func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
+func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string) {
 	dat, e := ioutil.ReadFile(path)
 	if e != nil {
 		fmt.Printf("error: %v", e)
@@ -66,7 +67,7 @@ func LoadFromFile(ssp *sdk_ssp.SystemSecurityPlan, path string){
 }
 
 // initiate a ssp instance for the given file id
-func LoadFromFileById(ssp *sdk_ssp.SystemSecurityPlan, fileId string){
+func LoadFromFileById(ssp *sdk_ssp.SystemSecurityPlan, fileId string) {
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fileId
 	targetFile = context.ExpandPath(targetFile)
@@ -87,11 +88,11 @@ func LoadFromFileById(ssp *sdk_ssp.SystemSecurityPlan, fileId string){
 }
 
 // marshal a ssp into a xml file, returns the xml path
-func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
+func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string {
 	parent := context.DownloadDir
-	if(ssp.Id == ""){
+	if ssp.Id == "" {
 		ssp.Id = uuid.New().String()
-	}	
+	}
 	targetFile := parent + "/" + ssp.Id
 	targetFile = context.ExpandPath(targetFile)
 	xmlFile := targetFile + ".xml"
@@ -104,7 +105,7 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 	// marshal to xml
 	out, e := xml.MarshalIndent(ssp, "  ", "    ")
 	check(e)
-	
+
 	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
 	check(ioErr)
 
@@ -112,26 +113,26 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string{
 }
 
 // insert an inventory item
-func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InsertInventoryItemRequest){
-	sdk_itm := &sdk_ssp.InventoryItem{}	
+func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InsertInventoryItemRequest) {
+	sdk_itm := &sdk_ssp.InventoryItem{}
 
 	// fetch inventory information for item
 	db_itm := information.GetInventoryItem(request.InventoryItemID)
 	sdk_itm.AssetId = db_itm.AssetId
-	sdk_itm.Description = &sdk_ssp.Markup{Raw:db_itm.Description}
+	sdk_itm.Description = &sdk_ssp.Markup{Raw: db_itm.Description}
 	sdk_itm.Id = db_itm.UUID
 
 	// fetch parties for item
 	for _, partyRoleMap := range request.ResponsibleParties {
 
 		sdk_party := &sdk_ssp.ResponsibleParty{}
-		
+
 		// insert user role detail in the header
 		db_user := information.GetUser(partyRoleMap.UserUUID)
 		AddUser(ssp, db_user)
 		sdk_party.RoleId = db_user.RoleId
-		
-		for _, partyId := range partyRoleMap.PartyUUIDs{
+
+		for _, partyId := range partyRoleMap.PartyUUIDs {
 			sdk_party.PartyIds = append(sdk_party.PartyIds, PartyId(partyId))
 
 			// insert party detail in the header
@@ -140,44 +141,44 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.Inser
 
 		sdk_itm.ResponsibleParties = append(sdk_itm.ResponsibleParties, *sdk_party)
 	}
-	
+
 	// fetch component for item
-	for _, component_id := range request.ImplementComponents{
-		implement_component := &sdk_ssp.ImplementedComponent{ ComponentId : component_id }
+	for _, component_id := range request.ImplementComponents {
+		implement_component := &sdk_ssp.ImplementedComponent{ComponentId: component_id}
 		sdk_itm.ImplementedComponents = append(sdk_itm.ImplementedComponents, *implement_component)
-		
+
 		// insert component detail in the header
-		AddComponent(ssp, component_id, []sdk_ssp.ResponsibleRole{})	
+		AddComponent(ssp, component_id, []sdk_ssp.ResponsibleRole{})
 	}
 
 	// insert inventory item into ssp systemimplementation section
 	GuardSystemImplementation(ssp)
-	if(ssp.SystemImplementation.SystemInventory==nil){
+	if ssp.SystemImplementation.SystemInventory == nil {
 		ssp.SystemImplementation.SystemInventory = &sdk_ssp.SystemInventory{}
 	}
 	ssp.SystemImplementation.SystemInventory.InventoryItems = append(ssp.SystemImplementation.SystemInventory.InventoryItems, *sdk_itm)
 }
 
 // insert an implemented requirement
-func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.InsertImplementedRequirementRequest){
+func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.InsertImplementedRequirementRequest) {
 	sdk_requirement := &sdk_ssp.ImplementedRequirement{}
 	sdk_requirement.ControlId = requirement.ControlID
-	sdk_requirement.Id =  requirement.UUID
+	sdk_requirement.Id = requirement.UUID
 
-	for _, statement := range requirement.Statements{			
+	for _, statement := range requirement.Statements {
 		// from request statement to sdk statement
 		sdk_statement := &sdk_ssp.Statement{}
 		sdk_statement.StatementId = statement.StatementID
 
-		for _, byComponent := range statement.ByComponents{
+		for _, byComponent := range statement.ByComponents {
 			// from byComponent to sdk byComponent
 			sdk_byComponent := &sdk_ssp.ByComponent{}
 			sdk_byComponent.ComponentId = byComponent.ComponentID
-			sdk_byComponent.Description = &sdk_ssp.Markup{Raw:byComponent.Description}
+			sdk_byComponent.Description = &sdk_ssp.Markup{Raw: byComponent.Description}
 			responsibleRoles := []sdk_ssp.ResponsibleRole{}
-			
+
 			// component parameters
-			for _, param := range byComponent.SetParameters{
+			for _, param := range byComponent.SetParameters {
 				sdk_param := &sdk_ssp.SetParameter{}
 				// from setParams to sdk params
 				sdk_param.ParamId = param.ParamID
@@ -189,23 +190,23 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data
 			// responsible roles and users for a component
 			for _, partyRoleMap := range byComponent.ResponsibleParties {
 
-				sdk_role:= &sdk_ssp.ResponsibleRole{}
-				
+				sdk_role := &sdk_ssp.ResponsibleRole{}
+
 				// insert user role detail in the header
 				db_user := information.GetUser(partyRoleMap.UserUUID)
 				AddUser(ssp, db_user)
 				sdk_role.RoleId = db_user.RoleId
-				
-				for _, partyId := range partyRoleMap.PartyUUIDs{
+
+				for _, partyId := range partyRoleMap.PartyUUIDs {
 					sdk_role.PartyIds = append(sdk_role.PartyIds, PartyId(partyId))
-		
+
 					// insert party detail in the header
 					AddParty(ssp, partyId)
 				}
-		
+
 				//sdk_byComponent.ResponsibleRoles = append(sdk_byComponent.ResponsibleRoles, *sdk_role)
 				responsibleRoles = append(responsibleRoles, *sdk_role)
-			}			
+			}
 
 			AddComponent(ssp, byComponent.ComponentID, responsibleRoles)
 			sdk_statement.ByComponents = append(sdk_statement.ByComponents, *sdk_byComponent)
@@ -218,24 +219,24 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data
 }
 
 // private func to add a component in system-implementation, check duplicates
-func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole){
+func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole) {
 	GuardSystemImplementation(ssp)
 
 	// checkt existing components
-	for _, component := range ssp.SystemImplementation.Components{
-		if(component.Id == componentId){
-			// merge roles within a component and finish		
-			toAppend := []sdk_ssp.ResponsibleRole {}
-			
-			for _, newRole := range responsibleRoles{
+	for _, component := range ssp.SystemImplementation.Components {
+		if component.Id == componentId {
+			// merge roles within a component and finish
+			toAppend := []sdk_ssp.ResponsibleRole{}
+
+			for _, newRole := range responsibleRoles {
 				duplicate := false
-				for _, existRole := range component.ResponsibleRoles{
-					if(newRole.RoleId == existRole.RoleId){
+				for _, existRole := range component.ResponsibleRoles {
+					if newRole.RoleId == existRole.RoleId {
 						duplicate = true
 						break
 					}
 				}
-				if(!duplicate){
+				if !duplicate {
 					toAppend = append(toAppend, newRole)
 				}
 			}
@@ -247,107 +248,107 @@ func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsib
 	db_component := information.GetComponent(componentId)
 	sdk_component := &sdk_ssp.Component{}
 	sdk_component.Id = db_component.UUID
-	sdk_component.Description =  &sdk_ssp.Markup{Raw:db_component.Description}
-	sdk_component.Status = &sdk_ssp.Status{State:db_component.State}
+	sdk_component.Description = &sdk_ssp.Markup{Raw: db_component.Description}
+	sdk_component.Status = &sdk_ssp.Status{State: db_component.State}
 	sdk_component.Title = Title(db_component.Title)
 	sdk_component.ComponentType = db_component.Type
 
 	// version and last-modified property
-	versionProperty := &Prop{Name:"version", Value:db_component.Version}
-	lastModifiedProperty := &Prop{Name:"last-modified-date", Value:db_component.LastModified}
+	versionProperty := &Prop{Name: "version", Value: db_component.Version}
+	lastModifiedProperty := &Prop{Name: "last-modified-date", Value: db_component.LastModified}
 	sdk_component.Properties = append(sdk_component.Properties, *versionProperty)
-	sdk_component.Properties = append(sdk_component.Properties, *lastModifiedProperty )
+	sdk_component.Properties = append(sdk_component.Properties, *lastModifiedProperty)
 
 	// insert the responsible role
 	sdk_component.ResponsibleRoles = responsibleRoles
 
-	// insert into ssp component collection	
+	// insert into ssp component collection
 	ssp.SystemImplementation.Components = append(ssp.SystemImplementation.Components, *sdk_component)
 }
 
 // private func to add a user in system-implementation, check duplicates
-func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User){
+func AddUser(ssp *sdk_ssp.SystemSecurityPlan, db_user information.User) {
 	GuardSystemImplementation(ssp)
 
 	// no duplicate users
-	for _, user := range ssp.SystemImplementation.Users{
-		if(user.Id == db_user.UUID){
+	for _, user := range ssp.SystemImplementation.Users {
+		if user.Id == db_user.UUID {
 			return
-		}		
+		}
 	}
-	
+
 	// get user info from DB
-	sdk_user :=  &sdk_ssp.User{}
+	sdk_user := &sdk_ssp.User{}
 	sdk_user.Title = Title(db_user.Title)
 	sdk_user.Id = db_user.UUID
 	sdk_user.RoleIds = []sdk_ssp.RoleId{sdk_ssp.RoleId(db_user.RoleId)}
 
-	annotation := &Annotation {Name: "type", Value:db_user.Type }
-	sdk_user.Annotations = []sdk_ssp.Annotation{ *annotation }
+	annotation := &Annotation{Name: "type", Value: db_user.Type}
+	sdk_user.Annotations = []sdk_ssp.Annotation{*annotation}
 
 	// insert into ssp header
 	ssp.SystemImplementation.Users = append(ssp.SystemImplementation.Users, *sdk_user)
 }
 
 // private func to add a party in meta data, check duplicates
-func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string){
+func AddParty(ssp *sdk_ssp.SystemSecurityPlan, partyId string) {
 	GuardMetaData(ssp)
 
 	// no duplicate parties
-	for _, party := range ssp.Metadata.Parties{
-		if(party.Id == partyId){
+	for _, party := range ssp.Metadata.Parties {
+		if party.Id == partyId {
 			return
-		}		
+		}
 	}
-	
+
 	// get party info from DB
-	db_party := information.GetParty(partyId);
+	db_party := information.GetParty(partyId)
 	sdk_party := &Party{}
 	sdk_party.Id = db_party.UUID
 
 	// party name and type are missing in this sdk
 	// using properties field in sdk_party for party name and type
-	nameProperty := &Prop{Name:"name", Value:db_party.RoleId}
-	typeProperty := &Prop{Name:"type", Value:db_party.Type}
+	nameProperty := &Prop{Name: "name", Value: db_party.RoleId}
+	typeProperty := &Prop{Name: "type", Value: db_party.Type}
 	sdk_party.Properties = append(sdk_party.Properties, *nameProperty)
 	sdk_party.Properties = append(sdk_party.Properties, *typeProperty)
 
 	// insert into ssp header
 	ssp.Metadata.Parties = append(ssp.Metadata.Parties, *sdk_party)
-} 
+}
 
-func GuardMetaData(ssp *sdk_ssp.SystemSecurityPlan){
-	if(ssp.Metadata == nil){
+func GuardMetaData(ssp *sdk_ssp.SystemSecurityPlan) {
+	if ssp.Metadata == nil {
 		ssp.Metadata = &sdk_ssp.Metadata{}
 	}
 }
 
-func GuardSystemImplementation(ssp *sdk_ssp.SystemSecurityPlan){
-	if(ssp.SystemImplementation == nil){
+func GuardSystemImplementation(ssp *sdk_ssp.SystemSecurityPlan) {
+	if ssp.SystemImplementation == nil {
 		ssp.SystemImplementation = &sdk_ssp.SystemImplementation{}
 	}
 }
 
-func GuardControlImplementation(ssp *sdk_ssp.SystemSecurityPlan){
-	if(ssp.ControlImplementation == nil){
+func GuardControlImplementation(ssp *sdk_ssp.SystemSecurityPlan) {
+	if ssp.ControlImplementation == nil {
 		ssp.ControlImplementation = &sdk_ssp.ControlImplementation{}
 	}
 }
 
-func GuardSystemCharacteristics(ssp *sdk_ssp.SystemSecurityPlan){
-	if(ssp.SystemCharacteristics == nil){
+func GuardSystemCharacteristics(ssp *sdk_ssp.SystemSecurityPlan) {
+	if ssp.SystemCharacteristics == nil {
 		ssp.SystemCharacteristics = &sdk_ssp.SystemCharacteristics{}
 	}
 }
 
-func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan){
+func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan) {
 	GuardSystemCharacteristics(ssp)
-	if(ssp.SystemCharacteristics.SystemInformation == nil){
+	if ssp.SystemCharacteristics.SystemInformation == nil {
 		ssp.SystemCharacteristics.SystemInformation = &sdk_ssp.SystemInformation{}
 	}
 }
 
-func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurityPlanModel{
+func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurityPlanModel {
 	// load from file
 	ssp := &sdk_ssp.SystemSecurityPlan{}
 	sspModel := SystemSecurityPlanModel{}
@@ -366,37 +367,37 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 
 	// turn into data model
 	sspModel.ImportProfile = profileName
-	sspModel.MetaDataModel = data_models.MetaData{}
-	sspModel.SystemCharacteristicModel = data_models.SystemCharacteristic{}
-	sspModel.SystemImplementationModel = data_models.SystemImplementation{}
-	sspModel.ControlImplementationModel = data_models.ControlImplementation{}
+	sspModel.MetaDataModel = ssp_models.MetaData{}
+	sspModel.SystemCharacteristicModel = ssp_models.SystemCharacteristic{}
+	sspModel.SystemImplementationModel = ssp_models.SystemImplementation{}
+	sspModel.ControlImplementationModel = ssp_models.ControlImplementation{}
 
 	// metadata
-	if(ssp.Metadata!=nil){
+	if ssp.Metadata != nil {
 		sspModel.MetaDataModel.Version = string(ssp.Metadata.Version)
 		sspModel.MetaDataModel.OscalVersion = string(ssp.Metadata.OscalVersion)
 		sspModel.MetaDataModel.Title = string(ssp.Metadata.Title)
 		sspModel.MetaDataModel.LastModified = string(ssp.Metadata.LastModified)
-		for _, party := range ssp.Metadata.Parties{
+		for _, party := range ssp.Metadata.Parties {
 			// find type and name property from properties
 			partyName := findPropValue(party.Properties, "name")
 			partyType := findPropValue(party.Properties, "type")
-			partyModel := data_models.Party{
-				Uuid: party.Id,	
+			partyModel := ssp_models.Party{
+				Uuid: party.Id,
 				Name: partyName,
 				Type: partyType,
 			}
 			sspModel.MetaDataModel.Parties = append(sspModel.MetaDataModel.Parties, partyModel)
-		}	
+		}
 	}
 
 	// System Characteristic
-	if(ssp.SystemCharacteristics!= nil && ssp.SystemCharacteristics.SystemInformation != nil){
+	if ssp.SystemCharacteristics != nil && ssp.SystemCharacteristics.SystemInformation != nil {
 
 		informationValue := ssp.SystemCharacteristics.SystemInformation.InformationTypes[0]
 		sspModel.SystemCharacteristicModel.SystemName = string(ssp.SystemCharacteristics.SystemName)
 		sspModel.SystemCharacteristicModel.Description = string(ssp.SystemCharacteristics.Description.Raw)
-    	sspModel.SystemCharacteristicModel.SecurityLevel = string(ssp.SystemCharacteristics.SecuritySensitivityLevel)
+		sspModel.SystemCharacteristicModel.SecurityLevel = string(ssp.SystemCharacteristics.SecuritySensitivityLevel)
 
 		sspModel.SystemCharacteristicModel.SystemInformationTitle = string(informationValue.Title)
 		sspModel.SystemCharacteristicModel.SystemInformationDescription = string(informationValue.Description.Raw)
@@ -406,96 +407,96 @@ func MakeSystemSecurityPlanModel(path string, profileName string) SystemSecurity
 	}
 
 	// System Implementation
-	if(ssp.SystemImplementation!=nil){		
-	for _, user := range ssp.SystemImplementation.Users{
-	userModel := data_models.User{
-		Uuid: user.Id,
-		Title: string(user.Title),
-		Type: string(user.Annotations[0].Value),
-		RoleId: string(user.RoleIds[0]),			
-	}
-	sspModel.SystemImplementationModel.Users = append(sspModel.SystemImplementationModel.Users, userModel)
-	}	
-	
-	// sspModel.SystemImplementationModel.Components
-	for _, component := range ssp.SystemImplementation.Components{
-		componentModel := data_models.Component{
-			Uuid : component.Id,
-			Type : component.ComponentType,
-			Title : string(component.Title),
-			Description : string(component.Description.Raw),
-			Status : component.Status.State,
-		}
-		// responsible roles
-		for _, role := range component.ResponsibleRoles{
-			ResponsibleRole := data_models.ResponsibleRole{
-				RoleId: role.RoleId,
+	if ssp.SystemImplementation != nil {
+		for _, user := range ssp.SystemImplementation.Users {
+			userModel := ssp_models.User{
+				Uuid:   user.Id,
+				Title:  string(user.Title),
+				Type:   string(user.Annotations[0].Value),
+				RoleId: string(user.RoleIds[0]),
 			}
-			for _, partyId := range role.PartyIds{
-				ResponsibleRole.PartyIds = append(ResponsibleRole.PartyIds, string(partyId))
-			}
-			componentModel.ResponsibleRoles = append(componentModel.ResponsibleRoles, ResponsibleRole)
+			sspModel.SystemImplementationModel.Users = append(sspModel.SystemImplementationModel.Users, userModel)
 		}
-		sspModel.SystemImplementationModel.Components = append(sspModel.SystemImplementationModel.Components, componentModel)
-	}
 
-	// sspModel.SystemImplementationModel.InventoryItems
-	for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems{
-		itemModel := data_models.InventoryItem{
-			Uuid : item.Id,
-			Description : item.Description.Raw,
-			AssetId : item.AssetId,		
-		}
-		for _,impl := range item.ImplementedComponents{
-			itemModel.ImplementComponentIds = append(itemModel.ImplementComponentIds, impl.ComponentId)
-		}
-		// set item.ResponsibleParties
-		for _,party := range item.ResponsibleParties{
-			partyModel := data_models.ResponsibleParty{
-				RoleId : party.RoleId,
-				PartyUuid : string(party.PartyIds[0]),	// might need to change to array here
+		// sspModel.SystemImplementationModel.Components
+		for _, component := range ssp.SystemImplementation.Components {
+			componentModel := ssp_models.Component{
+				Uuid:        component.Id,
+				Type:        component.ComponentType,
+				Title:       string(component.Title),
+				Description: string(component.Description.Raw),
+				Status:      component.Status.State,
 			}
-			itemModel.ResponsibleParties = append(itemModel.ResponsibleParties,partyModel )
+			// responsible roles
+			for _, role := range component.ResponsibleRoles {
+				ResponsibleRole := ssp_models.ResponsibleRole{
+					RoleId: role.RoleId,
+				}
+				for _, partyId := range role.PartyIds {
+					ResponsibleRole.PartyIds = append(ResponsibleRole.PartyIds, string(partyId))
+				}
+				componentModel.ResponsibleRoles = append(componentModel.ResponsibleRoles, ResponsibleRole)
+			}
+			sspModel.SystemImplementationModel.Components = append(sspModel.SystemImplementationModel.Components, componentModel)
 		}
-		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
-	}
+
+		// sspModel.SystemImplementationModel.InventoryItems
+		for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems {
+			itemModel := ssp_models.InventoryItem{
+				Uuid:        item.Id,
+				Description: item.Description.Raw,
+				AssetId:     item.AssetId,
+			}
+			for _, impl := range item.ImplementedComponents {
+				itemModel.ImplementComponentIds = append(itemModel.ImplementComponentIds, impl.ComponentId)
+			}
+			// set item.ResponsibleParties
+			for _, party := range item.ResponsibleParties {
+				partyModel := ssp_models.ResponsibleParty{
+					RoleId:    party.RoleId,
+					PartyUuid: string(party.PartyIds[0]), // might need to change to array here
+				}
+				itemModel.ResponsibleParties = append(itemModel.ResponsibleParties, partyModel)
+			}
+			sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
+		}
 	}
 
 	// Control Implementation
 	// sspModel.ControlImplementationModel.ImplementedRequirements
-	if(ssp.ControlImplementation!=nil){
-	for _, req := range ssp.ControlImplementation.ImplementedRequirements{
-		reqModel := data_models.ImplementedRequirement{
-			Uuid: req.Id,
-			ControlId: req.ControlId,
-		}
-
-		// statements
-		for _, statement := range req.Statements{
-			statementModel := data_models.StatementModel{
-				StatementId : statement.StatementId,
+	if ssp.ControlImplementation != nil {
+		for _, req := range ssp.ControlImplementation.ImplementedRequirements {
+			reqModel := ssp_models.ImplementedRequirement{
+				Uuid:      req.Id,
+				ControlId: req.ControlId,
 			}
-			// byComponents array
-			for _, bycomponent := range statement.ByComponents{
-				bycomponentModel := data_models.ByComponentModel{
-					ComponentUuid : bycomponent.ComponentId,
-					Description : bycomponent.Description.Raw,					
+
+			// statements
+			for _, statement := range req.Statements {
+				statementModel := ssp_models.StatementModel{
+					StatementId: statement.StatementId,
 				}
-				// setParameter arary
-				for _, setParam:= range bycomponent.ParameterSettings{
-					paramModel := data_models.Parameter{
-						ParamId: setParam.ParamId,
-						Value: string(setParam.Value),
+				// byComponents array
+				for _, bycomponent := range statement.ByComponents {
+					bycomponentModel := ssp_models.ByComponentModel{
+						ComponentUuid: bycomponent.ComponentId,
+						Description:   bycomponent.Description.Raw,
 					}
-					bycomponentModel.Parameters = append(bycomponentModel.Parameters, paramModel)
+					// setParameter arary
+					for _, setParam := range bycomponent.ParameterSettings {
+						paramModel := ssp_models.Parameter{
+							ParamId: setParam.ParamId,
+							Value:   string(setParam.Value),
+						}
+						bycomponentModel.Parameters = append(bycomponentModel.Parameters, paramModel)
+					}
+					statementModel.ByComponents = append(statementModel.ByComponents, bycomponentModel)
 				}
-				statementModel.ByComponents = append(statementModel.ByComponents, bycomponentModel)
+				reqModel.Statements = append(reqModel.Statements, statementModel)
 			}
-			reqModel.Statements = append(reqModel.Statements, statementModel)
-		}
 
-		sspModel.ControlImplementationModel.ImplementedRequirements = append(sspModel.ControlImplementationModel.ImplementedRequirements, reqModel)
-	}
+			sspModel.ControlImplementationModel.ImplementedRequirements = append(sspModel.ControlImplementationModel.ImplementedRequirements, reqModel)
+		}
 	}
 
 	return sspModel
@@ -509,12 +510,12 @@ func check(e error) {
 }
 
 // find the value in a property array
-func findPropValue(properties []Prop, key string) string{
-	if(properties==nil){
+func findPropValue(properties []Prop, key string) string {
+	if properties == nil {
 		return ""
 	}
-	for _, prop := range properties{
-		if(prop.Name == key){
+	for _, prop := range properties {
+		if prop.Name == key {
 			return prop.Value
 		}
 	}
@@ -522,29 +523,29 @@ func findPropValue(properties []Prop, key string) string{
 }
 
 // remove an implemented requirement
-func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId string){
+func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId string) {
 	// check if element container in the xml exist
-	if(ssp.ControlImplementation==nil){
+	if ssp.ControlImplementation == nil {
 		return
 	}
 
 	// find the index of the element
 	index := -1
-	for i:=0;i<len(ssp.ControlImplementation.ImplementedRequirements);i++{
-		if(ssp.ControlImplementation.ImplementedRequirements[i].Id == reqId){
+	for i := 0; i < len(ssp.ControlImplementation.ImplementedRequirements); i++ {
+		if ssp.ControlImplementation.ImplementedRequirements[i].Id == reqId {
 			index = i
 			break
 		}
 	}
-	if(index == -1){
-		return	// didn't find the element
+	if index == -1 {
+		return // didn't find the element
 	}
 
 	// handle the case where the target element is the only element left
-	if(index==0 || len(ssp.ControlImplementation.ImplementedRequirements)==1){
+	if index == 0 || len(ssp.ControlImplementation.ImplementedRequirements) == 1 {
 		ssp.ControlImplementation = nil
 		return
-	}else{
+	} else {
 		// remove that slice at index
 		ssp.ControlImplementation.ImplementedRequirements[index] = ssp.ControlImplementation.ImplementedRequirements[len(ssp.ControlImplementation.ImplementedRequirements)-1]
 		ssp.ControlImplementation.ImplementedRequirements = ssp.ControlImplementation.ImplementedRequirements[:len(ssp.ControlImplementation.ImplementedRequirements)-1]
@@ -552,40 +553,39 @@ func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId strin
 	}
 }
 
-// remove an inventory item 
-func RemoveInventoryItemAt(ssp *sdk_ssp.SystemSecurityPlan, itemId string){
+// remove an inventory item
+func RemoveInventoryItemAt(ssp *sdk_ssp.SystemSecurityPlan, itemId string) {
 	// check if element container in the xml exist
-	if(ssp.SystemImplementation==nil){
+	if ssp.SystemImplementation == nil {
 		return
 	}
-	if(ssp.SystemImplementation.SystemInventory==nil){
+	if ssp.SystemImplementation.SystemInventory == nil {
 		return
 	}
 
 	// find the index of the element
 	index := -1
-	for i:=0;i<len(ssp.SystemImplementation.SystemInventory.InventoryItems);i++{
-		if(ssp.SystemImplementation.SystemInventory.InventoryItems[i].Id == itemId){
+	for i := 0; i < len(ssp.SystemImplementation.SystemInventory.InventoryItems); i++ {
+		if ssp.SystemImplementation.SystemInventory.InventoryItems[i].Id == itemId {
 			index = i
 			break
 		}
 	}
-	if(index == -1){
+	if index == -1 {
 		return // didn't find the element
 	}
 
 	// handle the case where the target element is the only element left
-	if(index==0 || len(ssp.SystemImplementation.SystemInventory.InventoryItems)==1){
+	if index == 0 || len(ssp.SystemImplementation.SystemInventory.InventoryItems) == 1 {
 		ssp.SystemImplementation.SystemInventory = nil
 		return
-	}else{
+	} else {
 		// remove that slice at index
 		ssp.SystemImplementation.SystemInventory.InventoryItems[index] = ssp.SystemImplementation.SystemInventory.InventoryItems[len(ssp.SystemImplementation.SystemInventory.InventoryItems)-1]
 		ssp.SystemImplementation.SystemInventory.InventoryItems = ssp.SystemImplementation.SystemInventory.InventoryItems[:len(ssp.SystemImplementation.SystemInventory.InventoryItems)-1]
 		return
 	}
 }
-
 
 // ImplementedComponent
 type ImplementedComponent = sdk_ssp.ImplementedComponent
@@ -669,8 +669,7 @@ type RolePartyMap = data_models.RolePartyMap
 type Title = validation_root.Title
 
 //
-type Annotation  =validation_root.Annotation
+type Annotation = validation_root.Annotation
 
-// 
-type SystemSecurityPlanModel = data_models.SystemSecurityPlanModel
-
+//
+type SystemSecurityPlanModel = ssp_models.SystemSecurityPlanModel

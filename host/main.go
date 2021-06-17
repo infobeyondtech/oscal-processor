@@ -420,6 +420,18 @@ func main() {
 		c.JSON(http.StatusOK, pv)
 	})
 
+	// ToBeTested
+	r.GET("/profile/view-profile", func(c *gin.Context) {
+		fid := c.Param("fid")
+		parent := context.DownloadDir
+		targetFile := parent + "/" + fid
+		targetFile = context.ExpandPath(targetFile)
+		xmlFile := targetFile + ".xml"
+		println(xmlFile)
+		model := profile.MakeProfileModel(xmlFile)
+		c.JSON(http.StatusOK, model)
+	})
+
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
