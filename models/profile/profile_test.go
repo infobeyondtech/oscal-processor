@@ -36,7 +36,16 @@ func TestMakeProfileModel(t *testing.T) {
 	fmt.Printf("file path: " + path)
 
 	profileModel := MakeProfileModel(path)
-
+	// assert.Equal(profileModel.Metadata.Title, "1")
 	assert.Equal(profileModel.Metadata.Title, string(profile.Metadata.Title))
+	assert.Equal(profileModel.Metadata.Version, string(profile.Metadata.Version))
+	assert.Equal(profileModel.Metadata.OscalVersion, string(profile.Metadata.OscalVersion))
+	//assert.Equal(profileModel.Metadata.Version, "1")
+	assert.Equal(profileModel.Metadata.Title, "a")
+	assert.Equal(profileModel.Metadata.Version, "a")
+	assert.Equal(profileModel.Metadata.OscalVersion, "a")
+	// assert.Equal(profileModel.Metadata.LastModified, string(profile.Metadata.LastModified))
+	// assert.Equal(profileModel.Metadata.Roles, string(profile.Metadata.Roles[0]))
+	// assert.Equal(profileModel.Metadata.Title, string(profile.Metadata.Title))
 
 }
