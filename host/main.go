@@ -422,7 +422,7 @@ func main() {
 	})
 
 	// ToBeTested
-	r.GET("/profile/view-profile", func(c *gin.Context) {
+	r.GET("/profile/view-profile/:fid", func(c *gin.Context) {
 		fid := c.Param("fid")
 		parent := context.DownloadDir
 		targetFile := parent + "/" + fid

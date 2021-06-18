@@ -29,6 +29,7 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fid
 	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
 
 	// generate profile and write to file
 	p := &sdk_profile.Profile{}
@@ -64,10 +65,10 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	}
 
 	// target file has no file type, but content is in xml format
-	err := ioutil.WriteFile(targetFile, out, 0644)
+	err := ioutil.WriteFile(xmlFile, out, 0644)
 
 	// Returns the unique file id, if everything is correct
-	return targetFile, err
+	return xmlFile, err
 }
 
 // LoadFromFile : initiate a profile using a xml file
@@ -328,6 +329,7 @@ func MakeProfileModel(path string) ProfileModel {
 		fmt.Printf("error: %v", marshalError)
 		return profile_Model
 	}
+
 	profile_Model.Metadata = profile_models.Metadata{}
 	profile_Model.Imports = profile_models.Import{}
 	profile_Model.BackMatter = profile_models.BackMatter{}
