@@ -89,8 +89,8 @@ type Statement struct {
 }
 
 type RolePartyMap struct {
-	UserUUID string `json:"UserUUID" binding:"required"`
-	PartyUUIDs []string `json:"PartyUUIDs" binding:"required"`
+	UserUUID string `json:"userUUID" binding:"required"`
+	PartyUUIDs []string `json:"partyUUIDs" binding:"required"`
 } 
 
 type RemoveElementRequest struct{

@@ -16,7 +16,6 @@ COPY . .
 RUN mkdir -p /root/oscal_processing_space/tmp
 RUN mkdir -p /root/oscal_processing_space/uploads
 RUN mkdir -p /root/oscal_processing_space/downloads
-COPY test.xml /root/oscal_processing_space/downloads/test.xml
 COPY container_root_files /root
 
 ENV CGO_ENABLED=0

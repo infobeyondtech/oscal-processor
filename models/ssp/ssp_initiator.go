@@ -443,7 +443,8 @@ func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel{
 	}
 
 	// sspModel.SystemImplementationModel.InventoryItems
-	for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems{
+	if(ssp.SystemImplementation.SystemInventory!=nil){
+		for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems{
 		itemModel := data_models.InventoryItem{
 			Uuid : item.Id,
 			Description : item.Description.Raw,
@@ -461,7 +462,11 @@ func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel{
 			itemModel.ResponsibleParties = append(itemModel.ResponsibleParties,partyModel )
 		}
 		sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
+		}
 	}
+		
+
+
 	}
 
 	// Control Implementation
