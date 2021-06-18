@@ -247,7 +247,7 @@ func main() {
 		ssp.Id = uuid.New().String()
 
 		version := json.Version
-		oscal_version := json.OscalVersion 
+		oscal_version := json.OscalVersion
 		title := json.Title
 		profileId := json.ProfileId
 		request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
@@ -328,7 +328,7 @@ func main() {
 		targetFile = context.ExpandPath(targetFile)
 		xmlFile := targetFile + ".xml"
 
-		model:=sspEngine.MakeSystemSecurityPlanModel(xmlFile)
+		model := sspEngine.MakeSystemSecurityPlanModel(xmlFile)
 		c.JSON(http.StatusOK, model)
 	})
 	r.POST("/ssp/remove-inventory-item", func(c *gin.Context) {
@@ -419,6 +419,18 @@ func main() {
 		fileid := c.Param("fileid")
 		pv := param_value.GetParam(fileid)
 		c.JSON(http.StatusOK, pv)
+	})
+
+	// ToBeTested
+	r.GET("/profile/view-profile", func(c *gin.Context) {
+		fid := c.Param("fid")
+		parent := context.DownloadDir
+		targetFile := parent + "/" + fid
+		targetFile = context.ExpandPath(targetFile)
+		xmlFile := targetFile + ".xml"
+		// println(xmlFile)
+		model := profile.MakeProfileModel(xmlFile)
+		c.JSON(http.StatusOK, model)
 	})
 
 	//r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
