@@ -447,6 +447,7 @@ func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel {
 		}
 
 		// sspModel.SystemImplementationModel.InventoryItems
+		if(ssp.SystemImplementation.SystemInventory!=nil) {
 		for _, item := range ssp.SystemImplementation.SystemInventory.InventoryItems {
 			itemModel := ssp_models.InventoryItem{
 				Uuid:        item.Id,
@@ -465,6 +466,7 @@ func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel {
 				itemModel.ResponsibleParties = append(itemModel.ResponsibleParties, partyModel)
 			}
 			sspModel.SystemImplementationModel.InventoryItems = append(sspModel.SystemImplementationModel.InventoryItems, itemModel)
+		}
 		}
 	}
 

@@ -288,7 +288,8 @@ func TestIntegration(t *testing.T){
 	title := "Enterprise Logging and Auditing System Security Plan"
 	version := "1.0"
 	oscal_version := "1.0.0-milestone1"
-	request := request_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version}
+	profileId := "04630c2c-e296-439e-b690-d6a7656ca367"
+	request := request_models.SetTitleVersionRequest{ Title: title , Version: version, OscalVersion: oscal_version, ProfileId: profileId}
 	SetTitleVersion(ssp, request)
 
 	// add system characteristics
