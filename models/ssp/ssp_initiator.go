@@ -550,8 +550,8 @@ func RemoveImplementedRequirementAt(ssp *sdk_ssp.SystemSecurityPlan, reqId strin
 	}
 
 	// handle the case where the target element is the only element left
-	if index == 0 || len(ssp.ControlImplementation.ImplementedRequirements) == 1 {
-		ssp.ControlImplementation = nil
+	if index == 0 && len(ssp.ControlImplementation.ImplementedRequirements) == 1 {
+		ssp.ControlImplementation.ImplementedRequirements = []ImplementedRequirement{}
 		return
 	} else {
 		// remove that slice at index
@@ -584,8 +584,8 @@ func RemoveInventoryItemAt(ssp *sdk_ssp.SystemSecurityPlan, itemId string) {
 	}
 
 	// handle the case where the target element is the only element left
-	if index == 0 || len(ssp.SystemImplementation.SystemInventory.InventoryItems) == 1 {
-		ssp.SystemImplementation.SystemInventory = nil
+	if index == 0 && len(ssp.SystemImplementation.SystemInventory.InventoryItems) == 1 {
+		ssp.SystemImplementation.SystemInventory.InventoryItems = []InventoryItem{}
 		return
 	} else {
 		// remove that slice at index
@@ -681,3 +681,7 @@ type Annotation = validation_root.Annotation
 
 //
 type SystemSecurityPlanModel = ssp_models.SystemSecurityPlanModel
+
+type InventoryItem = sdk_ssp.InventoryItem
+
+type ImplementedRequirement = sdk_ssp.ImplementedRequirement
