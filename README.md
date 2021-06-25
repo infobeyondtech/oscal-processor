@@ -34,5 +34,5 @@ curl -i \
   - Build 
     > docker build -t main .
   - Run 
-    > docker run -dp 9050:9050 main .
+    > docker run -dp 9050:9050 main
 
