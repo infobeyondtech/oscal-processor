@@ -13,9 +13,9 @@
 #http://localhost:8080/profile/create
 
 # Profile Navigator Test
-curl -i -H "Content-Type: application/json" \
-    -X GET \
-http://localhost:8080/profile/navigator/test.xml
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/profile/navigator/test.xml
 
 # Resolve Profile Test
 #curl -i -H "Content-Type: application/json" \
@@ -29,8 +29,8 @@ http://localhost:8080/profile/navigator/test.xml
 #http://localhost:8080/upload
 
 # Control Test
-#curl -i -H "Content-Type: application/json" \ #    -X GET \
-#http://localhost:8080/control/ac-2
+#curl -i -H "Content-Type: application/json"      -X GET \
+#http://localhost:9050/control/ac-2
 
 # Enhancement Test
 #curl -i -H "Content-Type: application/json" \
@@ -43,6 +43,6 @@ http://localhost:8080/profile/navigator/test.xml
 #http://localhost:8080/getparam/fileid1/paramid1
 
 # Set Param Test
-#curl -i -H "Content-Type: application/json" \
-#    -X GET \
-#http://localhost:8080/setparam/fileid2/paramid2/value3
+curl -i -H "Content-Type: application/json" \
+    -X POST \
+http://localhost:9050/setparam/fileid2/paramid2/value5

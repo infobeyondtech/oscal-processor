@@ -14,6 +14,7 @@ import (
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 
 	"github.com/infobeyondtech/oscal-processor/context"
+	profile_models "github.com/infobeyondtech/oscal-processor/models/data_models/profile_model"
 )
 
 // Given a set of controls, a set of catalogs, and a baseline,
@@ -28,6 +29,7 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	parent := context.DownloadDir
 	targetFile := parent + "/" + fid
 	targetFile = context.ExpandPath(targetFile)
+	xmlFile := targetFile + ".xml"
 
 	// generate profile and write to file
 	p := &sdk_profile.Profile{}
@@ -63,10 +65,10 @@ func CreateProfile(ctrls []string, baseline string, ctlgs []string, title string
 	}
 
 	// target file has no file type, but content is in xml format
-	err := ioutil.WriteFile(targetFile, out, 0644)
+	err := ioutil.WriteFile(xmlFile, out, 0644)
 
 	// Returns the unique file id, if everything is correct
-	return targetFile, err
+	return xmlFile, err
 }
 
 // LoadFromFile : initiate a profile using a xml file
@@ -85,7 +87,7 @@ func LoadFromFile(profile *sdk_profile.Profile, path string) {
 	}
 }
 
-func WriteToFile(p *sdk_profile.Profile) string{
+func WriteToFile(p *sdk_profile.Profile) string {
 	parent := context.DownloadDir
 	targetFile := parent + "/" + p.Id
 	targetFile = context.ExpandPath(targetFile)
@@ -98,7 +100,7 @@ func WriteToFile(p *sdk_profile.Profile) string{
 	dt := time.Now()
 	guardMetadata(p)
 	p.Metadata.LastModified = validation_root.LastModified(dt.String())
-	
+
 	ioErr := ioutil.WriteFile(xmlFile, out, 0644)
 	check(ioErr)
 
@@ -310,6 +312,63 @@ func check(e error) {
 	}
 }
 
+func MakeProfileModel(path string) ProfileModel {
+	// load from file
+	profile := &sdk_profile.Profile{}
+	profile_Model := profile_models.ProfileModel{}
+	dat, e := ioutil.ReadFile(path)
+
+	if e != nil {
+		fmt.Printf("error: %v", e)
+		return profile_Model
+	}
+
+	// unmarshal into data structure
+	marshalError := xml.Unmarshal([]byte(dat), &profile)
+	if marshalError != nil {
+		fmt.Printf("error: %v", marshalError)
+		return profile_Model
+	}
+
+	profile_Model.Metadata = profile_models.Metadata{}
+	profile_Model.Imports = profile_models.Import{}
+	profile_Model.BackMatter = profile_models.BackMatter{}
+
+	// metadata
+	if profile.Metadata != nil {
+		profile_Model.Metadata.Title = string(profile.Metadata.Title)
+		profile_Model.Metadata.Version = string(profile.Metadata.Version)
+		profile_Model.Metadata.OscalVersion = string(profile.Metadata.OscalVersion)
+		profile_Model.Metadata.LastModified = string(profile.Metadata.LastModified)
+
+	}
+
+	profile_Model.Imports.Href = string(profile.Imports[0].Href)
+	for _, include := range profile.Imports[0].Include.IdSelectors {
+		profile_Model.Imports.Include = append(profile_Model.Imports.Include, include.ControlId)
+	}
+
+	for _, resource := range profile.BackMatter.Resources {
+		var rlink_arr []profile_models.Rlink
+		for _, rlinks := range resource.Rlinks {
+			rlink := profile_models.Rlink{
+				Href:      rlinks.Href,
+				MediaType: rlinks.MediaType,
+			}
+			rlink_arr = append(rlink_arr, rlink)
+		}
+
+		resources := profile_models.Resource{
+			Id:     resource.Id,
+			Desc:   string(resource.Desc),
+			Rlinks: rlink_arr,
+		}
+		profile_Model.BackMatter.Resources = append(profile_Model.BackMatter.Resources, resources)
+	}
+	return profile_Model
+
+}
+
 // Metadata : field in profile
 type Metadata = validation_root.Metadata
 
@@ -376,4 +435,19 @@ type Address = validation_root.Address
 // AsIs : field in Modify
 type AsIs = sdk_profile.AsIs
 
+type ProfileModel = profile_models.ProfileModel
 
+// find the value in a property array
+func findPropValue(properties []Prop, key string) string {
+	if properties == nil {
+		return ""
+	}
+	for _, prop := range properties {
+		if prop.Name == key {
+			return prop.Value
+		}
+	}
+	return ""
+}
+
+type Rlink = validation_root.Rlink
