@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -127,7 +128,13 @@ func main() {
 		pv := param_value.SetParamValue(uuid, paramid, value)
 		c.JSON(http.StatusOK, pv)
 	})
-
+	// Get ParamInfo
+	r.GET("/getparaminfo/:paramid", func(c *gin.Context) {
+		paramid := c.Param("paramid")
+		info := param_value.GetParamInfo(paramid)
+		fmt.Println(info.Description)
+		c.JSON(http.StatusOK, info)
+	})
 	// Resolve profile
 	r.POST("/profile/resolve/:uuid", func(c *gin.Context) {
 		rules := context.OSCALRepo +
