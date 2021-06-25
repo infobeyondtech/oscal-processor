@@ -3,6 +3,7 @@ package param_value
 import (
 	//"encoding/json"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -31,6 +32,31 @@ type NullableKey struct {
 	Paramid sql.NullString
 }
 
+type NullableParamInfo struct {
+	paramid sql.NullString `json:"paramid,omitempty"`
+	label sql.NullString `json:"label,omitempty"`
+	sort sql.NullString `json:"sort,omitempty"`
+	description sql.NullString `json:"description,omitempty"`
+}
+
+type SelectionChoice struct {
+	Text string `json:"Text,omitempty"`
+	Insert string `json:"Insert,omitempty"`
+	InsertLabel string `json:"InsertLabel,omitempty"`
+}
+
+type ParamDescription struct {
+	HowMany string `json:"HowMany,omitempty"`
+	Choices []SelectionChoice `json:"choices,omitempty"`
+}
+
+type ParamInfo struct {
+	Paramid string
+	Label string
+	Sort string
+	Description ParamDescription
+}
+
 func SetParamValue(fileid string, paramid string, value string) ParamValue {
 	// Open the DB
 	db, err := sql.Open("mysql", context.DBSource)
@@ -55,6 +81,50 @@ func SetParamValue(fileid string, paramid string, value string) ParamValue {
 		panic(err.Error())
 	}
 	result := ParamValue{fileid, paramid, value}
+	return result
+}
+
+func GetParamInfo(paramid string) ParamInfo {
+	var result ParamInfo
+	var nullableResult NullableParamInfo
+	// Open the DB
+	db, err := sql.Open("mysql", context.DBSource)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+	query := `SELECT paramid, label, sort, description FROM param_info WHERE paramid = "`
+	query += paramid
+	query += `";`
+	err = db.QueryRow(query).
+		Scan(&nullableResult.paramid, &nullableResult.label, &nullableResult.sort, &nullableResult.description)
+	if err != nil {
+		panic(err.Error())
+	}
+	// Validate the query response
+	if nullableResult.paramid.Valid {
+		result.Paramid = nullableResult.paramid.String
+	} else {
+		result.Paramid = ""
+	}
+	if nullableResult.label.Valid {
+		result.Label = nullableResult.label.String
+	} else {
+		result.Label = ""
+	}
+	if nullableResult.sort.Valid {
+		result.Sort = nullableResult.sort.String
+	} else {
+		result.Sort = ""
+	}
+	if nullableResult.description.Valid {
+		var desc ParamDescription
+		json.Unmarshal([]byte(nullableResult.description.String), &desc)
+		result.Description = desc
+		//result.Description = json.Unmarshal([]byte(nullableResult.description.String), )//nil//nullableResult.description.String
+	} else {
+		result.Description = ParamDescription{}
+	}
 	return result
 }
 

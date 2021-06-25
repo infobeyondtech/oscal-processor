@@ -29,4 +29,10 @@ curl -i \
   - Run 
     > nohup ./oscal-processor-engine &
   
+# docker 
+
+  - Build 
+    > docker build -t main .
+  - Run 
+    > docker run -dp 9050:9050 main
 

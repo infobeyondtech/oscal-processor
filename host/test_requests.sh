@@ -29,8 +29,8 @@
 #http://localhost:8080/upload
 
 # Control Test
-#curl -i -H "Content-Type: application/json"      -X GET \
-#http://localhost:9050/control/ac-2
+curl -i -H "Content-Type: application/json"      -X GET \
+http://localhost:9050/control/ac-2
 
 # Enhancement Test
 #curl -i -H "Content-Type: application/json" \
@@ -43,6 +43,11 @@
 #http://localhost:8080/getparam/fileid1/paramid1
 
 # Set Param Test
-curl -i -H "Content-Type: application/json" \
-    -X POST \
-http://localhost:9050/setparam/fileid2/paramid2/value5
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/setparam/fileid2/paramid2/value5
+
+# Get Param Info
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/getparaminfo/ac-7_prm_3
