@@ -3,7 +3,7 @@ package ssp_models
 type SystemSecurityPlanModel struct {
 	ImportProfile              string                `json:"importProfile" binding:"required"`
 	MetaDataModel              MetaData              `json:"metaDataModel" binding:"required"`
-	SystemCharacteristicModel  SystemCharacteristic  `json:"SystemCharacteristicModel" binding:"required"`
+	SystemCharacteristicModel  SystemCharacteristic  `json:"systemCharacteristicModel" binding:"required"`
 	SystemImplementationModel  SystemImplementation  `json:"systemImplementationModel" binding:"required"`
 	ControlImplementationModel ControlImplementation `json:"controlImplementationModel" binding:"required"`
 }
