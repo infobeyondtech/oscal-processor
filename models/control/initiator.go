@@ -3,6 +3,7 @@ package control
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/infobeyondtech/oscal-processor/context"
 	"log"
@@ -31,6 +32,7 @@ type Control struct {
 	Id string `xml:"id,attr,omitempty" json:"id,omitempty"`
 	// Parameters provide a mechanism for the dynamic assignment of value(s) in a control.
 	Parameters []Param `xml:"param,omitempty" json:"parameters,omitempty"`
+	RelatedControls []string `xml:"relatedControls,omitempty" json:"relatedControls,omitempty"`
 	// A partition or component of a control or part
 	Parts []Part `xml:"part,omitempty" json:"parts,omitempty"`
 }
@@ -41,6 +43,7 @@ type ControlSummary struct {
 }
 
 func GetControl(ctrlId string, isEnh bool) Control {
+	fmt.Println("Call to GetControl")
 	// Open the DB
 	db, err := sql.Open("mysql", context.DBSource)
 	if err != nil {
@@ -55,6 +58,7 @@ func GetControl(ctrlId string, isEnh bool) Control {
 	} else {
 		queryString = `call GetControlTree('` + ctrlId + `', @result)`
 	}
+	fmt.Println(queryString)
 	query, err := db.Query(queryString)
 	if err != nil {
 		panic(err.Error())

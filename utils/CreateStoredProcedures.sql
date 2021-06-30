@@ -6,13 +6,13 @@ DROP PROCEDURE IF EXISTS GetParamsString;
 DELIMITER $$
 CREATE PROCEDURE GetParamsString (
 	IN  controlid VARCHAR(20),
-   	INOUT result VARCHAR(2000)
+   	INOUT result TEXT
 )
 BEGIN
 	DECLARE finished INTEGER DEFAULT 0;
     DECLARE currParamId VARCHAR(20);
     DECLARE firstParam BOOL DEFAULT TRUE;
-    DECLARE currLabel VARCHAR(100);
+    DECLARE currLabel TEXT;
     DECLARE currControlParam
 		CURSOR FOR 
 			SELECT controls_params.paramid
@@ -36,6 +36,43 @@ BEGIN
 		SELECT label from params where paramid = currParamId into currLabel;
         SET result = CONCAT(result, '{"id": "', currParamId, '", "label": "', currLabel, '"}');
 	END LOOP getControlParam;
+    SET result = CONCAT(result, '], ');
+END$$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS GetRelatedControlsString;
+DELIMITER $$
+CREATE PROCEDURE GetRelatedControlsString (
+	IN  controlid VARCHAR(20),
+   	INOUT result TEXT
+)
+BEGIN
+	DECLARE finished INTEGER DEFAULT 0;
+    DECLARE currRelatedControl VARCHAR(20);
+    DECLARE firstRelatedControl BOOL DEFAULT TRUE;
+    DECLARE currLabel TEXT;
+    DECLARE currRelatedControl
+		CURSOR FOR 
+			SELECT control_related_controls.relatedcontrolid
+            FROM control_related_controls
+            WHERE control_related_controls.controlid = controlid;
+	
+     DECLARE CONTINUE HANDLER 
+        FOR NOT FOUND SET finished = 1;
+        
+	SET result = '"relatedControls": [';    
+    OPEN currRelatedControl;
+	getRelatedControls: LOOP
+		FETCH currRelatedControl INTO currRelatedControl;
+		IF finished = 1 THEN 
+			LEAVE getRelatedControls;
+		END IF;
+        IF !firstRelatedControl THEN
+			SET result = CONCAT(result, ', ');
+        END IF;
+        SET firstRelatedControl = FALSE;
+        SET result = CONCAT(result, '"', currRelatedControl, '"');
+	END LOOP getRelatedControls;
     SET result = CONCAT(result, '], ');
 END$$
 DELIMITER ;
@@ -105,10 +142,11 @@ BEGIN
 	DECLARE numOfChildren INT;
     DECLARE paramFinished INTEGER DEFAULT 0; 
     DECLARE finished INTEGER DEFAULT 0;
-    DECLARE currPartId VARCHAR(20);
-    DECLARE partTree VARCHAR(20000) DEFAULT "";
+    DECLARE currPartId TEXT;
+    DECLARE partTree TEXT DEFAULT "";
     DECLARE firstRun BOOL DEFAULT TRUE;
-    DECLARE paramsString VARCHAR(2000);
+    DECLARE paramsString TEXT;
+    DECLARE relatedControlsString TEXT;
     
    	DECLARE currControlChild
 		CURSOR FOR 
@@ -118,14 +156,15 @@ BEGIN
 	DECLARE CONTINUE HANDLER 
         FOR NOT FOUND SET finished = 1;	
 	
-    # Set the control's id and parameter value in the 
+    # Set the control's id and parameter value and related controls in the 
     # resulting JSON object and open it's parts array
     SET result = CONCAT('{ "id": "', controlid, '", ');    
     CALL GetParamsString(controlid, paramsString);
     SET result = CONCAT(result, paramsString);
+    Call GetRelatedControlsString(controlid, relatedControlsString);
+    SET result = CONCAT(result, relatedControlsString);    
     SET result = CONCAT(result, '"parts": [');
-    
-	OPEN currControlChild;
+    OPEN currControlChild;
 	getControlChild: LOOP
 		FETCH currControlChild INTO currPartId;
 		IF finished = 1 THEN 
@@ -155,7 +194,7 @@ BEGIN
 	DECLARE finished INTEGER DEFAULT 0;
     DECLARE currParamId VARCHAR(20);
     DECLARE firstParam BOOL DEFAULT TRUE;
-    DECLARE currLabel VARCHAR(100);
+    DECLARE currLabel TEXT;
     DECLARE currEnhancementParam
 		CURSOR FOR 
 			SELECT enhancements_params.paramid
@@ -192,10 +231,10 @@ CREATE PROCEDURE GetEnhancementTree (
 BEGIN
 	DECLARE numOfChildren INT;
     DECLARE finished INTEGER DEFAULT 0;
-    DECLARE currPartId VARCHAR(20);
-    DECLARE partTree VARCHAR(20000) DEFAULT "";
+    DECLARE currPartId TEXT;
+    DECLARE partTree TEXT DEFAULT "";
     DECLARE firstRun BOOL DEFAULT TRUE;
-    DECLARE paramsString VARCHAR(2000);
+    DECLARE paramsString TEXT;
     
    	DECLARE currEnhancementChild
 		CURSOR FOR 
@@ -231,8 +270,7 @@ BEGIN
     SELECT result;
 END$$
 DELIMITER ;
-call GetEnhancementTree('ac-2.1', @result);
-select @result;
+
 
 
 
