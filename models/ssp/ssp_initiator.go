@@ -346,9 +346,8 @@ func GuardSystemCharacteristics(ssp *sdk_ssp.SystemSecurityPlan) {
 
 func GuardSystemInformation(ssp *sdk_ssp.SystemSecurityPlan) {
 	GuardSystemCharacteristics(ssp)
-	if ssp.SystemCharacteristics.SystemInformation == nil {
-		ssp.SystemCharacteristics.SystemInformation = &sdk_ssp.SystemInformation{}
-	}
+	
+	ssp.SystemCharacteristics.SystemInformation = &sdk_ssp.SystemInformation{}
 }
 
 func MakeSystemSecurityPlanModel(path string) SystemSecurityPlanModel {
