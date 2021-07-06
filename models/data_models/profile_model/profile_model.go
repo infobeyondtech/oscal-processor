@@ -307,3 +307,5 @@ type Rlink struct {
     // Describes the media type of the linked resource
     MediaType string `xml:"media-type,attr,omitempty" json:"mediaType,omitempty"`
 }
+
+

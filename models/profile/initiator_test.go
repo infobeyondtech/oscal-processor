@@ -1,18 +1,22 @@
 package profile
 
 import (
-    "encoding/xml"
-    "errors"
-    "io/ioutil"
-    "reflect"
-    "strings"
-    "testing"
-
-    . "github.com/ahmetb/go-linq/v3"
-    sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
-    "github.com/google/uuid"
-    "github.com/infobeyondtech/oscal-processor/context"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	
+	
+	"io/ioutil"
+	"reflect"
+	"strings"
+	"testing"
+	. "github.com/ahmetb/go-linq/v3"
+	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
+	"github.com/google/uuid"
+	"github.com/infobeyondtech/oscal-processor/context"
+	
 )
+
 
 func TestSetID(t *testing.T) {
     p := &sdk_profile.Profile{}
@@ -445,3 +449,5 @@ func validateProfile(p *Profile) bool {
 
     return valid
 }
+
+
