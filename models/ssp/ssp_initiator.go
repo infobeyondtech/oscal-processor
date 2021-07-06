@@ -11,7 +11,7 @@ import (
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 	"github.com/google/uuid"
 	"github.com/infobeyondtech/oscal-processor/context"
-	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models/requests_model"
 	ssp_models "github.com/infobeyondtech/oscal-processor/models/data_models/ssp_model"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
 )
