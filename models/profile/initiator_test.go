@@ -1,20 +1,20 @@
 package profile
 
 import (
-	"encoding/xml"
-	"errors"
-	"fmt"
-	
-	
-	"io/ioutil"
-	"reflect"
-	"strings"
-	"testing"
-	. "github.com/ahmetb/go-linq/v3"
-	sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
-	"github.com/google/uuid"
-	"github.com/infobeyondtech/oscal-processor/context"
-	
+    "encoding/xml"
+    "errors"
+    "fmt"
+    
+    
+    "io/ioutil"
+    "reflect"
+    "strings"
+    "testing"
+    . "github.com/ahmetb/go-linq/v3"
+    sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
+    "github.com/google/uuid"
+    "github.com/infobeyondtech/oscal-processor/context"
+    
 )
 
 

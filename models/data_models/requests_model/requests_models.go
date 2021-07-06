@@ -92,8 +92,8 @@ type Statement struct {
 }
 
 type RolePartyMap struct {
-	UserUUID string `json:"userUUID" binding:"required"`
-	PartyUUIDs []string `json:"partyUUIDs" binding:"required"`
+    UserUUID string `json:"userUUID" binding:"required"`
+    PartyUUIDs []string `json:"partyUUIDs" binding:"required"`
 } 
 
 
