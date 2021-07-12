@@ -28,6 +28,7 @@ type Component struct {
 	Type         string `json:"type,omitempty"`
 	LastModified string `json:"last_modified,omitempty"`
 	Version      string `json:"version,omitempty"`
+	Users []User `json:"users,omitempty"`
 }
 
 type NullableInventoryItem struct {
