@@ -381,11 +381,11 @@ func main() {
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
-            pv := information.FindAllComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent("")
+            c.JSON(http.StatusOK, component)
         } else {
-            pv := information.FindComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent(filter)
+            c.JSON(http.StatusOK, component)
         }
     })
     r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
