@@ -74,6 +74,29 @@ type InsertImplementedRequirementRequest struct {
     Statements []Statement `json:"statements"`
 }
 
+type InsertByComponentRequest struct{
+    FileID          string `json:"fileID" binding:"required"`
+    ControlID  string      `json:"controlID" binding:"required"`
+    StatementID  string `json:"statementID" binding:"required"`
+    ByComponent ByComponent `json:"byComponent"`    
+}
+
+type RemoveByComponentRequest struct{
+    FileID          string `json:"fileID" binding:"required"`
+    ControlID  string      `json:"controlID" binding:"required"`
+    StatementID string `json:"statementID" binding:"required"`
+    ComponentID string `json:"ComponentID" binding:"required"`
+}
+
+type EditComponentParameterRequest struct{
+    FileID          string `json:"fileID" binding:"required"`
+    ControlID  string      `json:"controlID" binding:"required"`
+    StatementID string `json:"statementID" binding:"required"`
+    ComponentID string `json:"ComponentID" binding:"required"`
+    ParamID string `json:"paramID" binding:"required"`
+    Value   string `json:"value" binding:"required"`
+}
+
 type SetParameter struct {
     ParamID string `json:"paramID" binding:"required"`
     Value   string `json:"value" binding:"required"`
@@ -88,7 +111,7 @@ type ByComponent struct {
 
 type Statement struct {
     StatementID  string        `json:"statementID" binding:"required"`
-    ByComponents []ByComponent `json:"bycomponents" binding:"required"`
+    ByComponents []ByComponent `json:"byComponents" binding:"required"`
 }
 
 type RolePartyMap struct {

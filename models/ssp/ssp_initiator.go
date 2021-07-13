@@ -221,6 +221,102 @@ func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data
 	ssp.ControlImplementation.ImplementedRequirements = append(ssp.ControlImplementation.ImplementedRequirements, *sdk_requirement)
 }
 
+func AddByComponent(ssp *sdk_ssp.SystemSecurityPlan, controlID string, statementID string, componentID string){
+	GuardControlImplementation(ssp)
+	// if implemented requirement of this control id doesn't exist, create a new implemented requirement
+	// if statement doesn't exist, create new statement and insert into implemented requirement
+	implementedReq_exist := false
+	statement_exist := false
+	for _,impl := range ssp.ControlImplementation.ImplementedRequirements{
+		if(impl.ControlId == controlID){
+			implementedReq_exist = true
+			target_statement := sdk_ssp.Statement{}
+			for _,statement := range impl.Statements{
+				if(statement.StatementId == statementID){
+					statement_exist = true
+					target_statement = statement
+					break
+				}
+			}
+			if(!statement_exist){
+				newStatement := &sdk_ssp.Statement{}
+				sdk_byComponent := &sdk_ssp.ByComponent{ComponentId:componentID}
+				newStatement.ByComponents = append(newStatement.ByComponents, *sdk_byComponent)
+				impl.Statements = append(impl.Statements, *newStatement)
+			}else{
+				// statement exists, add a new by-component in target statement
+				// check if same by-component exist
+				duplicate_by_component:=false
+				for _,bc := range target_statement.ByComponents{
+					if(bc.ComponentId == componentID){
+						duplicate_by_component = true
+						break
+					}				
+				}
+				if(!duplicate_by_component){
+					sdk_byComponent := &sdk_ssp.ByComponent{ComponentId:componentID}
+					target_statement.ByComponents = append(target_statement.ByComponents, *sdk_byComponent)
+				}				
+			}			
+		}
+	}
+	if(!implementedReq_exist){
+		// when impl req not exist, insert a new implemented requirement
+		sdk_requirement := &sdk_ssp.ImplementedRequirement{ControlId: controlID}
+		newStatement := &sdk_ssp.Statement{}
+		sdk_byComponent := &sdk_ssp.ByComponent{ComponentId:componentID}
+		newStatement.ByComponents = append(newStatement.ByComponents, *sdk_byComponent)
+		sdk_requirement.Statements = append(sdk_requirement.Statements, *newStatement)
+		ssp.ControlImplementation.ImplementedRequirements = append(ssp.ControlImplementation.ImplementedRequirements, *sdk_requirement)
+	}
+	AddComponent(ssp, componentID, []sdk_ssp.ResponsibleRole{})
+
+}
+
+func RemoveByComponent(ssp *sdk_ssp.SystemSecurityPlan, controlID string, statementID string, componentID string){
+	// check if implemented requirement, statement and by-component exist, if not, return
+	// remove the by-component block
+	GuardControlImplementation(ssp)
+	for _, impl := range ssp.ControlImplementation.ImplementedRequirements{
+		if(impl.ControlId == controlID){
+			for _, statement := range impl.Statements{
+
+				if(statement.StatementId != statementID){
+					continue
+				}
+				// find the element to remove
+				target_index := -1
+				for i := 0; i < len(statement.ByComponents); i++ {
+					if(statement.ByComponents[i].ComponentId == componentID) {
+						target_index = i
+						break
+					}
+				}
+				
+				if target_index == -1 {
+					return // didn't find the element
+				}
+
+				// remove element at index: target_index
+				if(target_index==0 && len(statement.ByComponents)==1){
+					statement.ByComponents = []sdk_ssp.ByComponent{}	// just remove the last by-component
+					return
+				}else{
+					// remove the target element, order doesn't matter
+					statement.ByComponents[target_index] = statement.ByComponents[len(statement.ByComponents)-1]
+					statement.ByComponents = statement.ByComponents[:len(statement.ByComponents)-1]
+				}
+			}
+		}
+	}
+}
+
+func EditComponentParameter(ssp *sdk_ssp.SystemSecurityPlan, controlID string, statementID string, componentID string, paramID string, value string){
+	// if implemented requirement or statement, or by-component doesn't exist, return
+	// check if param pair exist, if not, insert a new pair, else, update the value
+	GuardControlImplementation(ssp)
+}
+
 // private func to add a component in system-implementation, check duplicates
 func AddComponent(ssp *sdk_ssp.SystemSecurityPlan, componentId string, responsibleRoles []sdk_ssp.ResponsibleRole) {
 	GuardSystemImplementation(ssp)
@@ -684,3 +780,6 @@ type SystemSecurityPlanModel = ssp_models.SystemSecurityPlanModel
 type InventoryItem = sdk_ssp.InventoryItem
 
 type ImplementedRequirement = sdk_ssp.ImplementedRequirement
+
+type ByComponent = data_models.ByComponent
+
