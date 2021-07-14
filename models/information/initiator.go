@@ -3,7 +3,6 @@ package information
 import (
 	//"encoding/json"
 	"database/sql"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/infobeyondtech/oscal-processor/context"
 )
@@ -28,6 +27,7 @@ type Component struct {
 	Type         string `json:"type,omitempty"`
 	LastModified string `json:"last_modified,omitempty"`
 	Version      string `json:"version,omitempty"`
+	Roles        []string `json:"roles",omitempty`
 }
 
 type NullableInventoryItem struct {
@@ -77,15 +77,40 @@ type User struct {
 func GetComponent(UUID string) Component {
 	var result Component
 	var nullableResult NullableComponent
+	users := make([]string, 0)
+
 	db, err := sql.Open("mysql", context.DBSource)
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
-	err = db.QueryRow(`SELECT id, title, uuid, description, state, type, last_modified, version FROM oscal_component WHERE uuid = "`+UUID+`";`).
-		Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
+	//rows, err := db.Query()
+		qs := `SELECT id, title, uuid, description, state, type, last_modified, version, user ` +
+                          `FROM oscal_component ` +
+                          `INNER JOIN components_users on oscal_component.uuid=components_users.component ` +
+                          `WHERE uuid="` + UUID + `";`
+		rows, err := db.Query(qs)
 	if err != nil {
 		panic(err.Error())
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var nullableRole sql.NullString
+		err = rows.Scan(
+			&nullableResult.Id,
+			&nullableResult.Title,
+			&nullableResult.UUID,
+			&nullableResult.Description,
+			&nullableResult.State,
+			&nullableResult.Type,
+			&nullableResult.LastModified,
+			&nullableResult.Version,
+			&nullableRole,
+		)
+		if nullableRole.Valid {
+			users = append(users, nullableRole.String)
+		}
 	}
 	if nullableResult.Id.Valid {
 		result.Id = nullableResult.Id.String
@@ -127,6 +152,7 @@ func GetComponent(UUID string) Component {
 	} else {
 		result.Version = ""
 	}
+	result.Roles = users
 	return result
 }
 
@@ -245,13 +271,17 @@ func GetUser(UUID string) User {
 
 func FindComponent(Input string) []Component {
 	results := make([]Component, 0)
+	componentMap := make(map[string]Component)
 	db, err := sql.Open("mysql", context.DBSource)
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
-	rows, err := db.Query(`SELECT id, title, uuid, description, state, type, last_modified, version FROM oscal_component WHERE title like "%` + Input + `%"` +
-		`OR description like "%` + Input + `%";`)
+	qs := `SELECT id, title, uuid, description, state, type, last_modified, version, user ` +
+		  `FROM oscal_component ` +
+		  `INNER JOIN components_users ON oscal_component.uuid=components_users.component ` +
+		  `WHERE title like "%` + Input + `%" OR description like "%` + Input + `%";`
+	rows, err := db.Query(qs)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -260,9 +290,19 @@ func FindComponent(Input string) []Component {
 	for rows.Next() {
 		var result Component
 		var nullableResult NullableComponent
-
-		err := rows.Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
-
+		var nullableRole sql.NullString
+		var currRole string
+		err := rows.Scan(
+			&nullableResult.Id,
+			&nullableResult.Title,
+			&nullableResult.UUID,
+			&nullableResult.Description,
+			&nullableResult.State,
+			&nullableResult.Type,
+			&nullableResult.LastModified,
+			&nullableResult.Version,
+			&nullableRole,
+		)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -306,79 +346,93 @@ func FindComponent(Input string) []Component {
 		} else {
 			result.Version = ""
 		}
-		results = append(results, result)
+		if nullableRole.Valid {
+			currRole = nullableRole.String
+		}
+		if _, present := componentMap[result.UUID]; !present {
+			result.Roles = make([]string, 0)
+		}
+		result.Roles = append(componentMap[result.UUID].Roles, currRole)
+		componentMap[result.UUID] = result
 	}
+
+	for _, c := range componentMap {
+		results = append(results, c)
+	}
+
 	return results
 }
 
-func FindAllComponent(Input string) []Component {
-	results := make([]Component, 0)
-	db, err := sql.Open("mysql", context.DBSource)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-	rows, err := db.Query(`SELECT id, title, uuid, description, state, type, last_modified, version FROM oscal_component WHERE title like "%` + Input + `%"` +
-		`OR description like "%` + Input + `%";`)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var result Component
-		var nullableResult NullableComponent
-
-		err := rows.Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		if nullableResult.Id.Valid {
-			result.Id = nullableResult.Id.String
-		} else {
-			result.Id = ""
-		}
-		if nullableResult.Title.Valid {
-			result.Title = nullableResult.Title.String
-		} else {
-			result.Title = ""
-		}
-		if nullableResult.UUID.Valid {
-			result.UUID = nullableResult.UUID.String
-		} else {
-			result.UUID = ""
-		}
-		if nullableResult.Description.Valid {
-			result.Description = nullableResult.Description.String
-		} else {
-			result.Description = ""
-		}
-		if nullableResult.State.Valid {
-			result.State = nullableResult.State.String
-		} else {
-			result.State = ""
-		}
-		if nullableResult.Type.Valid {
-			result.Type = nullableResult.Type.String
-		} else {
-			result.Type = ""
-		}
-		if nullableResult.LastModified.Valid {
-			result.LastModified = nullableResult.LastModified.String
-		} else {
-			result.LastModified = ""
-		}
-		if nullableResult.Version.Valid {
-			result.Version = nullableResult.Version.String
-		} else {
-			result.Version = ""
-		}
-		results = append(results, result)
-	}
-	return results
-}
+//func FindAllComponent(Input string) []Component {
+//	results := make([]Component, 0)
+//	db, err := sql.Open("mysql", context.DBSource)
+//	if err != nil {
+//		panic(err.Error())
+//	}
+//	defer db.Close()
+//	qs := `SELECT id, title, uuid, description, state, type, last_modified, version, user ` +
+//		`FROM oscal_component ` +
+//		`INNER JOIN components_users ON oscal_component.uuid=components_users.component;`
+//	rows, err := db.Query(qs)
+//	if err != nil {
+//		panic(err.Error())
+//	}
+//	defer rows.Close()
+//
+//	for rows.Next() {
+//		var result Component
+//		var nullableResult NullableComponent
+//
+//		err := rows.Scan(&nullableResult.Id, &nullableResult.Title, &nullableResult.UUID, &nullableResult.Description, &nullableResult.State, &nullableResult.Type, &nullableResult.LastModified, &nullableResult.Version)
+//
+//		if err != nil {
+//			panic(err.Error())
+//		}
+//
+//		if nullableResult.Id.Valid {
+//			result.Id = nullableResult.Id.String
+//		} else {
+//			result.Id = ""
+//		}
+//		if nullableResult.Title.Valid {
+//			result.Title = nullableResult.Title.String
+//		} else {
+//			result.Title = ""
+//		}
+//		if nullableResult.UUID.Valid {
+//			result.UUID = nullableResult.UUID.String
+//		} else {
+//			result.UUID = ""
+//		}
+//		if nullableResult.Description.Valid {
+//			result.Description = nullableResult.Description.String
+//		} else {
+//			result.Description = ""
+//		}
+//		if nullableResult.State.Valid {
+//			result.State = nullableResult.State.String
+//		} else {
+//			result.State = ""
+//		}
+//		if nullableResult.Type.Valid {
+//			result.Type = nullableResult.Type.String
+//		} else {
+//			result.Type = ""
+//		}
+//		if nullableResult.LastModified.Valid {
+//			result.LastModified = nullableResult.LastModified.String
+//		} else {
+//			result.LastModified = ""
+//		}
+//		if nullableResult.Version.Valid {
+//			result.Version = nullableResult.Version.String
+//		} else {
+//			result.Version = ""
+//		}
+//		results = append(results, result)
+//	}
+//	return results
+//}
 
 func FindInventoryItem(Input string) []InventoryItem {
 	results := make([]InventoryItem, 0)

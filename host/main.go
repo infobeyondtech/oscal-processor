@@ -306,6 +306,69 @@ func main() {
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })
+    r.POST("/ssp/add-by-component", func(c *gin.Context) {
+        var json data_models.InsertByComponentRequest
+        if err := c.ShouldBindJSON(&json); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        // load from file, give a new file id
+        fileId := json.FileID
+        ssp := &sdk_ssp.SystemSecurityPlan{}
+        sspEngine.LoadFromFileById(ssp, fileId)
+        ssp.Id = uuid.New().String()
+
+        // operation
+        // todo: add service to sspEngine to add by-component
+        
+        sspEngine.WriteToFile(ssp)
+
+        // return file id
+        c.JSON(http.StatusOK, ssp.Id)
+    })
+    r.POST("/ssp/remove-by-component", func(c *gin.Context) {
+        var json data_models.RemoveByComponentRequest
+        if err := c.ShouldBindJSON(&json); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        // load from file, give a new file id
+        fileId := json.FileID
+        ssp := &sdk_ssp.SystemSecurityPlan{}
+        sspEngine.LoadFromFileById(ssp, fileId)
+        ssp.Id = uuid.New().String()
+
+        // operation
+        sspEngine.RemoveByComponent(ssp, json.ControlID, json.StatementID, json.ComponentID)
+        
+        sspEngine.WriteToFile(ssp)
+
+        // return file id
+        c.JSON(http.StatusOK, ssp.Id)
+    })
+    r.POST("/ssp/edit-component-parameter", func(c *gin.Context) {
+        var json data_models.EditComponentParameterRequest
+        if err := c.ShouldBindJSON(&json); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        // load from file, give a new file id
+        fileId := json.FileID
+        ssp := &sdk_ssp.SystemSecurityPlan{}
+        sspEngine.LoadFromFileById(ssp, fileId)
+        ssp.Id = uuid.New().String()
+
+        // operation
+        sspEngine.EditComponentParameter(ssp, json.ControlID, json.StatementID, json.ComponentID, json.ParamID, json.Value)
+        
+        sspEngine.WriteToFile(ssp)
+
+        // return file id
+        c.JSON(http.StatusOK, ssp.Id)
+    })
 
     r.POST("/ssp/add-implemented-requirement", func(c *gin.Context) {
         var json requests_models.InsertImplementedRequirementRequest
@@ -384,11 +447,11 @@ func main() {
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
-            pv := information.FindAllComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent("")
+            c.JSON(http.StatusOK, component)
         } else {
-            pv := information.FindComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent(filter)
+            c.JSON(http.StatusOK, component)
         }
     })
     r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
