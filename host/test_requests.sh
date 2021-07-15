@@ -15,7 +15,7 @@
 # Profile Navigator Test
 #curl -i -H "Content-Type: application/json" \
 #    -X GET \
-#http://localhost:9050/profile/navigator/test.xml
+#http://localhost:9050/profile/navigator/testprofile.xml
 
 # Resolve Profile Test
 #curl -i -H "Content-Type: application/json" \
@@ -29,13 +29,13 @@
 #http://localhost:8080/upload
 
 # Control Test
-curl -i -H "Content-Type: application/json"      -X GET \
-http://localhost:9050/control/ac-2
+#curl -i -H "Content-Type: application/json"      -X GET \
+#http://localhost:9050/control/ac-7
 
 # Enhancement Test
 #curl -i -H "Content-Type: application/json" \
 #    -X GET \
-#http://localhost:8080/control_enhancement/ac-2.2
+#http://localhost:9050/control_enhancement/ac-2.2
 
 # Get Param Test
 #curl -i -H "Content-Type: application/json" \
@@ -51,3 +51,36 @@ http://localhost:9050/control/ac-2
 #curl -i -H "Content-Type: application/json" \
 #    -X GET \
 #http://localhost:9050/getparaminfo/ac-7_prm_3
+
+# Get Param Info
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/getparam/1
+
+# Update Param Test
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/setparam/1/boom
+
+# Create Param Test
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/createparam/4/component_id_2/param_id_2/value_2
+
+# Delete Param Test
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/deleteparam/28
+
+# Get Param 
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/getparam/1
+
+# Get Params
+curl -i -H "Content-Type: application/json" \
+    -X GET \
+http://localhost:9050/get-params/1
+
+
+

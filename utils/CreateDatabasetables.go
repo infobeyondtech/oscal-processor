@@ -841,8 +841,9 @@ func CreatePartsToParagraphsTable(db *sql.DB, c catalog.Catalog) {
 }
 
 func CreateParamsToValuesTable(db *sql.DB) {
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `params_values`(fileid varchar(20), paramid varchar(20), value varchar(100))")
+    qs := "CREATE TABLE IF NOT EXISTS `params_values`(record_id MEDIUMINT NOT NULL AUTO_INCREMENT, project_id INT, component_id VARCHAR(30), param_id VARCHAR(30), value TEXT, PRIMARY KEY (record_id));"
+    fmt.Println(qs)
+	_, err := db.Exec(qs)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
@@ -1020,7 +1021,9 @@ func main() {
 		panic(err.Error())
 	}
 
-    CreateComponentsToUsersTable(db)
+    //CreateComponentsToUsersTable(db)
+
+    CreateParamsToValuesTable(db)
 
 	//AddEnhancementImpact(db)
 

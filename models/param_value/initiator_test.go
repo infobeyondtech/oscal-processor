@@ -1,46 +1,64 @@
 package param_value
 
-import (
-    "testing"
-    //"encoding/json"
-    "github.com/stretchr/testify/assert"
-    //"io/ioutil"
-    //"fmt"
-    //sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
-    //"encoding/xml"
-    //"encoding/json"
-)
+//func TestParamValueIntegration(t *testing.T) {
+//    assert := assert.New(t)
+//    test_project_ids := []int{1}
+//    test_component_ids := []string{"test_component_1"}
+//    test_param_ids := []string{"test_param_1"}
+//    test_values := []string{"value1"}
+//
+//}
 
-func TestGetParamValue(t *testing.T) {
+//func TestSetParamValue(t *testing.T) {
+//func TestCreateParamValue(t *testing.T) {
+//    //assert := assert.New(t)
+//    test_project_ids := []int{1}
+//    test_component_ids := []string{"test_component_1"}
+//    test_param_ids := []string{"test_param_1"}
+//    test_values := []string{"value1"}
+//
+//    expected_values := make([]ParamValue, 0)
+//    for idx, _ := range test_project_ids {
+//        expected_values = append(expected_values, ParamValue{0, test_project_ids[idx],test_component_ids[idx],test_param_ids[idx],test_values[idx]})
+//    }
+//
+//    for idx, _ := range expected_values {
+//       // Get a Test ParamValue
+//       //actual_pv := CreateParamValue(expected_values[idx].ProjectId, expected_values[idx].ComponentId, expected_values[idx].ParamId, expected_values[idx].Value)
+//       r := CreateParamValue(expected_values[idx].ProjectId, expected_values[idx].ComponentId, expected_values[idx].ParamId, expected_values[idx].Value)
+//       fmt.Println(r)
+//       UpdateParamValue(r, "rawr")
+//       fmt.Println(GetParamValue(r))
+//       fmt.Println(GetParam(1))
+//       DeleteParamValue(2)
+//
+//       //assert.Equal(expected_values[idx], actual_pv)
+//    }
+//}
 
-    assert := assert.New(t)
-    test_fileids := []string{"fileid1"}
-    test_paramids := []string{"paramid1"}
-
-    expected_values := []ParamValue{ParamValue{"fileid1", "paramid1", "value1"}}
-
-    for test_ct, fileid := range test_fileids {
-       // Get a Test ParamValue
-       actual_pv := GetParamValue(fileid, test_paramids[test_ct])
-       assert.Equal(expected_values[test_ct], actual_pv)
-    }
-}
-
-func TestSetParamValue(t *testing.T) {
-
-    assert := assert.New(t)
-    test_fileids := []string{"fileid1"}
-    test_paramids := []string{"paramid1"}
-    test_values := []string{"value1"}
-
-    expected_values := []ParamValue{ParamValue{"fileid1", "paramid1", "value1"}}
-
-    for test_ct, fileid := range test_fileids {
-       // Get a Test ParamValue
-       actual_pv := SetParamValue(fileid, test_paramids[test_ct], test_values[test_ct])
-       assert.Equal(expected_values[test_ct], actual_pv)
-    }
-}
+//func TestGetParamValue(t *testing.T) {
+//
+//    assert := assert.New(t)
+//    test_project_ids := []int{1}
+//    test_component_ids := []string{"test_component_1"}
+//    test_param_ids := []string{"test_param_1"}
+//    test_values := []string{"value1"}
+//
+//    expected_values := make([]ParamValue, 0)
+//    for idx, _ := range test_project_ids {
+//        expected_values = append(expected_values, ParamValue{test_project_ids[idx],test_component_ids[idx],test_param_ids[idx],test_values[idx]})
+//    }
+//
+//    for idx, _ := range expected_values {
+//       // Get a Test ParamValue
+//       actual_pv := GetParamValue(expected_values[idx].ProjectId, expected_values[idx].ComponentId, expected_values[idx].ParamId)
+//       assert.Equal(expected_values[idx], actual_pv)
+//    }
+//}
+//
+//func TestGetParam(t *testing.T) {
+//    fmt.Println(GetParam(1))
+//}
 
 
 
