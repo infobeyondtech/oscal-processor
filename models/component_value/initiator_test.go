@@ -1,4 +1,4 @@
-package param_value
+package component_value
 
 //func TestParamValueIntegration(t *testing.T) {
 //    assert := assert.New(t)

@@ -841,8 +841,9 @@ func CreatePartsToParagraphsTable(db *sql.DB, c catalog.Catalog) {
 }
 
 func CreateParamsToValuesTable(db *sql.DB) {
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `params_values`(fileid varchar(20), paramid varchar(20), value varchar(100))")
+    qs := "CREATE TABLE IF NOT EXISTS `params_values`(record_id MEDIUMINT NOT NULL AUTO_INCREMENT, project_id INT, component_id VARCHAR(30), param_id VARCHAR(30), value TEXT, PRIMARY KEY (record_id));"
+    fmt.Println(qs)
+	_, err := db.Exec(qs)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
@@ -927,23 +928,136 @@ func isEmpty(object interface{}) bool {
 	return false
 }
 
-func main() {
+func CreateControlToRelatedControlsTable(db *sql.DB, c Catalog) {
+	db.Exec("CREATE TABLE IF NOT EXISTS `control_related_controls`(controlid varchar(20), relatedcontrolid varchar(20))")
+	for _, group := range c.Group {
+		for _, ctrl := range group.Control {
+			for _, part := range ctrl.Part {
+				if part.Name == "guidance" {
+					//fmt.Println(ctrl.ID)
+					for _, link := range part.Link {
+						//fmt.Println("\t" + strings.ToLower(link.Text))
+						query := `INSERT INTO control_related_controls(controlid, relatedcontrolid) Values("`
+						query += ctrl.ID
+						query += `", "`
+						query += strings.ToLower(link.Text)
+						query += `")`
+						_, err := db.Exec(query)
+						if err != nil {
+							fmt.Println("Error on: " + query)
+						}
+					}
+				}
+			}
+		}
+	}
 
-	toLoad := "NIST_SP-800-53_rev4_catalog.xml"
-	//toLoad := "NIST_SP-800-53_rev4_catalog.json"
-	//db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube")
+}
+
+//
+//func AddEnhancementImpact(db *sql.DB) {
+//
+//	//_, err := db.Exec("CREATE TABLE IF NOT EXISTS `nist800_53_rev4_enhancements`(enh_id TEXT, low INT DEFAULT NULL, moderate INT DEFAULT NULL, high INT DEFAULT NULL)")
+//	//if err != nil {
+//	//	fmt.Println(err.Error())
+//	//} else {
+//	//	fmt.Println("DB tabled created successfully..")
+//	//}
+//	toLoad := "800-53-rev4-controls.xml"
+//	data, e := ioutil.ReadFile(toLoad)
+//	if e != nil {
+//		fmt.Printf("error 1: %v\n", e)
+//		return
+//	}
+//	controls := Controls{}
+//	marshalError := xml.Unmarshal([]byte(data), &controls)
+//	if marshalError != nil {
+//		fmt.Printf("error 2: %v\n", marshalError)
+//		return
+//	}
+//
+//	for _, ctrls := range controls.Control {
+//		for _, enh := range ctrls.ControlEnhancements.ControlEnhancement {
+//			for _, impact := range enh.BaselineImpact {
+//				if impact == "LOW" {
+//					query := `INSERT INTO control_related_controls(controlid, relatedcontrolid) Values("`
+//					query += ctrl.ID
+//					query += `", "`
+//					query += strings.ToLower(link.Text)
+//					query += `")`
+//					_, err := db.Exec(query)
+//
+//				}
+//				if impact == "MODERATE" {
+//
+//				}
+//				if impact == "HIGH" {
+//
+//				}
+//			}
+//        }
+//    }
+//}
+
+func CreateComponentsToUsersTable(db *sql.DB) {
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `components_users`(component TEXT, user TEXT)")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("DB tabled created successfully..")
+	}
+}
+
+func CreateComponentsValues(db *sql.DB) {
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `components_values`(recordId MEDIUMINT NOT NULL AUTO_INCREMENT, projectId INT, statementId VARCHAR(30), componentId VARCHAR(100), PRIMARY KEY (recordId))")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("DB tabled created successfully..")
+	}
+}
+
+
+func main() {
 	db, err := sql.Open("mysql", context.DBSource)
 	if err != nil {
-	    panic(err.Error())
+		panic(err.Error())
 	}
 	defer db.Close()
 	// Open doesn't open a connection. Validate DSN data:
 	err = db.Ping()
 	if err != nil {
-	    panic(err.Error())
+		panic(err.Error())
 	}
 
-	db.Exec("CREATE TABLE IF NOT EXISTS `param_info`(paramid varchar(20), label varchar(100), sort varchar(20), description TEXT)")
+	CreateComponentsValues(db)
+    //CreateComponentsToUsersTable(db)
+    //CreateParamsToValuesTable(db)
+	//AddEnhancementImpact(db)
+
+	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
+	//data, _ := ioutil.ReadFile(toLoad)
+	//c := Catalog{}
+	//marshalError := xml.Unmarshal([]byte(data), &c)
+	//if marshalError != nil {
+	//	fmt.Printf("error 2: %v\n", marshalError)
+	//	return
+	//}
+	//CreateControlToRelatedControlsTable(db, c)
+	//toLoad := "NIST_SP-800-53_rev4_catalog.json"
+	//db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube")
+	//db, err := sql.Open("mysql", context.DBSource)
+	//if err != nil {
+	//    panic(err.Error())
+	//}
+	//defer db.Close()
+	//// Open doesn't open a connection. Validate DSN data:
+	//err = db.Ping()
+	//if err != nil {
+	//    panic(err.Error())
+	//}
+
+	//db.Exec("CREATE TABLE IF NOT EXISTS `user_context`(projectId varchar(20), profileFileId varchar(20))")
 
 	//query := `INSERT INTO param_info(paramid, type, description) Values("`
 	//query += enhId
@@ -956,99 +1070,99 @@ func main() {
 	//query += `")`
 	//_, err = db.Exec(query)
 
-	data, _ := ioutil.ReadFile(toLoad)
-	c := Catalog{}
-	marshalError := xml.Unmarshal([]byte(data), &c)
-	if marshalError != nil {
-		fmt.Printf("error 2: %v\n", marshalError)
-		return
-	} else {
-		//var paramMap map[string]string
-		paramMap := make(map[string]string)
-		for _, group := range c.Group {
-			for _, ctrl := range group.Control {
-				for _, param := range ctrl.Param {
-					paramMap[param.ID] = param.Label
-				}
-			}
-		}
-		for _, group := range c.Group {
-			for _, ctrl := range group.Control {
-				for _, param := range ctrl.Param {
-					if !isEmpty(param.Select) {
-						query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
-						query += param.ID
-						query += `", "`
-						query += param.Label
-						query += `", "`
-						query += `selection`
-						query += `", `
-						query += `'{ "HowMany": "`
-						strippedHowMany := strings.ReplaceAll(param.Select.HowMany, " ", "")
-						strippedHowMany = strings.ReplaceAll(strippedHowMany, "\n", "")
-						strippedHowMany = strings.ReplaceAll(strippedHowMany, "\t", "")
-						if strippedHowMany != "" {
-							query += param.Select.HowMany
-							query += `", `
-						} else {
-							query += `one", `
-						}
-						query += `"choices": [`
-						firstChoice := true
-						for _, c := range param.Select.Choice {
-							if firstChoice {
-								firstChoice = false
-							} else {
-								query += `, `
-							}
-							query += `{ "Text": "`
-							strippedChoiceText := strings.ReplaceAll(c.Text, " ", "")
-							strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\n", "")
-							strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\t", "")
-							if strippedChoiceText != "" {
-								query += strings.TrimSpace(c.Text)
-								query += `", `
-							} else {
-								query += `", `
-							}
-							query += `"Insert": "`
-							if !isEmpty(c.Insert) {
-								query += c.Insert.ParamID
-								query += `", "InsertLabel": "`
-								query += paramMap[c.Insert.ParamID]
-								query += `"`
-								//fmt.Println("insert paramid: " + c.Insert.ParamID)
-							} else {
-								query += `", "InsertLabel": ""`
-							}
-							query += ` }`
-						}
-						query += `] }'`
-						query += `)`
-						//fmt.Println(query)
-						_, err = db.Exec(query)
-						if err != nil {
-							fmt.Print(err)
-							fmt.Println()
-							fmt.Println(query)
-						}
-					} else {
-						query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
-						query += param.ID
-						query += `", "`
-						query += param.Label
-						query += `", "`
-						query += `assignment`
-						query += `", "`
-						query += `{}`
-						query += `")`
-						//fmt.Println(query)
-						db.Exec(query)
-					}
-				}
-			}
-		}
-	}
+	//data, _ := ioutil.ReadFile(toLoad)
+	//c := Catalog{}
+	//marshalError := xml.Unmarshal([]byte(data), &c)
+	//if marshalError != nil {
+	//	fmt.Printf("error 2: %v\n", marshalError)
+	//	return
+	//} else {
+	//	//var paramMap map[string]string
+	//	paramMap := make(map[string]string)
+	//	for _, group := range c.Group {
+	//		for _, ctrl := range group.Control {
+	//			for _, param := range ctrl.Param {
+	//				paramMap[param.ID] = param.Label
+	//			}
+	//		}
+	//	}
+	//	for _, group := range c.Group {
+	//		for _, ctrl := range group.Control {
+	//			for _, param := range ctrl.Param {
+	//				if !isEmpty(param.Select) {
+	//					query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
+	//					query += param.ID
+	//					query += `", "`
+	//					query += param.Label
+	//					query += `", "`
+	//					query += `selection`
+	//					query += `", `
+	//					query += `'{ "HowMany": "`
+	//					strippedHowMany := strings.ReplaceAll(param.Select.HowMany, " ", "")
+	//					strippedHowMany = strings.ReplaceAll(strippedHowMany, "\n", "")
+	//					strippedHowMany = strings.ReplaceAll(strippedHowMany, "\t", "")
+	//					if strippedHowMany != "" {
+	//						query += param.Select.HowMany
+	//						query += `", `
+	//					} else {
+	//						query += `one", `
+	//					}
+	//					query += `"choices": [`
+	//					firstChoice := true
+	//					for _, c := range param.Select.Choice {
+	//						if firstChoice {
+	//							firstChoice = false
+	//						} else {
+	//							query += `, `
+	//						}
+	//						query += `{ "Text": "`
+	//						strippedChoiceText := strings.ReplaceAll(c.Text, " ", "")
+	//						strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\n", "")
+	//						strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\t", "")
+	//						if strippedChoiceText != "" {
+	//							query += strings.TrimSpace(c.Text)
+	//							query += `", `
+	//						} else {
+	//							query += `", `
+	//						}
+	//						query += `"Insert": "`
+	//						if !isEmpty(c.Insert) {
+	//							query += c.Insert.ParamID
+	//							query += `", "InsertLabel": "`
+	//							query += paramMap[c.Insert.ParamID]
+	//							query += `"`
+	//							//fmt.Println("insert paramid: " + c.Insert.ParamID)
+	//						} else {
+	//							query += `", "InsertLabel": ""`
+	//						}
+	//						query += ` }`
+	//					}
+	//					query += `] }'`
+	//					query += `)`
+	//					//fmt.Println(query)
+	//					_, err = db.Exec(query)
+	//					if err != nil {
+	//						fmt.Print(err)
+	//						fmt.Println()
+	//						fmt.Println(query)
+	//					}
+	//				} else {
+	//					query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
+	//					query += param.ID
+	//					query += `", "`
+	//					query += param.Label
+	//					query += `", "`
+	//					query += `assignment`
+	//					query += `", "`
+	//					query += `{}`
+	//					query += `")`
+	//					//fmt.Println(query)
+	//					db.Exec(query)
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 //for _, curr_ctrl := range GetAllControls(c) {

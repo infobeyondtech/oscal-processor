@@ -1,7 +1,10 @@
 package main
 
 import (
+    "fmt"
+    "github.com/infobeyondtech/oscal-processor/models/component_value"
     "net/http"
+    "strconv"
 
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
@@ -98,6 +101,8 @@ func main() {
         pn := &profile_navigator.ProfileNavigator{}
         profile_navigator.CreateProfileNavigator(pn, p)
 
+        fmt.Println(pn.Groups)
+
         c.JSON(http.StatusOK, pn.Groups)
 
     })
@@ -113,21 +118,100 @@ func main() {
         c.JSON(http.StatusOK, ctrl)
     })
     // Get ParamValue
-    r.GET("/getparam/:uuid/:paramid", func(c *gin.Context) {
-        uuid := c.Param("uuid")
-        paramid := c.Param("paramid")
-        pv := param_value.GetParamValue(uuid, paramid)
+    r.GET("/getparam/:record_id", func(c *gin.Context) {
+        recordId, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        pv := param_value.GetParamValue(recordId)
         c.JSON(http.StatusOK, pv)
     })
     // Set ParamValue
-    r.POST("/setparam/:uuid/:paramid/:value", func(c *gin.Context) {
+    r.POST("/setparam/:record_id/:value", func(c *gin.Context) {
         // TODO: Does this need to set the parameter in either profile or
         // the profile's implementation?
-        uuid := c.Param("uuid")
-        paramid := c.Param("paramid")
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
         value := c.Param("value")
-        pv := param_value.SetParamValue(uuid, paramid, value)
+        pv := param_value.UpdateParamValue(record_id, value)
         c.JSON(http.StatusOK, pv)
+    })
+
+    r.POST("/createparam/:project_id/:component_id/:param_id/:value", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or
+        // the profile's implementation?
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        component_id := c.Param("component_id")
+        param_id := c.Param("param_id")
+        value := c.Param("value")
+        record_id := param_value.CreateParamValue(project_id, component_id, param_id, value)
+        c.JSON(http.StatusOK, strconv.Itoa(record_id))
+    })
+
+    r.POST("/deleteparam/:record_id", func(c *gin.Context) {
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        param_value.DeleteParamValue(record_id)
+    })
+
+    // Get ParamValue
+    r.GET("/getcomponent/:record_id", func(c *gin.Context) {
+        recordId, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        cv := component_value.GetComponentValue(recordId)
+        c.JSON(http.StatusOK, cv)
+    })
+
+    // Set ParamValue
+    r.POST("/setcomponent/:record_id/:component_id", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or
+        // the profile's implementation?
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        component_id := c.Param("component_id")
+        cv := component_value.UpdateComponentValue(record_id, component_id)
+        c.JSON(http.StatusOK, cv)
+    })
+
+    r.POST("/createcomponent/:project_id/:statement_id/:component_id", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or
+        // the profile's implementation?
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        statement_id := c.Param("statement_id")
+        component_id := c.Param("component_id")
+        record_id := component_value.CreateComponentValue(project_id, statement_id, component_id)
+        c.JSON(http.StatusOK, strconv.Itoa(record_id))
+    })
+
+    r.POST("/deletecomponent/:record_id", func(c *gin.Context) {
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        component_value.DeleteComponentValue(record_id)
+    })
+
+    r.GET("/get-components/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        cvs := component_value.GetComponent(project_id)
+        c.JSON(http.StatusOK, cvs)
     })
 
     // Resolve profile
@@ -444,11 +528,11 @@ func main() {
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
-            pv := information.FindAllComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent("")
+            c.JSON(http.StatusOK, component)
         } else {
-            pv := information.FindComponent(filter)
-            c.JSON(http.StatusOK, pv)
+            component := information.FindComponent(filter)
+            c.JSON(http.StatusOK, component)
         }
     })
     r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
@@ -482,9 +566,12 @@ func main() {
         }
     })
 
-    r.GET("/get-params/:fileid", func(c *gin.Context) {
-        fileid := c.Param("fileid")
-        pv := param_value.GetParam(fileid)
+    r.GET("/get-params/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        pv := param_value.GetParam(project_id)
         c.JSON(http.StatusOK, pv)
     })
 
