@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "github.com/infobeyondtech/oscal-processor/models/component_value"
     "net/http"
     "strconv"
 
@@ -158,6 +159,59 @@ func main() {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
         param_value.DeleteParamValue(record_id)
+    })
+
+    // Get ParamValue
+    r.GET("/getcomponent/:record_id", func(c *gin.Context) {
+        recordId, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        cv := component_value.GetComponentValue(recordId)
+        c.JSON(http.StatusOK, cv)
+    })
+
+    // Set ParamValue
+    r.POST("/setcomponent/:record_id/:component_id", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or
+        // the profile's implementation?
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        component_id := c.Param("component_id")
+        cv := component_value.UpdateComponentValue(record_id, component_id)
+        c.JSON(http.StatusOK, cv)
+    })
+
+    r.POST("/createcomponent/:project_id/:statement_id/:component_id", func(c *gin.Context) {
+        // TODO: Does this need to set the parameter in either profile or
+        // the profile's implementation?
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        statement_id := c.Param("statement_id")
+        component_id := c.Param("component_id")
+        record_id := component_value.CreateComponentValue(project_id, statement_id, component_id)
+        c.JSON(http.StatusOK, strconv.Itoa(record_id))
+    })
+
+    r.POST("/deletecomponent/:record_id", func(c *gin.Context) {
+        record_id, err := strconv.Atoi(c.Param("record_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        component_value.DeleteComponentValue(record_id)
+    })
+
+    r.GET("/get-components/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        cvs := component_value.GetComponent(project_id)
+        c.JSON(http.StatusOK, cvs)
     })
 
     // Resolve profile

@@ -1008,6 +1008,15 @@ func CreateComponentsToUsersTable(db *sql.DB) {
 	}
 }
 
+func CreateComponentsValues(db *sql.DB) {
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `components_values`(recordId MEDIUMINT NOT NULL AUTO_INCREMENT, projectId INT, statementId VARCHAR(30), componentId VARCHAR(100), PRIMARY KEY (recordId))")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("DB tabled created successfully..")
+	}
+}
+
 
 func main() {
 	db, err := sql.Open("mysql", context.DBSource)
@@ -1021,10 +1030,9 @@ func main() {
 		panic(err.Error())
 	}
 
+	CreateComponentsValues(db)
     //CreateComponentsToUsersTable(db)
-
-    CreateParamsToValuesTable(db)
-
+    //CreateParamsToValuesTable(db)
 	//AddEnhancementImpact(db)
 
 	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"

@@ -78,9 +78,34 @@
 #http://localhost:9050/getparam/1
 
 # Get Params
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/get-params/1
+
+# Create Component Test
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/createcomponent/23/statement_id_23/component_id_23
+
+# Update Component Test
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/setcomponent/1/updated_component_id
+
+# Delete Component Test
 curl -i -H "Content-Type: application/json" \
-    -X GET \
-http://localhost:9050/get-params/1
+    -X POST \
+http://localhost:9050/deletecomponent/2
+
+# Get Component Value
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/getcomponent/1
+
+# Get Components
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/get-components/23
 
 
 
