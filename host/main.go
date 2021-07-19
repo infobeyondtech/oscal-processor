@@ -535,6 +535,11 @@ func main() {
             c.JSON(http.StatusOK, component)
         }
     })
+    r.GET("/information/get-component/:uuid", func(c *gin.Context) {
+        id := c.Param("uuid")
+        component := information.GetComponent(id)
+        c.JSON(http.StatusOK, component)
+    })
     r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
