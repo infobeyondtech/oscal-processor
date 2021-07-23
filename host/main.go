@@ -307,7 +307,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/add-by-component", func(c *gin.Context) {
-        var json data_models.InsertByComponentRequest
+        var json requests_models.InsertByComponentRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -328,7 +328,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/remove-by-component", func(c *gin.Context) {
-        var json data_models.RemoveByComponentRequest
+        var json requests_models.RemoveByComponentRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -349,7 +349,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/edit-component-parameter", func(c *gin.Context) {
-        var json data_models.EditComponentParameterRequest
+        var json requests_models.EditComponentParameterRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
