@@ -841,8 +841,9 @@ func CreatePartsToParagraphsTable(db *sql.DB, c catalog.Catalog) {
 }
 
 func CreateParamsToValuesTable(db *sql.DB) {
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `params_values`(fileid varchar(20), paramid varchar(20), value varchar(100))")
+    qs := "CREATE TABLE IF NOT EXISTS `params_values`(record_id MEDIUMINT NOT NULL AUTO_INCREMENT, project_id INT, component_id VARCHAR(30), param_id VARCHAR(30), value TEXT, PRIMARY KEY (record_id));"
+    fmt.Println(qs)
+	_, err := db.Exec(qs)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
@@ -1007,6 +1008,15 @@ func CreateComponentsToUsersTable(db *sql.DB) {
 	}
 }
 
+func CreateComponentsValues(db *sql.DB) {
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `components_values`(recordId MEDIUMINT NOT NULL AUTO_INCREMENT, projectId INT, statementId VARCHAR(30), componentId VARCHAR(100), PRIMARY KEY (recordId))")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("DB tabled created successfully..")
+	}
+}
+
 
 func main() {
 	db, err := sql.Open("mysql", context.DBSource)
@@ -1020,8 +1030,9 @@ func main() {
 		panic(err.Error())
 	}
 
-    CreateComponentsToUsersTable(db)
-
+	CreateComponentsValues(db)
+    //CreateComponentsToUsersTable(db)
+    //CreateParamsToValuesTable(db)
 	//AddEnhancementImpact(db)
 
 	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
