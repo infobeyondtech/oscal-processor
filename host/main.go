@@ -19,6 +19,8 @@ import (
     "github.com/infobeyondtech/oscal-processor/models/param_value"
     "github.com/infobeyondtech/oscal-processor/models/profile"
     "github.com/infobeyondtech/oscal-processor/models/profile_navigator"
+    "github.com/infobeyondtech/oscal-processor/models/component_user_party"
+    "github.com/infobeyondtech/oscal-processor/models/inventory_item_component"
     sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
 )
 
@@ -574,6 +576,75 @@ func main() {
         pv := param_value.GetParam(project_id)
         c.JSON(http.StatusOK, pv)
     })
+
+    r.GET("/get-component-user-party/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := component_user_party.GetComponentUserParty(project_id)
+        c.JSON(http.StatusOK, result)
+    })
+
+    r.POST("/remove-component-user-party/:id", func(c *gin.Context) {
+        id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        component_user_party.RemoveComponentUserParty(id)
+    })
+
+    r.POST("/add-component-user-party/:project_id/:component_id/:user_id/:party_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        component_id:= c.Param("component_id")
+        user_id:= c.Param("user_id")
+        party_id:= c.Param("party_id")
+       
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := component_user_party.AddComponentUserParty(project_id, component_id, user_id, party_id)
+        c.JSON(http.StatusOK, result)
+    })
+
+    r.POST("/remove-inventory-component/:id", func(c *gin.Context) {
+        id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        inventory_item_component.RemoveInventoryItemComponent(id)
+    })
+
+    r.POST("/add-inventory-component/:project_id/:inventory_item_id/:component_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        item_id := c.Param("nventory_item_id")
+        component_id := c.Param("component_id")
+        
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := inventory_item_component.AddInventoryItemComponent(project_id, item_id, component_id)
+        c.JSON(http.StatusOK, result)
+    })
+
+    r.GET("/get-inventory-component/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+       
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := inventory_item_component.GetInventoryItemComponent(project_id)
+        c.JSON(http.StatusOK, result)
+    })
+
+    // todo: methods for managing inventory items and user-party maps
+    
 
     // ToBeTested
     r.GET("/profile/view-profile/:fid", func(c *gin.Context) {
