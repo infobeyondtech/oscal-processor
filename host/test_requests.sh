@@ -48,9 +48,9 @@
 #http://localhost:9050/setparam/fileid2/paramid2/value5
 
 # Get Param Info
-#curl -i -H "Content-Type: application/json" \
-#    -X GET \
-#http://localhost:9050/getparaminfo/ac-7_prm_3
+curl -i -H "Content-Type: application/json" \
+    -X GET \
+http://localhost:9050/getparaminfo/ac-7_prm_3
 
 # Get Param Info
 #curl -i -H "Content-Type: application/json" \
@@ -93,9 +93,9 @@
 #http://localhost:9050/setcomponent/1/updated_component_id
 
 # Delete Component Test
-curl -i -H "Content-Type: application/json" \
-    -X POST \
-http://localhost:9050/deletecomponent/2
+#curl -i -H "Content-Type: application/json" \
+#    -X POST \
+#http://localhost:9050/deletecomponent/2
 
 # Get Component Value
 #curl -i -H "Content-Type: application/json" \
@@ -106,6 +106,11 @@ http://localhost:9050/deletecomponent/2
 #curl -i -H "Content-Type: application/json" \
 #    -X GET \
 #http://localhost:9050/get-components/23
+
+#curl -i -H "Content-Type: application/json" \
+#    -X GET \
+#http://localhost:9050/information/get-component/795533ab-9427-4abe-820f-0b571bacfe6d
+
 
 
 

@@ -13,14 +13,14 @@ import (
     //"encoding/json"
     sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
     "github.com/infobeyondtech/oscal-processor/context"
+    "github.com/infobeyondtech/oscal-processor/models/component_user_party"
     "github.com/infobeyondtech/oscal-processor/models/control"
     data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
     "github.com/infobeyondtech/oscal-processor/models/information"
+    "github.com/infobeyondtech/oscal-processor/models/inventory_item_component"
     "github.com/infobeyondtech/oscal-processor/models/param_value"
     "github.com/infobeyondtech/oscal-processor/models/profile"
     "github.com/infobeyondtech/oscal-processor/models/profile_navigator"
-    "github.com/infobeyondtech/oscal-processor/models/component_user_party"
-    "github.com/infobeyondtech/oscal-processor/models/inventory_item_component"
     sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
 )
 
@@ -526,6 +526,11 @@ func main() {
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
+    })
+    r.GET("/getparaminfo/:paramId", func(c *gin.Context) {
+        paramId := c.Param("paramId")
+        paramInfo := param_value.GetParamInfo(paramId)
+        c.JSON(http.StatusOK, paramInfo)
     })
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
