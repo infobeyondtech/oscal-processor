@@ -36,7 +36,7 @@ func TestAddComponentUserPartyMap(t *testing.T){
 func TestDeleteComponentUserPartyMap(t *testing.T){
 	assert := assert.New(t)
 
-	projectid := int64(4096)
+	projectid := int64(2049)	
 	// entities have to exist in DB
 	componentid := "e00acdcf-911b-437d-a42f-b0b558cc4f03"
 	userid:= "9824089b-322c-456f-86c4-4111c4200f69"
