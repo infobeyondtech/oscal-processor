@@ -531,6 +531,12 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
 
+    r.GET("/getparaminfo/:paramId", func(c *gin.Context) {
+        paramId := c.Param("paramId")
+        paramInfo := param_value.GetParamInfo(paramId)
+        c.JSON(http.StatusOK, paramInfo)
+    })
+
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
@@ -630,7 +636,7 @@ func main() {
 
     r.POST("/add-inventory-component/:project_id/:inventory_item_id/:component_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
-        item_id := c.Param("nventory_item_id")
+        item_id := c.Param("inventory_item_id")
         component_id := c.Param("component_id")
 
         if err != nil {
