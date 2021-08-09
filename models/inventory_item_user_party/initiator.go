@@ -67,7 +67,7 @@ func GetInventoryItemUserParty(projectid int64) []InventoryItemUserPartyMap{
 	defer db.Close()
 
 	// use project id to search for user-party maps
-	queryString := `SELECT id, project_id, inventory_item_id, user_id, party_id FROM inventory_item_component WHERE project_id = '`
+	queryString := `SELECT id, project_id, inventory_item_id, user_id, party_id FROM inventory_item_user_party WHERE project_id = '`
 	queryString += strconv.FormatInt(projectid, 10)+ `'`
 	queryResult, err := db.Query(queryString)
 	if err != nil {
