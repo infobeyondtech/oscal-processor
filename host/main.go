@@ -632,7 +632,7 @@ func main() {
 
     r.POST("/add-inventory-component/:project_id/:inventory_item_id/:component_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
-        item_id := c.Param("nventory_item_id")
+        item_id := c.Param("inventory_item_id")
         component_id := c.Param("component_id")
         
         if err != nil {
