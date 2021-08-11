@@ -50,7 +50,7 @@
 # Get Param Info
 curl -i -H "Content-Type: application/json" \
     -X GET \
-http://localhost:9050/getparaminfo/ac-7_prm_3
+http://localhost:9050/getparaminfo/cp-2_prm_4
 
 # Get Param Info
 #curl -i -H "Content-Type: application/json" \

@@ -1030,12 +1030,12 @@ func main() {
 		panic(err.Error())
 	}
 
-	CreateComponentsValues(db)
+	//CreateComponentsValues(db)
     //CreateComponentsToUsersTable(db)
     //CreateParamsToValuesTable(db)
 	//AddEnhancementImpact(db)
 
-	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
+	toLoad := "NIST_SP-800-53_rev4_catalog.xml"
 	//data, _ := ioutil.ReadFile(toLoad)
 	//c := Catalog{}
 	//marshalError := xml.Unmarshal([]byte(data), &c)
@@ -1070,99 +1070,105 @@ func main() {
 	//query += `")`
 	//_, err = db.Exec(query)
 
-	//data, _ := ioutil.ReadFile(toLoad)
-	//c := Catalog{}
-	//marshalError := xml.Unmarshal([]byte(data), &c)
-	//if marshalError != nil {
-	//	fmt.Printf("error 2: %v\n", marshalError)
-	//	return
-	//} else {
-	//	//var paramMap map[string]string
-	//	paramMap := make(map[string]string)
-	//	for _, group := range c.Group {
-	//		for _, ctrl := range group.Control {
-	//			for _, param := range ctrl.Param {
-	//				paramMap[param.ID] = param.Label
-	//			}
-	//		}
-	//	}
-	//	for _, group := range c.Group {
-	//		for _, ctrl := range group.Control {
-	//			for _, param := range ctrl.Param {
-	//				if !isEmpty(param.Select) {
-	//					query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
-	//					query += param.ID
-	//					query += `", "`
-	//					query += param.Label
-	//					query += `", "`
-	//					query += `selection`
-	//					query += `", `
-	//					query += `'{ "HowMany": "`
-	//					strippedHowMany := strings.ReplaceAll(param.Select.HowMany, " ", "")
-	//					strippedHowMany = strings.ReplaceAll(strippedHowMany, "\n", "")
-	//					strippedHowMany = strings.ReplaceAll(strippedHowMany, "\t", "")
-	//					if strippedHowMany != "" {
-	//						query += param.Select.HowMany
-	//						query += `", `
-	//					} else {
-	//						query += `one", `
-	//					}
-	//					query += `"choices": [`
-	//					firstChoice := true
-	//					for _, c := range param.Select.Choice {
-	//						if firstChoice {
-	//							firstChoice = false
-	//						} else {
-	//							query += `, `
-	//						}
-	//						query += `{ "Text": "`
-	//						strippedChoiceText := strings.ReplaceAll(c.Text, " ", "")
-	//						strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\n", "")
-	//						strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\t", "")
-	//						if strippedChoiceText != "" {
-	//							query += strings.TrimSpace(c.Text)
-	//							query += `", `
-	//						} else {
-	//							query += `", `
-	//						}
-	//						query += `"Insert": "`
-	//						if !isEmpty(c.Insert) {
-	//							query += c.Insert.ParamID
-	//							query += `", "InsertLabel": "`
-	//							query += paramMap[c.Insert.ParamID]
-	//							query += `"`
-	//							//fmt.Println("insert paramid: " + c.Insert.ParamID)
-	//						} else {
-	//							query += `", "InsertLabel": ""`
-	//						}
-	//						query += ` }`
-	//					}
-	//					query += `] }'`
-	//					query += `)`
-	//					//fmt.Println(query)
-	//					_, err = db.Exec(query)
-	//					if err != nil {
-	//						fmt.Print(err)
-	//						fmt.Println()
-	//						fmt.Println(query)
-	//					}
-	//				} else {
-	//					query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
-	//					query += param.ID
-	//					query += `", "`
-	//					query += param.Label
-	//					query += `", "`
-	//					query += `assignment`
-	//					query += `", "`
-	//					query += `{}`
-	//					query += `")`
-	//					//fmt.Println(query)
-	//					db.Exec(query)
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+	db.Exec("CREATE TABLE IF NOT EXISTS `param_info`(paramid varchar(20), label TEXT, sort varchar(20), description TEXT)")
+	data, _ := ioutil.ReadFile(toLoad)
+	c := Catalog{}
+	marshalError := xml.Unmarshal([]byte(data), &c)
+	if marshalError != nil {
+		fmt.Printf("error 2: %v\n", marshalError)
+		return
+	} else {
+		//var paramMap map[string]string
+		paramMap := make(map[string]string)
+		for _, group := range c.Group {
+			for _, ctrl := range group.Control {
+				for _, param := range ctrl.Param {
+					paramMap[param.ID] = param.Label
+				}
+			}
+		}
+		for _, group := range c.Group {
+			for _, ctrl := range group.Control {
+				for _, param := range ctrl.Param {
+					if !isEmpty(param.Select) {
+						query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
+						query += param.ID
+						query += `", "`
+						query += param.Label
+						query += `", "`
+						query += `selection`
+						query += `", `
+						query += `'{ "HowMany": "`
+						strippedHowMany := strings.ReplaceAll(param.Select.HowMany, " ", "")
+						strippedHowMany = strings.ReplaceAll(strippedHowMany, "\n", "")
+						strippedHowMany = strings.ReplaceAll(strippedHowMany, "\t", "")
+						if strippedHowMany != "" {
+							query += param.Select.HowMany
+							query += `", `
+						} else {
+							query += `one", `
+						}
+						query += `"choices": [`
+						firstChoice := true
+						for _, c := range param.Select.Choice {
+							if firstChoice {
+								firstChoice = false
+							} else {
+								query += `, `
+							}
+							query += `{ "Text": "`
+							strippedChoiceText := strings.ReplaceAll(c.Text, " ", "")
+							strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\n", "")
+							strippedChoiceText = strings.ReplaceAll(strippedChoiceText, "\t", "")
+							if strippedChoiceText != "" {
+								query += strings.TrimSpace(c.Text)
+								query += `", `
+							} else {
+								query += `", `
+							}
+							query += `"Insert": "`
+							if !isEmpty(c.Insert) {
+								query += c.Insert.ParamID
+								query += `", "InsertLabel": "`
+								query += paramMap[c.Insert.ParamID]
+								query += `"`
+								//fmt.Println("insert paramid: " + c.Insert.ParamID)
+							} else {
+								query += `", "InsertLabel": ""`
+							}
+							query += ` }`
+						}
+						query += `] }'`
+						query += `)`
+						//fmt.Println(query)
+						_, err = db.Exec(query)
+						if err != nil {
+							fmt.Print(err)
+							fmt.Println()
+							fmt.Println(query)
+						}
+					} else {
+						query := `INSERT INTO param_info(paramid, label, sort, description) Values("`
+						query += param.ID
+						query += `", "`
+						query += param.Label
+						query += `", "`
+						query += `assignment`
+						query += `", "`
+						query += `{}`
+						query += `")`
+						//fmt.Println(query)
+						_, err = db.Exec(query)
+						if err != nil {
+							fmt.Print(err)
+							fmt.Println()
+							fmt.Println(query)
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //for _, curr_ctrl := range GetAllControls(c) {
