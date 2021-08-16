@@ -471,7 +471,10 @@ func main() {
         ssp.Id = uuid.New().String()
 
         // operation
-        sspEngine.AddImplementedRequirement(ssp, json)
+        for _, implementedRequirement := range json.ImplementedRequirements{
+            sspEngine.AddImplementedRequirement(ssp, implementedRequirement)
+        }
+
         sspEngine.WriteToFile(ssp)
 
         // return file id

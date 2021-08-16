@@ -67,11 +67,15 @@ type InsertInventoryItemRequest struct {
     ResponsibleParties  []RolePartyMap `json:"responsibleParties"`
 }
 
-type InsertImplementedRequirementRequest struct {
-    FileID     string      `json:"fileID" binding:"required"`
+type ImplementedRequirement struct {
     UUID       string      `json:"uuid" binding:"required"`
     ControlID  string      `json:"controlID" binding:"required"`
     Statements []Statement `json:"statements"`
+}
+
+type InsertImplementedRequirementRequest struct {
+    FileID     string      `json:"fileID" binding:"required"`
+    ImplementedRequirements []ImplementedRequirement `json:"implementedRequirements"`
 }
 
 type InsertByComponentRequest struct{

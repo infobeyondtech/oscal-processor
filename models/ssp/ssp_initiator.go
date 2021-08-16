@@ -163,7 +163,7 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.Inser
 }
 
 // insert an implemented requirement
-func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.InsertImplementedRequirementRequest) {
+func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.ImplementedRequirement) {
 	sdk_requirement := &sdk_ssp.ImplementedRequirement{}
 	sdk_requirement.ControlId = requirement.ControlID
 	sdk_requirement.Id = requirement.UUID
