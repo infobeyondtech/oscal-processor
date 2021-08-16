@@ -20,6 +20,7 @@ import (
     requests_models "github.com/infobeyondtech/oscal-processor/models/data_models/requests_model"
     "github.com/infobeyondtech/oscal-processor/models/information"
     "github.com/infobeyondtech/oscal-processor/models/inventory_item_component"
+    "github.com/infobeyondtech/oscal-processor/models/inventory_item_user_party"
     "github.com/infobeyondtech/oscal-processor/models/param_value"
     "github.com/infobeyondtech/oscal-processor/models/profile"
     "github.com/infobeyondtech/oscal-processor/models/profile_navigator"
@@ -660,8 +661,38 @@ func main() {
         result := inventory_item_component.GetInventoryItemComponent(project_id)
         c.JSON(http.StatusOK, result)
     })
+    r.POST("/remove-inventory-user-party/:id", func(c *gin.Context) {
+        id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        inventory_item_user_party.RemoveInventoryItemUserParty(id)
 
-    // todo: methods for managing inventory items and user-party maps
+    })
+    r.POST("/add-inventory-user-party/:project_id/:inventory_item_id/:user_id/:party_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        item_id := c.Param("inventory_item_id")
+        party_id := c.Param("party_id")
+        user_id := c.Param("user_id")
+        
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := inventory_item_user_party.AddInventoryItemUserParty(project_id, item_id, user_id, party_id)
+        c.JSON(http.StatusOK, result)
+    })
+    r.GET("/get-inventory-user-party/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+       
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        
+        result := inventory_item_user_party.GetInventoryItemUserParty(project_id)
+        c.JSON(http.StatusOK, result)
+    })
 
     // ToBeTested
     r.GET("/profile/view-profile/:fid", func(c *gin.Context) {
