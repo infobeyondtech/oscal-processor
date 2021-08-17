@@ -12,6 +12,8 @@ import (
     "github.com/docker/oscalkit/pkg/oscal_source"
     sdk_profile "github.com/docker/oscalkit/types/oscal/profile"
     "github.com/docker/oscalkit/types/oscal/validation_root"
+    _ "github.com/go-sql-driver/mysql" 
+    "database/sql"
 
     "github.com/infobeyondtech/oscal-processor/context"
     profile_models "github.com/infobeyondtech/oscal-processor/models/data_models/profile_model"
@@ -244,8 +246,8 @@ func AddControls(profile *sdk_profile.Profile, controls []string, reference stri
         control := &Call{ControlId: c}
         var found = false
         for _, h := range existImport.Include.IdSelectors {
-            fmt.Print("h", h)
-            fmt.Print("*control", *control)
+            //fmt.Print("h", h)
+            //fmt.Print("*control", *control)
             if h == *control {
                 found = true
                 break
@@ -448,6 +450,101 @@ func MakeProfileModel(path string) ProfileModel {
     }
     return profile_Model
 
+} 
+
+func GetProfileBaselineDiff(controls []string, baseline string) []string { 
+    var result []string
+    var baselineArr []string
+    // Open the DB
+    db, err := sql.Open("mysql", context.DBSource)
+    if err != nil {
+        panic(err.Error())
+    }
+    defer db.Close() 
+
+    // select from control table
+    rows, err := db.Query(`SELECT control_id FROM nist800_53_rev4 WHERE ` + baseline + ` = "1";` )
+    if err != nil {
+        panic(err.Error())
+    }
+    defer rows.Close()
+    
+    for rows.Next() {
+        var control string 
+        var nullableControl sql.NullString
+
+        err := rows.Scan(&nullableControl)
+        if err != nil {
+            panic(err.Error())
+        }
+
+        if nullableControl.Valid {
+            control = nullableControl.String
+        } else {
+            control = ""
+        }
+        
+        baselineArr = append(baselineArr, control)
+    } 
+
+    // select from control enhancement table
+    rows1, err1 := db.Query(`SELECT enh_id FROM nist800_53_rev4_enhancements where ` + baseline + ` = "1";` )
+    if err1 != nil {
+        panic(err1.Error())
+    }
+
+    defer rows1.Close()
+
+    for rows1.Next() {
+        var control string 
+        var nullableControl sql.NullString
+
+        err := rows1.Scan(&nullableControl)
+        if err != nil {
+            panic(err.Error())
+        }
+
+        if nullableControl.Valid {
+            control = nullableControl.String
+        } else {
+            control = ""
+        }
+        
+        baselineArr = append(baselineArr, control)
+    } 
+
+    for i:=0; i<len(baselineArr); i++ {
+        if contains(controls, baselineArr[i]) == false {
+            result = append(result, baselineArr[i])
+        }  
+    } 
+    return result
+}
+
+func contains (a []string, b string) bool {
+    for i:=0; i < len(a); i++ {
+        if b == a[i] {  
+            return true
+        } 
+    } 
+    return false
+} 
+
+func GetDiff (fid string, baseline string) []string {
+    fmt.Print("fid", fid)
+    dir := context.DownloadDir
+    inputSrc := dir + "/" + fid + ".xml"
+    inputSrc = context.ExpandPath(inputSrc)
+
+    /*
+    p := &profile.Profile{}
+    profile.LoadFromFile(p, inputSrc) 
+    */
+    p := MakeProfileModel(inputSrc) 
+    
+    controls := p.Imports.Include 
+    fmt.Print("controls", controls)
+    return GetProfileBaselineDiff(controls,baseline) 
 }
 
 // Metadata : field in profile

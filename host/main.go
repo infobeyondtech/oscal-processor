@@ -2,20 +2,22 @@ package main
 
 import (
     "fmt"
+
     "github.com/infobeyondtech/oscal-processor/models/component_value"
+
     "net/http"
     "strconv"
 
+    sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
     "github.com/google/uuid"
 
     //"encoding/json"
-    sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
     "github.com/infobeyondtech/oscal-processor/context"
     "github.com/infobeyondtech/oscal-processor/models/component_user_party"
     "github.com/infobeyondtech/oscal-processor/models/control"
-    data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
+    requests_models "github.com/infobeyondtech/oscal-processor/models/data_models/requests_model"
     "github.com/infobeyondtech/oscal-processor/models/information"
     "github.com/infobeyondtech/oscal-processor/models/inventory_item_component"
     "github.com/infobeyondtech/oscal-processor/models/inventory_item_user_party"
@@ -23,6 +25,7 @@ import (
     "github.com/infobeyondtech/oscal-processor/models/profile"
     "github.com/infobeyondtech/oscal-processor/models/profile_navigator"
     sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
+    "github.com/infobeyondtech/oscal-processor/models/user_context"
 )
 
 func main() {
@@ -68,7 +71,7 @@ func main() {
     })
     // Create profile
     r.POST("/profile/create", func(c *gin.Context) {
-        var json data_models.CreatProfileRequest
+        var json requests_models.CreatProfileRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -243,7 +246,7 @@ func main() {
         }
     })
     r.POST("/profile/add-party", func(c *gin.Context) {
-        var json data_models.AddPartyRequest
+        var json requests_models.AddPartyRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -274,7 +277,7 @@ func main() {
 
     })
     r.POST("/profile/add-role-party", func(c *gin.Context) {
-        var json data_models.AddRolePartyRequest
+        var json requests_models.AddRolePartyRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -303,7 +306,7 @@ func main() {
         c.JSON(http.StatusOK, p.Id)
     })
     r.POST("/profile/add-control", func(c *gin.Context) {
-        var json data_models.AddControlRequest
+        var json requests_models.AddControlRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -329,7 +332,7 @@ func main() {
         c.JSON(http.StatusOK, p.Id)
     })
     r.POST("/ssp/create", func(c *gin.Context) {
-        var json data_models.SetTitleVersionRequest
+        var json requests_models.SetTitleVersionRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -342,7 +345,7 @@ func main() {
         oscal_version := json.OscalVersion
         title := json.Title
         profileId := json.ProfileId
-        request := data_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
+        request := requests_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
 
         // operation
         sspEngine.SetTitleVersion(ssp, request)
@@ -352,7 +355,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/set-characteristic", func(c *gin.Context) {
-        var json data_models.AddSystemCharacteristicReuqest
+        var json requests_models.AddSystemCharacteristicReuqest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -372,7 +375,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/add-inventory-item", func(c *gin.Context) {
-        var json data_models.InsertInventoryItemRequest
+        var json requests_models.InsertInventoryItemRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -385,14 +388,17 @@ func main() {
         ssp.Id = uuid.New().String()
 
         // operation
-        sspEngine.AddInventoryItem(ssp, json)
+        for _, item := range json.InventoryItemRequests{
+            sspEngine.AddInventoryItem(ssp, item)
+        }              
+        
         sspEngine.WriteToFile(ssp)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/add-by-component", func(c *gin.Context) {
-        var json data_models.InsertByComponentRequest
+        var json requests_models.InsertByComponentRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -406,14 +412,14 @@ func main() {
 
         // operation
         // todo: add service to sspEngine to add by-component
-        
+
         sspEngine.WriteToFile(ssp)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/remove-by-component", func(c *gin.Context) {
-        var json data_models.RemoveByComponentRequest
+        var json requests_models.RemoveByComponentRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -427,14 +433,14 @@ func main() {
 
         // operation
         sspEngine.RemoveByComponent(ssp, json.ControlID, json.StatementID, json.ComponentID)
-        
+
         sspEngine.WriteToFile(ssp)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/edit-component-parameter", func(c *gin.Context) {
-        var json data_models.EditComponentParameterRequest
+        var json requests_models.EditComponentParameterRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -448,7 +454,7 @@ func main() {
 
         // operation
         sspEngine.EditComponentParameter(ssp, json.ControlID, json.StatementID, json.ComponentID, json.ParamID, json.Value)
-        
+
         sspEngine.WriteToFile(ssp)
 
         // return file id
@@ -456,7 +462,7 @@ func main() {
     })
 
     r.POST("/ssp/add-implemented-requirement", func(c *gin.Context) {
-        var json data_models.InsertImplementedRequirementRequest
+        var json requests_models.InsertImplementedRequirementRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -469,7 +475,10 @@ func main() {
         ssp.Id = uuid.New().String()
 
         // operation
-        sspEngine.AddImplementedRequirement(ssp, json)
+        for _, implementedRequirement := range json.ImplementedRequirements{
+            sspEngine.AddImplementedRequirement(ssp, implementedRequirement)
+        }
+
         sspEngine.WriteToFile(ssp)
 
         // return file id
@@ -487,7 +496,7 @@ func main() {
         c.JSON(http.StatusOK, model)
     })
     r.POST("/ssp/remove-inventory-item", func(c *gin.Context) {
-        var json data_models.RemoveElementRequest
+        var json requests_models.RemoveElementRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -508,7 +517,7 @@ func main() {
         c.JSON(http.StatusOK, ssp.Id)
     })
     r.POST("/ssp/remove-implemented-requirement", func(c *gin.Context) {
-        var json data_models.RemoveElementRequest
+        var json requests_models.RemoveElementRequest
         if err := c.ShouldBindJSON(&json); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
@@ -528,11 +537,13 @@ func main() {
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })
+
     r.GET("/getparaminfo/:paramId", func(c *gin.Context) {
         paramId := c.Param("paramId")
         paramInfo := param_value.GetParamInfo(paramId)
         c.JSON(http.StatusOK, paramInfo)
     })
+
     r.GET("/infomation/find-component/", func(c *gin.Context) {
         filter := c.Request.URL.Query().Get("filter")
         if len(filter) < 1 {
@@ -593,7 +604,7 @@ func main() {
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         result := component_user_party.GetComponentUserParty(project_id)
         c.JSON(http.StatusOK, result)
     })
@@ -603,20 +614,20 @@ func main() {
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         component_user_party.RemoveComponentUserParty(id)
     })
 
     r.POST("/add-component-user-party/:project_id/:component_id/:user_id/:party_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
-        component_id:= c.Param("component_id")
-        user_id:= c.Param("user_id")
-        party_id:= c.Param("party_id")
-       
+        component_id := c.Param("component_id")
+        user_id := c.Param("user_id")
+        party_id := c.Param("party_id")
+
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         result := component_user_party.AddComponentUserParty(project_id, component_id, user_id, party_id)
         c.JSON(http.StatusOK, result)
     }) 
@@ -653,7 +664,7 @@ func main() {
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         inventory_item_component.RemoveInventoryItemComponent(id)
     })
 
@@ -661,26 +672,25 @@ func main() {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
         item_id := c.Param("inventory_item_id")
         component_id := c.Param("component_id")
-        
+
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         result := inventory_item_component.AddInventoryItemComponent(project_id, item_id, component_id)
         c.JSON(http.StatusOK, result)
     })
 
     r.GET("/get-inventory-component/:project_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
-       
+
         if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         }
-        
+
         result := inventory_item_component.GetInventoryItemComponent(project_id)
         c.JSON(http.StatusOK, result)
     })
-
     r.POST("/remove-inventory-user-party/:id", func(c *gin.Context) {
         id, err := strconv.ParseInt(c.Param("id"), 10, 64)
         if err != nil {
@@ -690,7 +700,6 @@ func main() {
         inventory_item_user_party.RemoveInventoryItemUserParty(id)
 
     })
-
     r.POST("/add-inventory-user-party/:project_id/:inventory_item_id/:user_id/:party_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
         item_id := c.Param("inventory_item_id")
@@ -704,7 +713,6 @@ func main() {
         result := inventory_item_user_party.AddInventoryItemUserParty(project_id, item_id, user_id, party_id)
         c.JSON(http.StatusOK, result)
     })
-
     r.GET("/get-inventory-user-party/:project_id", func(c *gin.Context) {
         project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
        
@@ -728,6 +736,7 @@ func main() {
         c.JSON(http.StatusOK, model)
     })
 
+
     r.GET("/get-inventory-items/:project_id", func(c *gin.Context) {
         project_id, err := strconv.Atoi(c.Param("project_id"))
         if err != nil {
@@ -738,6 +747,38 @@ func main() {
     }) 
 
     
+
+    r.POST("/set-user-context/:projectid/:profileFileId", func(c *gin.Context) {
+        projectid := c.Param("projectid")
+        profileFileId := c.Param("profileFileId")
+
+        pv := user_context.SetUserContext(projectid, profileFileId)
+        c.JSON(http.StatusOK, pv)
+    })
+
+    r.GET("/get-user-context/:projectid", func(c *gin.Context) {
+        projectid := c.Param("projectid")
+        pv := user_context.GetProfileFileId(projectid)
+        c.JSON(http.StatusOK, pv)
+    })
+
+    r.POST("/get-profile-baseline-diff", func(c *gin.Context) {
+        var json requests_models.CompareDiffRequest
+
+        if err := c.ShouldBindJSON(&json); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        baseline := json.Baseline
+        id := json.UUID
+        fmt.Print("id", id)
+        fmt.Print("baseline", baseline)
+        pv := profile.GetDiff(id, baseline)
+
+        c.JSON(http.StatusOK, pv)
+    })
+
 
     //r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
     r.Run("0.0.0.0:9050") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")

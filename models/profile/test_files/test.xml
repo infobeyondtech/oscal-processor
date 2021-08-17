@@ -22,7 +22,7 @@
           </party>
           <responsible-party role-id="creator">
               <party-id>IT-JTF</party-id>
-          </responsible-party>
+          </responsible-party> 
       </metadata>
       <import href="#catalog">
           <include>

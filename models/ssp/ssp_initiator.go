@@ -11,7 +11,7 @@ import (
 	"github.com/docker/oscalkit/types/oscal/validation_root"
 	"github.com/google/uuid"
 	"github.com/infobeyondtech/oscal-processor/context"
-	data_models "github.com/infobeyondtech/oscal-processor/models/data_models"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models/requests_model"
 	ssp_models "github.com/infobeyondtech/oscal-processor/models/data_models/ssp_model"
 	information "github.com/infobeyondtech/oscal-processor/models/information"
 )
@@ -116,7 +116,7 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string {
 }
 
 // insert an inventory item
-func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InsertInventoryItemRequest) {
+func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InventoryItemRequest) {
 	sdk_itm := &sdk_ssp.InventoryItem{}
 
 	// fetch inventory information for item
@@ -163,7 +163,7 @@ func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.Inser
 }
 
 // insert an implemented requirement
-func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.InsertImplementedRequirementRequest) {
+func AddImplementedRequirement(ssp *sdk_ssp.SystemSecurityPlan, requirement data_models.ImplementedRequirement) {
 	sdk_requirement := &sdk_ssp.ImplementedRequirement{}
 	sdk_requirement.ControlId = requirement.ControlID
 	sdk_requirement.Id = requirement.UUID
