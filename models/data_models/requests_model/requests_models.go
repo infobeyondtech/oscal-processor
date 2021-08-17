@@ -60,11 +60,15 @@ type AddSystemCharacteristicReuqest struct {
     AvailabilityImpact           string `json:"availabilityImpact"`
 }
 
-type InsertInventoryItemRequest struct {
-    FileID              string         `json:"fileID" binding:"required"`
+type InventoryItemRequest struct {
     InventoryItemID     string         `json:"inventoryItemID" binding:"required"`
     ImplementComponents []string       `json:"implementComponents" binding:"required"`
     ResponsibleParties  []RolePartyMap `json:"responsibleParties"`
+}
+
+type InsertInventoryItemRequest struct {
+    FileID              string         `json:"fileID" binding:"required"`
+    InventoryItemRequests []InventoryItemRequest `json:"inventoryItemRequest" binding:"required"`
 }
 
 type ImplementedRequirement struct {

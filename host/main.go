@@ -388,7 +388,10 @@ func main() {
         ssp.Id = uuid.New().String()
 
         // operation
-        sspEngine.AddInventoryItem(ssp, json)
+        for _, item := range json.InventoryItemRequests{
+            sspEngine.AddInventoryItem(ssp, item)
+        }              
+        
         sspEngine.WriteToFile(ssp)
 
         // return file id

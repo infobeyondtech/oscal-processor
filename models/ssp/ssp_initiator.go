@@ -116,7 +116,7 @@ func WriteToFile(ssp *sdk_ssp.SystemSecurityPlan) string {
 }
 
 // insert an inventory item
-func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InsertInventoryItemRequest) {
+func AddInventoryItem(ssp *sdk_ssp.SystemSecurityPlan, request data_models.InventoryItemRequest) {
 	sdk_itm := &sdk_ssp.InventoryItem{}
 
 	// fetch inventory information for item
