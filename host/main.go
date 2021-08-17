@@ -619,6 +619,33 @@ func main() {
         
         result := component_user_party.AddComponentUserParty(project_id, component_id, user_id, party_id)
         c.JSON(http.StatusOK, result)
+    }) 
+
+    r.GET("/get-partys/:project_id/:component_id/:user_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        component_id:= c.Param("component_id")
+        user_id:= c.Param("user_id")
+       
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        fmt.Print(project_id, component_id, user_id)
+        
+        result := component_user_party.GetPartys(project_id, component_id, user_id)
+        c.JSON(http.StatusOK, result)
+    })
+
+    r.POST("/remove-partys/:project_id/:component_id/:user_id/:party_id", func(c *gin.Context) {
+        project_id, err := strconv.ParseInt(c.Param("project_id"), 10, 64)
+        component_id:= c.Param("component_id")
+        user_id:= c.Param("user_id")
+        party_id:= c.Param("party_id")
+       
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        fmt.Print(project_id, component_id, user_id)
+        component_user_party.RemoveParty(project_id, component_id, user_id, party_id)
     })
 
     r.POST("/remove-inventory-component/:id", func(c *gin.Context) {
@@ -700,6 +727,17 @@ func main() {
         model := profile.MakeProfileModel(xmlFile)
         c.JSON(http.StatusOK, model)
     })
+
+    r.GET("/get-inventory-items/:project_id", func(c *gin.Context) {
+        project_id, err := strconv.Atoi(c.Param("project_id"))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        }
+        cvs := inventory_item_component.GetInventoryItems(project_id)
+        c.JSON(http.StatusOK, cvs)
+    }) 
+
+    
 
     //r.RunTLS("gamma.infobeyondtech.com:9888", "cert.cert", "cert.key") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
     r.Run("0.0.0.0:9050") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
