@@ -32,6 +32,11 @@ import (
 	//"io/ioutil"
 )
 
+type Insert struct {
+	Text    string `xml:",chardata"`
+	ParamID string `xml:"param-id,attr"`
+}
+
 type Catalog struct {
 	XMLName  xml.Name `xml:"catalog"`
 	Text     string   `xml:",chardata"`
@@ -599,31 +604,87 @@ func CreatePartsTable(db *sql.DB, c catalog.Catalog) {
 	}
 }
 
-func CreateParamsTable(db *sql.DB, c catalog.Catalog) {
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS params(paramid varchar(20), label varchar(300), PRIMARY KEY(paramid))")
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("DB tabled created successfully..")
+func CreateParamsTable(db *sql.DB, c Catalog) {
+	db.Exec("CREATE TABLE IF NOT EXISTS `params`(paramid varchar(20), label TEXT)")
+	paramLabelMap := make(map[string]string)
+	//visited := make(map[string]bool)
+	for _, group := range c.Group {
+		for _, ctrl := range group.Control {
+			for _, p := range ctrl.Param {
+				paramLabelMap[p.ID] = p.Label
+			}
+		}
 	}
-
-	for _, ctrl := range GetAllControls(c) {
-		for _, param := range ctrl.Parameters {
-			query := `INSERT INTO params(paramid, label) Values("`
-			query += param.Id
-			query += `", "`
-			query += string(param.Label)
-			query += `")`
-			_, err = db.Exec(query)
-			if err != nil {
-				fmt.Println(err.Error())
-				fmt.Println("Caused by: " + query)
-				os.Exit(0)
+	for _, group := range c.Group {
+		for _, ctrl := range group.Control {
+			for _, p := range ctrl.Param {
+				paramLabel := ""
+				// If the parameter is a select param
+				if p.Label == "" {
+					if p.Select.HowMany != "" {
+						paramLabel += `Selection (` + p.Select.HowMany + `): `
+					} else {
+						paramLabel += `Selection: `
+					}
+					firstChoice := true
+					for _, choice := range p.Select.Choice {
+						if !firstChoice {
+							paramLabel += ` `
+						} else {
+							firstChoice = false
+						}
+						if strings.TrimSpace(choice.Text) != "" {
+							paramLabel += strings.TrimSpace(choice.Text)
+						}
+						if choice.Insert != (Insert{}) {
+							paramLabel += `[Assignment: ` + strings.TrimSpace(paramLabelMap[choice.Insert.ParamID]) + `]`
+						}
+						paramLabel += `;`
+					}
+				} else {
+					paramLabel = `Assignment: ` + p.Label
+				}
+				query := `INSERT INTO params(paramid, label) Values("`
+				query += p.ID
+				query += `", "`
+				query += paramLabel
+				query += `")`
+				_, err := db.Exec(query)
+				if err != nil {
+					fmt.Println(err.Error())
+					fmt.Println("Caused by: " + query)
+					os.Exit(0)
+				}
 			}
 		}
 	}
 }
+
+//func CreateParamsTable(db *sql.DB, c catalog.Catalog) {
+//
+//	_, err := db.Exec("CREATE TABLE IF NOT EXISTS params(paramid varchar(20), label varchar(300), PRIMARY KEY(paramid))")
+//	if err != nil {
+//		fmt.Println(err.Error())
+//	} else {
+//		fmt.Println("DB tabled created successfully..")
+//	}
+//
+//	for _, ctrl := range GetAllControls(c) {
+//		for _, param := range ctrl.Parameters {
+//			query := `INSERT INTO params(paramid, label) Values("`
+//			query += param.Id
+//			query += `", "`
+//			query += string(param.Label)
+//			query += `")`
+//			_, err = db.Exec(query)
+//			if err != nil {
+//				fmt.Println(err.Error())
+//				fmt.Println("Caused by: " + query)
+//				os.Exit(0)
+//			}
+//		}
+//	}
+//}
 
 func CreateControlsToPartsTable(db *sql.DB, c catalog.Catalog) {
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS `controls_parts`(controlid varchar(20), partid varchar(20))")
@@ -841,8 +902,8 @@ func CreatePartsToParagraphsTable(db *sql.DB, c catalog.Catalog) {
 }
 
 func CreateParamsToValuesTable(db *sql.DB) {
-    qs := "CREATE TABLE IF NOT EXISTS `params_values`(record_id MEDIUMINT NOT NULL AUTO_INCREMENT, project_id INT, component_id VARCHAR(30), param_id VARCHAR(30), value TEXT, PRIMARY KEY (record_id));"
-    fmt.Println(qs)
+	qs := "CREATE TABLE IF NOT EXISTS `params_values`(record_id MEDIUMINT NOT NULL AUTO_INCREMENT, project_id INT, component_id VARCHAR(30), param_id VARCHAR(30), value TEXT, PRIMARY KEY (record_id));"
+	fmt.Println(qs)
 	_, err := db.Exec(qs)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1017,7 +1078,6 @@ func CreateComponentsValues(db *sql.DB) {
 	}
 }
 
-
 func main() {
 	db, err := sql.Open("mysql", context.DBSource)
 	if err != nil {
@@ -1030,19 +1090,20 @@ func main() {
 		panic(err.Error())
 	}
 
-	CreateComponentsValues(db)
-    //CreateComponentsToUsersTable(db)
-    //CreateParamsToValuesTable(db)
+	//CreateComponentsValues(db)
+	//CreateComponentsToUsersTable(db)
+	//CreateParamsToValuesTable(db)
 	//AddEnhancementImpact(db)
 
-	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
-	//data, _ := ioutil.ReadFile(toLoad)
-	//c := Catalog{}
-	//marshalError := xml.Unmarshal([]byte(data), &c)
-	//if marshalError != nil {
-	//	fmt.Printf("error 2: %v\n", marshalError)
-	//	return
-	//}
+	toLoad := "NIST_SP-800-53_rev4_catalog.xml"
+	data, _ := ioutil.ReadFile(toLoad)
+	c := Catalog{}
+	marshalError := xml.Unmarshal([]byte(data), &c)
+	if marshalError != nil {
+		fmt.Printf("error 2: %v\n", marshalError)
+		return
+	}
+	CreateParamsTable(db, c)
 	//CreateControlToRelatedControlsTable(db, c)
 	//toLoad := "NIST_SP-800-53_rev4_catalog.json"
 	//db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube")
@@ -1070,6 +1131,7 @@ func main() {
 	//query += `")`
 	//_, err = db.Exec(query)
 
+	//db.Exec("CREATE TABLE IF NOT EXISTS `param_info`(paramid varchar(20), label TEXT, sort varchar(20), description TEXT)")
 	//data, _ := ioutil.ReadFile(toLoad)
 	//c := Catalog{}
 	//marshalError := xml.Unmarshal([]byte(data), &c)
@@ -1157,7 +1219,12 @@ func main() {
 	//					query += `{}`
 	//					query += `")`
 	//					//fmt.Println(query)
-	//					db.Exec(query)
+	//					_, err = db.Exec(query)
+	//					if err != nil {
+	//						fmt.Print(err)
+	//						fmt.Println()
+	//						fmt.Println(query)
+	//					}
 	//				}
 	//			}
 	//		}
@@ -1267,4 +1334,3 @@ func main() {
 //CreateControlstoEnhancementsTable(db, c)
 //CreateEnhancementsToPartsTable(db, c)
 //CreateEnhancementsToParamsTable(db, c)
-
