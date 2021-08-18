@@ -30,7 +30,7 @@ type NullableUserSsp struct{
 
 // Given a set of controls, a set of catalogs, and a baseline,
 // generate a unique ID, which can be used for the following operations.
-func SetUserContext(projectId string, profileFileId string) UserContext {
+func AddUserContext(projectId string, profileFileId string) UserContext {
         // Open the DB
         db, err := sql.Open("mysql", context.DBSource)
         if err != nil {
@@ -112,6 +112,15 @@ func UpdateUserContext(projectId string, profileFileId string) UserContext{
     return result
 }
 
+func SetUserContext(projectId string, profileFileId string) UserContext{
+    // one project is linked to one profile file at most
+    currentProfile := GetProfileFileId(projectId)
+    if currentProfile.ProfileFileId == "" {
+        return AddUserContext(projectId, profileFileId)
+    }else{
+        return UpdateUserContext(projectId, profileFileId)
+    }
+}
 
 
 
