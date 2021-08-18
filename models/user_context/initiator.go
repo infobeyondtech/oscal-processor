@@ -194,6 +194,7 @@ func UpdateUserSsp(projectId string, sspFileId string) UserSsp{
 }
 
 func SetUserSsp(projectId string, sspFileId string) UserSsp{
+    // one project is linked to one ssp file at most
     currentSsp := GetSspFileId(projectId)
     if currentSsp.SspFileId == "" {
         return AddUserSsp(projectId, sspFileId)

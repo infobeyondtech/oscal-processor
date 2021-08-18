@@ -345,11 +345,13 @@ func main() {
         oscal_version := json.OscalVersion
         title := json.Title
         profileId := json.ProfileId
+        projectId := json.ProjectId
         request := requests_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
 
         // operation
         sspEngine.SetTitleVersion(ssp, request)
         sspEngine.WriteToFile(ssp)
+        user_context.SetUserSsp(projectId, ssp.Id)  // set the latest working ssp file id
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
@@ -366,10 +368,13 @@ func main() {
         ssp := &sdk_ssp.SystemSecurityPlan{}
         sspEngine.LoadFromFileById(ssp, fileId)
         ssp.Id = uuid.New().String()
+        projectId := json.ProjectId
 
         // operation
         sspEngine.SetSystemCharacteristic(ssp, json)
         sspEngine.WriteToFile(ssp)
+
+        user_context.SetUserSsp(projectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
@@ -386,6 +391,7 @@ func main() {
         ssp := &sdk_ssp.SystemSecurityPlan{}
         sspEngine.LoadFromFileById(ssp, fileId)
         ssp.Id = uuid.New().String()
+        projectId := json.ProjectId
 
         // operation
         for _, item := range json.InventoryItemRequests{
@@ -393,6 +399,8 @@ func main() {
         }              
         
         sspEngine.WriteToFile(ssp)
+
+        user_context.SetUserSsp(projectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
@@ -473,6 +481,7 @@ func main() {
         ssp := &sdk_ssp.SystemSecurityPlan{}
         sspEngine.LoadFromFileById(ssp, fileId)
         ssp.Id = uuid.New().String()
+        projectId := json.ProjectId
 
         // operation
         for _, implementedRequirement := range json.ImplementedRequirements{
@@ -480,8 +489,10 @@ func main() {
         }
 
         sspEngine.WriteToFile(ssp)
+        
+        user_context.SetUserSsp(projectId, ssp.Id)
 
-        // return file id
+        // return file id, which is also the sspid
         c.JSON(http.StatusOK, ssp.Id)
     })
 
@@ -508,10 +519,13 @@ func main() {
         ssp := &sdk_ssp.SystemSecurityPlan{}
         sspEngine.LoadFromFileById(ssp, fileId)
         ssp.Id = uuid.New().String()
+        projectId := json.ProjectId
 
         // operation
         sspEngine.RemoveInventoryItemAt(ssp, elementId)
         sspEngine.WriteToFile(ssp)
+
+        user_context.SetUserSsp(projectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
@@ -529,10 +543,13 @@ func main() {
         ssp := &sdk_ssp.SystemSecurityPlan{}
         sspEngine.LoadFromFileById(ssp, fileId)
         ssp.Id = uuid.New().String()
+        projectId := json.ProjectId
 
         // operation
         sspEngine.RemoveImplementedRequirementAt(ssp, elementId)
         sspEngine.WriteToFile(ssp)
+
+        user_context.SetUserSsp(projectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)

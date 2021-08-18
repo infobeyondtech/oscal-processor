@@ -26,6 +26,7 @@ type SetTitleVersionRequest struct {
     //UUID         string `json:"uuid" binding:"required"`
     Title        string `json:"title" binding:"required"`
     ProfileId    string `json:"profileId" binding:"required"`
+    ProjectId    string `json:"projectId" binding:"required"`
     Version      string `json:"version"`
     OscalVersion string `json:"oscalVersion"`
 }
@@ -46,6 +47,7 @@ type AddControlRequest struct {
 
 // below are requests related to ssp
 type AddSystemCharacteristicReuqest struct {
+    ProjectId    string `json:"projectId" binding:"required"`
     FileID          string `json:"fileID" binding:"required"`
     UUID            string `json:"uuid" binding:"required"`
     SystemName      string `json:"systemName"`
@@ -68,6 +70,7 @@ type InventoryItemRequest struct {
 
 type InsertInventoryItemRequest struct {
     FileID              string         `json:"fileID" binding:"required"`
+    ProjectId    string `json:"projectId" binding:"required"`
     InventoryItemRequests []InventoryItemRequest `json:"inventoryItemRequest" binding:"required"`
 }
 
@@ -78,6 +81,7 @@ type ImplementedRequirement struct {
 }
 
 type InsertImplementedRequirementRequest struct {
+    ProjectId    string `json:"projectId" binding:"required"`
     FileID     string      `json:"fileID" binding:"required"`
     ImplementedRequirements []ImplementedRequirement `json:"implementedRequirements"`
 }
@@ -129,6 +133,7 @@ type RolePartyMap struct {
 
 
 type RemoveElementRequest struct {
+    ProjectId    string `json:"projectId" binding:"required"`
     FileID    string `json:"fileID" binding:"required"`
     ElementID string `json:"elementID" binding:"required"`
 }
