@@ -271,6 +271,7 @@ func main() {
         // give it a new uuid
         p.Id = uuid.New().String()
         profile.WriteToFile(p)
+        user_context.SetUserContext(json.ProjectId, p.Id)
 
         // return file id
         c.JSON(http.StatusOK, p.Id)
@@ -301,6 +302,7 @@ func main() {
         // give it a new uuid
         p.Id = uuid.New().String()
         profile.WriteToFile(p)
+        user_context.SetUserContext(json.ProjectId, p.Id)
 
         // return file id
         c.JSON(http.StatusOK, p.Id)
@@ -327,6 +329,7 @@ func main() {
         // give it a new uuid
         p.Id = uuid.New().String()
         profile.WriteToFile(p)
+        user_context.SetUserContext(json.ProjectId, p.Id)
 
         // return file id
         c.JSON(http.StatusOK, p.Id)
@@ -443,6 +446,7 @@ func main() {
         sspEngine.RemoveByComponent(ssp, json.ControlID, json.StatementID, json.ComponentID)
 
         sspEngine.WriteToFile(ssp)
+        user_context.SetUserSsp(json.ProjectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
@@ -464,6 +468,7 @@ func main() {
         sspEngine.EditComponentParameter(ssp, json.ControlID, json.StatementID, json.ComponentID, json.ParamID, json.Value)
 
         sspEngine.WriteToFile(ssp)
+        user_context.SetUserSsp(json.ProjectId, ssp.Id)
 
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
