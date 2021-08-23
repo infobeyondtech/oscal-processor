@@ -175,6 +175,9 @@ func GetSspFileId(projectId string) UserSsp {
         result.SspFileId = ""
     }
 
+    fmt.Println("GetSspFileId Result")
+    fmt.Println(result)
+
     // if no record is found, return an empty record
     return result
 }
@@ -191,7 +194,7 @@ func UpdateUserSsp(projectId string, sspFileId string) UserSsp{
     query += sspFileId
     query += `" WHERE projectId = "`
     query += projectId
-    query += `");`
+    query += `";`
     _, err = db.Exec(query)
     if err != nil {
         fmt.Println("Caused by: " + query)
@@ -206,8 +209,10 @@ func SetUserSsp(projectId string, sspFileId string) UserSsp{
     // one project is linked to one ssp file at most
     currentSsp := GetSspFileId(projectId)
     if currentSsp.SspFileId == "" {
+        fmt.Println("Adding")
         return AddUserSsp(projectId, sspFileId)
     }else{
+        fmt.Println("Updating")
         return UpdateUserSsp(projectId, sspFileId)
     }
 }

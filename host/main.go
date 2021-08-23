@@ -28,6 +28,45 @@ import (
     "github.com/infobeyondtech/oscal-processor/models/user_context"
 )
 
+func getImplementedRequirements(projectId string) []requests_models.ImplementedRequirement {
+    id, _ := strconv.Atoi(projectId)
+    controlToStatementMap := component_value.GetControlToStatementMap(id)
+    statementToComponentMap := component_value.GetStatementToComponentMap(id)
+    stmtCompToParamMap := param_value.GetStmtCompToParamMap(id)
+    fmt.Println("stmtCompToParamMap")
+    fmt.Println(stmtCompToParamMap)
+    implementedRequirements := make([]requests_models.ImplementedRequirement, 0)
+    // For each control
+    for controlID, statementIDs := range controlToStatementMap {
+        ir := requests_models.ImplementedRequirement{
+            UUID:       "test-implemented-requirement-uuid",
+            ControlID:  controlID,
+            Statements: make([]requests_models.Statement, 0),
+        }
+        // For each statement
+        for _, statementID := range statementIDs {
+            stmt := requests_models.Statement{
+                StatementID: statementID,
+                ByComponents: make([]requests_models.ByComponent, 0),
+            }
+            components := statementToComponentMap[statementID]
+            // For each component
+            for _, c := range components {
+                bc := requests_models.ByComponent{
+                    ComponentID:        c,
+                    Description:        "test-byComponent-description",
+                    SetParameters:      stmtCompToParamMap[statementID + c],
+                    ResponsibleParties: make([]requests_models.RolePartyMap, 0),
+                }
+                stmt.ByComponents = append(stmt.ByComponents, bc)
+            }
+            ir.Statements = append(ir.Statements, stmt)
+        }
+        implementedRequirements = append(implementedRequirements, ir)
+    }
+    return implementedRequirements
+}
+
 func main() {
     r := gin.Default()
     // Cors support
@@ -349,13 +388,30 @@ func main() {
         title := json.Title
         profileId := json.ProfileId
         projectId := json.ProjectId
-        request := requests_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId}
+        request := requests_models.SetTitleVersionRequest{Title: title, Version: version, OscalVersion: oscal_version, ProfileId: profileId, ProjectId: projectId}
 
         // operation
         sspEngine.SetTitleVersion(ssp, request)
         sspEngine.WriteToFile(ssp)
-        user_context.SetUserSsp(projectId, ssp.Id)  // set the latest working ssp file id
 
+        fmt.Println("created: " + ssp.Id)
+
+        implementedRequirements := getImplementedRequirements(projectId)
+        fmt.Println("IMPLEMENTED_REQUIREMENTS")
+        fmt.Println(implementedRequirements)
+        fileId := ssp.Id
+        ssp = &sdk_ssp.SystemSecurityPlan{}
+        sspEngine.LoadFromFileById(ssp, fileId)
+        ssp.Id = uuid.New().String()
+        //projectId := json.ProjectId
+
+        // operation
+        for _, implementedRequirement := range implementedRequirements{
+            sspEngine.AddImplementedRequirement(ssp, implementedRequirement)
+        }
+        sspEngine.WriteToFile(ssp)
+        fmt.Println("Created: " + ssp.Id)
+        user_context.SetUserSsp(projectId, ssp.Id)  // set the latest working ssp file id
         // return file id
         c.JSON(http.StatusOK, ssp.Id)
     })

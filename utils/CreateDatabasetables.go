@@ -3,7 +3,13 @@ package main
 import (
 	"database/sql"
 	"github.com/docker/oscalkit/types/oscal/catalog"
+	sdk_ssp "github.com/docker/oscalkit/types/oscal/system_security_plan"
+	"github.com/google/uuid"
 	"github.com/infobeyondtech/oscal-processor/context"
+	"github.com/infobeyondtech/oscal-processor/models/component_value"
+	data_models "github.com/infobeyondtech/oscal-processor/models/data_models/requests_model"
+	"github.com/infobeyondtech/oscal-processor/models/param_value"
+	sspEngine "github.com/infobeyondtech/oscal-processor/models/ssp"
 	"reflect"
 
 	//"github.com/docker/oscalkit/types/oscal/catalog"
@@ -169,7 +175,13 @@ type Catalog struct {
 								Text string `xml:",chardata"`
 								Name string `xml:"name,attr"`
 							} `xml:"prop"`
-							P    string `xml:"p"`
+							P struct {
+								Text   string `xml:",chardata"`
+								Insert []struct {
+									Text    string `xml:",chardata"`
+									ParamID string `xml:"param-id,attr"`
+								} `xml:"insert"`
+							} `xml:"p"`
 							Part []struct {
 								Text string `xml:",chardata"`
 								ID   string `xml:"id,attr"`
@@ -178,7 +190,13 @@ type Catalog struct {
 									Text string `xml:",chardata"`
 									Name string `xml:"name,attr"`
 								} `xml:"prop"`
-								P    string `xml:"p"`
+								P struct {
+									Text   string `xml:",chardata"`
+									Insert []struct {
+										Text    string `xml:",chardata"`
+										ParamID string `xml:"param-id,attr"`
+									} `xml:"insert"`
+								} `xml:"p"`
 								Part []struct {
 									Text string `xml:",chardata"`
 									ID   string `xml:"id,attr"`
@@ -187,7 +205,13 @@ type Catalog struct {
 										Text string `xml:",chardata"`
 										Name string `xml:"name,attr"`
 									} `xml:"prop"`
-									P string `xml:"p"`
+									P struct {
+										Text   string `xml:",chardata"`
+										Insert []struct {
+											Text    string `xml:",chardata"`
+											ParamID string `xml:"param-id,attr"`
+										} `xml:"insert"`
+									} `xml:"p"`
 								} `xml:"part"`
 							} `xml:"part"`
 						} `xml:"part"`
@@ -270,7 +294,13 @@ type Catalog struct {
 									Text string `xml:",chardata"`
 									Name string `xml:"name,attr"`
 								} `xml:"prop"`
-								P    string `xml:"p"`
+								P struct {
+									Text   string `xml:",chardata"`
+									Insert []struct {
+										Text    string `xml:",chardata"`
+										ParamID string `xml:"param-id,attr"`
+									} `xml:"insert"`
+								} `xml:"p"`
 								Link struct {
 									Text string `xml:",chardata"`
 									Rel  string `xml:"rel,attr"`
@@ -284,7 +314,13 @@ type Catalog struct {
 										Text string `xml:",chardata"`
 										Name string `xml:"name,attr"`
 									} `xml:"prop"`
-									P string `xml:"p"`
+									P struct {
+										Text   string `xml:",chardata"`
+										Insert []struct {
+											Text    string `xml:",chardata"`
+											ParamID string `xml:"param-id,attr"`
+										} `xml:"insert"`
+									} `xml:"p"`
 								} `xml:"part"`
 							} `xml:"part"`
 						} `xml:"part"`
@@ -602,6 +638,67 @@ func CreatePartsTable(db *sql.DB, c catalog.Catalog) {
 			}
 		}
 	}
+}
+
+func CreateParamsToParts(db *sql.DB, c Catalog) {
+	partToParamMap := make(map[string][]string)
+	for _, group := range c.Group {
+		for _, ctrl := range group.Control {
+			for _, part := range ctrl.Part {
+				partToParamMap[part.ID] = getParamsFromString(fmt.Sprintf("%s", part.P), ctrl.ID)
+				for _, child1 := range part.Part {
+					partToParamMap[child1.ID] = getParamsFromString(fmt.Sprintf("%s", child1.P), ctrl.ID)
+					for _, child2 := range child1.Part {
+						partToParamMap[child2.ID] = getParamsFromString(fmt.Sprintf("%s", child2.P), ctrl.ID)
+						for _, child3 := range child2.Part {
+							partToParamMap[child3.ID] = getParamsFromString(fmt.Sprintf("%s", child3.P), ctrl.ID)
+							for _, child4 := range child3.Part {
+								partToParamMap[child4.ID] = getParamsFromString(fmt.Sprintf("%s", child4.P), ctrl.ID)
+								for _, child5 := range child4.Part {
+									partToParamMap[child5.ID] = getParamsFromString(fmt.Sprintf("%s", child5.P), ctrl.ID)
+								}
+							}
+						}
+					}
+				}
+				//}
+			}
+		}
+	}
+	db.Exec("CREATE TABLE IF NOT EXISTS `params_parts`(paramID varchar(30), partID varchar(30))")
+	for partID, paramIDs := range partToParamMap {
+		for _, paramID := range paramIDs {
+			query := `INSERT INTO params_parts(paramID, partID) Values("`
+			query += paramID
+			query += `", "`
+			query += partID
+			query += `")`
+			_, err := db.Exec(query)
+			if err != nil {
+				fmt.Println(err.Error())
+				fmt.Println("Caused by: " + query)
+				os.Exit(0)
+			}
+		}
+	}
+}
+
+func getParamsFromString(input string, controlID string) []string {
+	var result []string
+	toSearch := input
+	for strings.Index(toSearch, controlID+"_prm_") != -1 {
+		idx := strings.Index(toSearch, controlID+"_prm_")
+		c := string(toSearch[idx])
+		pId := ""
+		for c != "}" {
+			pId += c
+			idx += 1
+			c = string(toSearch[idx])
+		}
+		result = append(result, pId)
+		toSearch = toSearch[idx:]
+	}
+	return result
 }
 
 func CreateParamsTable(db *sql.DB, c Catalog) {
@@ -1012,9 +1109,33 @@ func CreateControlToRelatedControlsTable(db *sql.DB, c Catalog) {
 			}
 		}
 	}
-
 }
 
+//func CreateParamsToParts(db *sql.DB, c Catalog) {
+//	db.Exec("CREATE TABLE IF NOT EXISTS `parts_params`(partID varchar(30), relatedcontrolid varchar(20))")
+//	for _, group := range c.Group {
+//		for _, ctrl := range group.Control {
+//			for _, part := range ctrl.Part {
+//				//part.P
+//				//if part.Name == "guidance" {
+//				//	//fmt.Println(ctrl.ID)
+//				//	for _, link := range part.Link {
+//				//		//fmt.Println("\t" + strings.ToLower(link.Text))
+//				//		query := `INSERT INTO control_related_controls(controlid, relatedcontrolid) Values("`
+//				//		query += ctrl.ID
+//				//		query += `", "`
+//				//		query += strings.ToLower(link.Text)
+//				//		query += `")`
+//				//		_, err := db.Exec(query)
+//				//		if err != nil {
+//				//			fmt.Println("Error on: " + query)
+//				//		}
+//				//	}
+//				//}
+//			}
+//		}
+//	}
+//}
 //
 //func AddEnhancementImpact(db *sql.DB) {
 //
@@ -1089,12 +1210,6 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	//CreateComponentsValues(db)
-	//CreateComponentsToUsersTable(db)
-	//CreateParamsToValuesTable(db)
-	//AddEnhancementImpact(db)
-
 	toLoad := "NIST_SP-800-53_rev4_catalog.xml"
 	data, _ := ioutil.ReadFile(toLoad)
 	c := Catalog{}
@@ -1103,7 +1218,194 @@ func main() {
 		fmt.Printf("error 2: %v\n", marshalError)
 		return
 	}
-	CreateParamsTable(db, c)
+	//CreateParamsToParts(db, c)
+
+	// TODO: Build controlToStatementMap
+	// TODO: Dynamic
+	controlToStatementMap := make(map[string][]string)
+	cvs := component_value.GetComponent(23)
+	for _, cv := range cvs {
+		ctrlId := strings.Split(cv.StatementId, "_")[0]
+		if statementIDs, ok := controlToStatementMap[ctrlId]; !ok {
+			controlToStatementMap[ctrlId] = make([]string, 0)
+			controlToStatementMap[ctrlId] = append(controlToStatementMap[ctrlId], cv.StatementId)
+		} else {
+			exists := false
+			for _, s := range statementIDs {
+				if s == cv.StatementId {
+					exists = true
+				}
+			}
+			if !exists {
+				controlToStatementMap[ctrlId] = append(controlToStatementMap[ctrlId], cv.StatementId)
+			}
+		}
+	}
+
+	// TODO: Build statementToComponentMap
+	statementToComponentMap := make(map[string][]string)
+	for _, cv := range cvs {
+		if _, exists := statementToComponentMap[cv.StatementId]; !exists {
+			statementToComponentMap[cv.StatementId] = make([]string, 0)
+		}
+		statementToComponentMap[cv.StatementId] = append(statementToComponentMap[cv.StatementId], cv.ComponentId)
+	}
+
+
+	// TODO: Build paramToPartMap
+	// TODO: Static
+	paramToPartMap := make(map[string]string)
+	for _, group := range c.Group {
+		for _, ctrl := range group.Control {
+			for _, part := range ctrl.Part {
+				//paramToPartMap[part.ID] = getParamsFromString(fmt.Sprintf("%s", part.P), ctrl.ID)
+				params := getParamsFromString(fmt.Sprintf("%s", part.P), ctrl.ID)
+				for _, p := range params {
+					paramToPartMap[p] = part.ID
+				}
+				for _, child1 := range part.Part {
+					//paramToPartMap[child1.ID] = getParamsFromString(fmt.Sprintf("%s", child1.P), ctrl.ID)
+					params = getParamsFromString(fmt.Sprintf("%s", child1.P), ctrl.ID)
+					for _, p := range params {
+						paramToPartMap[p] = child1.ID
+					}
+					for _, child2 := range child1.Part {
+						//paramToPartMap[child2.ID] = getParamsFromString(fmt.Sprintf("%s", child2.P), ctrl.ID)
+						params = getParamsFromString(fmt.Sprintf("%s", child2.P), ctrl.ID)
+						for _, p := range params {
+							paramToPartMap[p] = child2.ID
+						}
+						for _, child3 := range child2.Part {
+							//paramToPartMap[child3.ID] = getParamsFromString(fmt.Sprintf("%s", child3.P), ctrl.ID)
+							params = getParamsFromString(fmt.Sprintf("%s", child3.P), ctrl.ID)
+							for _, p := range params {
+								paramToPartMap[p] = child3.ID
+							}
+							for _, child4 := range child3.Part {
+								//paramToPartMap[child4.ID] = getParamsFromString(fmt.Sprintf("%s", child4.P), ctrl.ID)
+								params = getParamsFromString(fmt.Sprintf("%s", child4.P), ctrl.ID)
+								for _, p := range params {
+									paramToPartMap[p] = child4.ID
+								}
+								for _, child5 := range child4.Part {
+									//paramToPartMap[child5.ID] = getParamsFromString(fmt.Sprintf("%s", child5.P), ctrl.ID)
+									params = getParamsFromString(fmt.Sprintf("%s", child5.P), ctrl.ID)
+									for _, p := range params {
+										paramToPartMap[p] = child5.ID
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// TODO: Build StmtCompToParamMap
+	// TODO: Dynamic
+	stmtCompToParamMap := make(map[string][]data_models.SetParameter)
+	pvs := param_value.GetParam(23)
+	for _, pv := range pvs {
+		statementID := paramToPartMap[pv.ParamId]
+		if _, exists := stmtCompToParamMap[statementID + pv.ComponentId]; !exists {
+			stmtCompToParamMap[statementID + pv.ComponentId] = make([]data_models.SetParameter, 0)
+		}
+		sp := data_models.SetParameter{pv.ParamId, pv.Value}
+		stmtCompToParamMap[statementID+pv.ComponentId] = append(stmtCompToParamMap[statementID+pv.ComponentId], sp)
+	}
+
+	//fmt.Println(stmtCompToParamMap)
+
+	implementedRequirements := make([]data_models.ImplementedRequirement, 0)
+	// For each control
+	for controlID, statementIDs := range controlToStatementMap {
+		ir := data_models.ImplementedRequirement{
+			UUID:       "test-implemented-requirement-uuid",
+			ControlID:  controlID,
+			Statements: make([]data_models.Statement, 0),
+		}
+		// For each statement
+		for _, statementID := range statementIDs {
+			stmt := data_models.Statement{
+				StatementID: statementID,
+				ByComponents: make([]data_models.ByComponent, 0),
+			}
+			components := statementToComponentMap[statementID]
+			// For each component
+			for _, c := range components {
+				bc := data_models.ByComponent{
+					ComponentID:        c,
+					Description:        "test-byComponent-description",
+					SetParameters:      stmtCompToParamMap[statementID + c],
+					ResponsibleParties: make([]data_models.RolePartyMap, 0),
+				}
+				stmt.ByComponents = append(stmt.ByComponents, bc)
+			}
+			ir.Statements = append(ir.Statements, stmt)
+		}
+		implementedRequirements = append(implementedRequirements, ir)
+	}
+
+
+	ssp := &sdk_ssp.SystemSecurityPlan{}
+	ssp.Id = uuid.New().String()
+
+	r := data_models.SetTitleVersionRequest{
+		Title:        "test-title",
+		ProfileId:    "23",
+		Version:      "4",
+		OscalVersion: "4",
+	}
+	// operation
+	sspEngine.SetTitleVersion(ssp, r)
+	sspEngine.WriteToFile(ssp)
+
+	fmt.Println("Created to: " + ssp.Id)
+
+	req := data_models.InsertImplementedRequirementRequest{
+		ProjectId:               "23",
+		FileID:                  ssp.Id,
+		ImplementedRequirements: implementedRequirements,
+	}
+
+	// load from file, give a new file id
+	fileId := ssp.Id
+	ssp = &sdk_ssp.SystemSecurityPlan{}
+	sspEngine.LoadFromFileById(ssp, fileId)
+	ssp.Id = uuid.New().String()
+	// operation
+	for _, implementedRequirement := range req.ImplementedRequirements{
+		sspEngine.AddImplementedRequirement(ssp, implementedRequirement)
+	}
+	sspEngine.WriteToFile(ssp)
+	fmt.Println("Updated to: " + ssp.Id)
+
+
+	//data_models.InsertImplementedRequirementRequest{
+	//	FileID:                  "",
+	//	ImplementedRequirements: nil,
+	//}
+
+	//fmt.Println(stmtCompToParamMap["cp-1_smt.a" + "795533ab-9427-4abe-820f-0b571bacfe6d"])
+
+	//fmt.Println(implementedRequirements)
+
+	//CreateComponentsValues(db)
+	//CreateComponentsToUsersTable(db)
+	//CreateParamsToValuesTable(db)
+	//AddEnhancementImpact(db)
+
+	//toLoad := "NIST_SP-800-53_rev4_catalog.xml"
+	//data, _ := ioutil.ReadFile(toLoad)
+	//c := Catalog{}
+	//marshalError := xml.Unmarshal([]byte(data), &c)
+	//if marshalError != nil {
+	//	fmt.Printf("error 2: %v\n", marshalError)
+	//	return
+	//}
+
+	//CreateParamsTable(db, c)
 	//CreateControlToRelatedControlsTable(db, c)
 	//toLoad := "NIST_SP-800-53_rev4_catalog.json"
 	//db, err := sql.Open("mysql", "root_master:root@(216.84.167.166:3306)/cube")
