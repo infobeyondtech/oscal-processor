@@ -3,6 +3,7 @@ package information
 import (
 	//"encoding/json"
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/infobeyondtech/oscal-processor/context"
 )
@@ -229,6 +230,8 @@ func GetParty(UUID string) Party {
 }
 
 func GetUser(UUID string) User {
+	fmt.Println("GetUser")
+	fmt.Println(UUID)
 	var result User
 	var nullableResult NullableUser
 	db, err := sql.Open("mysql", context.DBSource)
@@ -268,6 +271,7 @@ func GetUser(UUID string) User {
 	}
 	return result
 }
+
 
 func FindComponent(Input string) []Component {
 	results := make([]Component, 0)
