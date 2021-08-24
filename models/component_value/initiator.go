@@ -8,6 +8,8 @@ package component_value
 import (
 	//"encoding/json"
 	"database/sql"
+	"strings"
+
 	//"encoding/json"
 	"fmt"
 	"strconv"
@@ -128,6 +130,41 @@ func GetComponentValue(recordId int) ComponentValue {
 		result.ComponentId = ""
 	}
 	return result
+}
+
+func GetControlToStatementMap(projectId int) map[string][]string {
+	controlToStatementMap := make(map[string][]string)
+	cvs := GetComponent(projectId)
+	for _, cv := range cvs {
+		ctrlId := strings.Split(cv.StatementId, "_")[0]
+		if statementIDs, ok := controlToStatementMap[ctrlId]; !ok {
+			controlToStatementMap[ctrlId] = make([]string, 0)
+			controlToStatementMap[ctrlId] = append(controlToStatementMap[ctrlId], cv.StatementId)
+		} else {
+			exists := false
+			for _, s := range statementIDs {
+				if s == cv.StatementId {
+					exists = true
+				}
+			}
+			if !exists {
+				controlToStatementMap[ctrlId] = append(controlToStatementMap[ctrlId], cv.StatementId)
+			}
+		}
+	}
+	return controlToStatementMap
+}
+
+func GetStatementToComponentMap(projectId int) map[string][]string {
+	statementToComponentMap := make(map[string][]string)
+	cvs := GetComponent(projectId)
+	for _, cv := range cvs {
+		if _, exists := statementToComponentMap[cv.StatementId]; !exists {
+			statementToComponentMap[cv.StatementId] = make([]string, 0)
+		}
+		statementToComponentMap[cv.StatementId] = append(statementToComponentMap[cv.StatementId], cv.ComponentId)
+	}
+	return statementToComponentMap
 }
 
 func GetComponent(projectId int) []ComponentValue {
