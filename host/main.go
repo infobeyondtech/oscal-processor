@@ -644,6 +644,9 @@ func main() {
 
 	r.GET("/infomation/find-component/", func(c *gin.Context) {
 		filter := c.Request.URL.Query().Get("filter")
+        if filter == "[object FocusEvent]" {
+            filter = ""
+        }
 		if len(filter) < 1 {
 			component := information.FindComponent("")
 			c.JSON(http.StatusOK, component)
@@ -664,6 +667,9 @@ func main() {
 	})
 	r.GET("/infomation/find-inventory-item/", func(c *gin.Context) {
 		filter := c.Request.URL.Query().Get("filter")
+        if filter == "[object FocusEvent]" {
+            filter = ""
+        }
 		if len(filter) < 1 {
 			pv := information.FindAllInventoryItem(filter)
 			c.JSON(http.StatusOK, pv)
@@ -674,6 +680,9 @@ func main() {
 	})
 	r.GET("/infomation/find-party/", func(c *gin.Context) {
 		filter := c.Request.URL.Query().Get("filter")
+        if filter == "[object FocusEvent]" {
+            filter = ""
+        }
 		if len(filter) < 1 {
 			pv := information.FindAllParty(filter)
 			c.JSON(http.StatusOK, pv)
@@ -684,6 +693,9 @@ func main() {
 	})
 	r.GET("/infomation/find-user/", func(c *gin.Context) {
 		filter := c.Request.URL.Query().Get("filter")
+        if filter == "[object FocusEvent]" {
+            filter = ""
+        }
 		if len(filter) < 1 {
 			pv := information.FindAllUser(filter)
 			c.JSON(http.StatusOK, pv)
