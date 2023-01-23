@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system-security-plan xmlns="http://csrc.nist.gov/ns/oscal/1.0"
+                      uuid="66c2a1c8-5830-48bd-8fdd-55a1c3a52888">
+   <metadata>
+      <title>Enterprise Logging and Auditing System Security Plan</title>
+      <last-modified>2019-09-23T18:14:50.591Z</last-modified>
+      <version>1.0</version>
+      <oscal-version>1.0.0-rc1</oscal-version>
+      <party uuid="3b2a5599-cc37-403f-ae36-5708fa804b27" type="organization">
+         <name>Enterprise Asset Owners</name>
+      </party>
+      <party uuid="833ac398-5c9a-4e6b-acba-2a9c11399da0" type="organization">
+         <name>Enterprise Asset Administrators</name>
+      </party>
+      <party uuid="ec485dcf-2519-43f5-8e7d-014cc315332d" type="organization">
+         <name>Legal Department</name>
+      </party>      
+   </metadata>
+   <import-profile href="../../nist.gov/SP800-53/rev4/xml/NIST_SP-800-53_rev4_MODERATE-baseline_profile.xml"/>
+   <system-characteristics>
+      <system-id identifier-type="https://ietf.org/rfc/rfc4122">d7456980-9277-4dcb-83cf-f8ff0442623b</system-id>
+      <system-name>Enterprise Logging and Auditing System</system-name>
+      <description>
+         <p>This is an example of a system that provides enterprise logging and log auditing capabilities.</p>
+      </description>
+      <annotation name="deployment-model" value="private"/>
+      <security-sensitivity-level>moderate</security-sensitivity-level>
+      <system-information>
+         <information-type uuid="7d28ac6e-5970-4f4c-a508-5a3715f0f02b">
+            <title>System and Network Monitoring</title>
+            <description>
+               <p>This system maintains historical logging and auditing information for all client devices connected to this system.</p>
+            </description>
+            <categorization system="https://doi.org/10.6028/NIST.SP.800-60v2r1">
+               <information-type-id>C.3.5.8</information-type-id>
+            </categorization>
+            <confidentiality-impact>
+               <base>fips-199-moderate</base>
+            </confidentiality-impact>
+            <integrity-impact>
+               <base>fips-199-moderate</base>
+            </integrity-impact>
+            <availability-impact>
+               <base>fips-199-low</base>
+            </availability-impact>
+         </information-type>
+      </system-information>
+   </system-characteristics>
+   <system-implementation>
+      <user uuid="9824089b-322c-456f-86c4-4111c4200f69">
+         <title>System Administrator</title>
+         <annotation name="type" value="internal"/>
+         <role-id>asset-administrator</role-id>
+      </user>
+      <user uuid="ae8de94c-835d-4303-83b1-114b6a117a07">
+         <title>Audit Team</title>
+         <annotation name="type" value="internal"/>
+         <role-id>asset-owner</role-id>
+      </user>
+      <component uuid="795533ab-9427-4abe-820f-0b571bacfe6d" type="policy">
+         <title>Enterprise Logging, Monitoring, and Alerting Policy</title>
+         <description>
+            <p>Requires all components to send logs to the enterprise logging solution</p>
+         </description>
+         <status state="operational"/>
+         <responsible-role role-id="maintainer">
+            <party-uuid>ec485dcf-2519-43f5-8e7d-014cc315332d</party-uuid>
+         </responsible-role>
+      </component>     
+      <inventory-item uuid="c9c32657-a0eb-4cf2-b5c1-20928983063c">
+         <description>
+            <p>The logging server.</p>
+         </description>
+         <prop name="asset-id">asset-id-logging-server</prop>
+         <responsible-party role-id="asset-administrator">
+            <party-uuid>833ac398-5c9a-4e6b-acba-2a9c11399da0</party-uuid>
+         </responsible-party>
+         <responsible-party role-id="asset-owner">
+            <party-uuid>3b2a5599-cc37-403f-ae36-5708fa804b27</party-uuid>
+         </responsible-party>
+         <implemented-component component-uuid="795533ab-9427-4abe-820f-0b571bacfe6d"/>
+      </inventory-item>
+      <remarks>
+         <p>This is a partial implementation that addresses the logging server portion of the auditing system.</p>
+      </remarks>
+   </system-implementation>
+   <control-implementation>
+      <description>
+         <p>This is the control implementation for the system.</p>
+      </description>
+      <implemented-requirement uuid="aaadb3ff-6ae8-4332-92db-211468c52af2" control-id="au-1">
+         <statement statement-id="au-1smt.a" uuid="f3887a91-9ed3-425c-b305-21e4634a1c34">
+            <by-component component-uuid="795533ab-9427-4abe-820f-0b571bacfe6d"
+                          uuid="a74681b2-fbcb-46eb-90fd-0d55aa74ac7b">
+               <description>
+                  <p>The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.</p>
+               </description>
+               <set-parameter param-id="au-1_prm_1">
+                  <value>all staff and contractors within the organization</value>
+               </set-parameter>
+            </by-component>
+         </statement>
+      </implemented-requirement>
+   </control-implementation>
+</system-security-plan>

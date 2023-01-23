@@ -1,0 +1,92 @@
+  <system-security-plan xmlns="http://csrc.nist.gov/ns/oscal/1.0" id="295a962f-bcb5-46ee-90c1-49e333860fba">
+      <metadata>
+          <title>Enterprise Logging and Auditing System Security Plan</title>
+          <version>1.0</version>
+          <oscal-version>1.0.0-m1</oscal-version>
+          <party id="ec485dcf-2519-43f5-8e7d-014cc315332d">
+              <prop name="name">Legal Department</prop>
+              <prop name="type">organization</prop>
+          </party>
+          <party id="833ac398-5c9a-4e6b-acba-2a9c11399da0">
+              <prop name="name">Enterprise Asset Administrators</prop>
+              <prop name="type">organization</prop>
+          </party>
+          <party id="3b2a5599-cc37-403f-ae36-5708fa804b27">
+              <prop name="name">Enterprise Asset Owners</prop>
+              <prop name="type">organization</prop>
+          </party>
+      </metadata>
+      <system-characteristics>
+          <system-id identifier-type="https://ietf.org/rfc/rfc4122">d7456980-9277-4dcb-83cf-f8ff0442623b</system-id>
+          <system-name>Enterprise Logging and Auditing System</system-name>
+          <description>This is an example of a system that provides enterprise logging and log auditing capabilities.</description>
+          <security-sensitivity-level>moderate</security-sensitivity-level>
+          <annotation name="deployment-model" value="private"></annotation>
+          <system-information>
+              <information-type>
+                  <title>System and Network Monitoring</title>
+                  <description>This system maintains historical logging and auditing information for all client devices connected to this system.</description>
+                  <confidentiality-impact>
+                      <base>fips-199-moderate</base>
+                  </confidentiality-impact>
+                  <integrity-impact>
+                      <base>fips-199-moderate</base>
+                  </integrity-impact>
+                  <availability-impact>
+                      <base>fips-199-low</base>
+                  </availability-impact>
+              </information-type>
+          </system-information>
+      </system-characteristics>
+      <system-implementation>
+          <user id="46ee87f8-724d-42de-907a-670fcb8bd0e3">
+              <title>Maintainer</title>
+              <role-id>maintainer</role-id>
+              <annotation name="type" value="internal"></annotation>
+          </user>
+          <user id="9824089b-322c-456f-86c4-4111c4200f69">
+              <title>System Administrator</title>
+              <role-id>asset-administrator</role-id>
+              <annotation name="type" value="internal"></annotation>
+          </user>
+          <user id="ae8de94c-835d-4303-83b1-114b6a117a07">
+              <title>Audit Team</title>
+              <role-id>asset-owner</role-id>
+              <annotation name="type" value="internal"></annotation>
+          </user>
+          <component id="795533ab-9427-4abe-820f-0b571bacfe6d" component-type="policy">
+              <title>Enterprise Logging, Monitoring, and Alerting Policy</title>
+              <description>Requires all components to send logs to the enterprise logging solution</description>
+              <prop name="version"></prop>
+              <prop name="last-modified-date"></prop>
+              <status state="operational"></status>
+              <responsible-role role-id="maintainer">
+                  <party-id>ec485dcf-2519-43f5-8e7d-014cc315332d</party-id>
+              </responsible-role>
+          </component>
+          <system-inventory>
+              <inventory-item id="c9c32657-a0eb-4cf2-b5c1-20928983063c" asset-id="asset-id-logging-server">
+                  <description>The logging server.</description>
+                  <responsible-party role-id="asset-administrator">
+                      <party-id>833ac398-5c9a-4e6b-acba-2a9c11399da0</party-id>
+                  </responsible-party>
+                  <responsible-party role-id="asset-owner">
+                      <party-id>3b2a5599-cc37-403f-ae36-5708fa804b27</party-id>
+                  </responsible-party>
+                  <implemented-component component-id="795533ab-9427-4abe-820f-0b571bacfe6d"></implemented-component>
+              </inventory-item>
+          </system-inventory>
+      </system-implementation>
+      <control-implementation>
+          <implemented-requirement id="aaadb3ff-6ae8-4332-92db-211468c52af2" control-id="au-1">
+              <statement statement-id="au-1smt.a">
+                  <by-component component-id="795533ab-9427-4abe-820f-0b571bacfe6d">
+                      <description>The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.</description>
+                      <set-parameter param-id="au-1_prm_1">
+                          <value>all staff and contractors within the organization</value>
+                      </set-parameter>
+                  </by-component>
+              </statement>
+          </implemented-requirement>
+      </control-implementation>
+  </system-security-plan>

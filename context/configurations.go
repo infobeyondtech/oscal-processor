@@ -13,6 +13,7 @@ const (
 	DownloadDir = "~/oscal_processing_space/downloads"
 	JarLibDir   = "~/.nanshiie_baker/jars"
 	OSCALRepo   = "~/oscal_workspace/OSCAL"
+    DBSource    = "infobeyond:1234@(192.168.1.124:3306)/cube"
 )
 
 var usr, _ = user.Current()
